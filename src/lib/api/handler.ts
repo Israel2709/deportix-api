@@ -1,0 +1,139 @@
+import { createHash } from 'node:crypto';
+import { NextResponse, type NextRequest } from 'next/server';
+import { ZodError } from 'zod';
+import { ApiError, httpStatusForCode, type ErrorCode } from './errors';
+import { applyCorsHeaders } from './cors';
+import { newRequestId } from './request-id';
+import { CACHE, type CachePolicy } from './cache';
+import {
+  buildCollectionBody,
+  buildErrorBody,
+  buildResourceBody,
+  type Pagination,
+} from './responses';
+
+export interface RouteContext {
+  request: NextRequest;
+  params: Record<string, string>;
+  searchParams: URLSearchParams;
+  requestId: string;
+}
+
+export type RouteOutput =
+  | {
+      kind: 'collection';
+      data: unknown[];
+      pagination: Pagination;
+      updatedAt?: string | null;
+      cache?: CachePolicy;
+    }
+  | { kind: 'resource'; data: unknown; updatedAt?: string | null; cache?: CachePolicy }
+  | { kind: 'raw'; body: unknown; status?: number; cache?: CachePolicy };
+
+export type RouteHandler = (ctx: RouteContext) => Promise<RouteOutput>;
+
+type NextRouteArgs = { params: Promise<Record<string, string>> };
+
+function weakEtag(payload: string): string {
+  const hash = createHash('sha1').update(payload).digest('base64');
+  return `W/"${hash}"`;
+}
+
+function baseHeaders(requestId: string, origin: string | null): Headers {
+  const headers = new Headers();
+  headers.set('Content-Type', 'application/json; charset=utf-8');
+  headers.set('X-Request-Id', requestId);
+  applyCorsHeaders(headers, origin);
+  return headers;
+}
+
+function buildErrorResponse(
+  err: unknown,
+  requestId: string,
+  origin: string | null,
+): NextResponse {
+  let code: ErrorCode;
+  let message: string;
+  let details: unknown;
+
+  if (err instanceof ApiError) {
+    code = err.code;
+    message = err.message;
+    details = err.details;
+  } else if (err instanceof ZodError) {
+    code = 'INVALID_QUERY_PARAMETER';
+    message = err.issues[0]?.message ?? 'One or more query parameters are invalid.';
+    details = err.issues.map((issue) => ({
+      path: issue.path.join('.'),
+      message: issue.message,
+    }));
+  } else {
+    code = 'INTERNAL_SERVER_ERROR';
+    message = 'An unexpected error occurred.';
+    // Never leak internal error details to clients; log server-side for debugging.
+    console.error(`[${requestId}] Unhandled error:`, err);
+  }
+
+  const headers = baseHeaders(requestId, origin);
+  headers.set('Cache-Control', CACHE.none);
+  return new NextResponse(JSON.stringify(buildErrorBody(code, message, requestId, details)), {
+    status: httpStatusForCode(code),
+    headers,
+  });
+}
+
+/**
+ * Wraps a route handler with all cross-cutting concerns: request id, CORS, uniform
+ * envelopes, weak ETag + conditional `304`, cache headers, and error translation.
+ */
+export function getRoute(handler: RouteHandler) {
+  return async function GET(request: NextRequest, ctx: NextRouteArgs): Promise<NextResponse> {
+    const requestId = newRequestId();
+    const origin = request.headers.get('origin');
+
+    try {
+      const params = ctx?.params ? await ctx.params : {};
+      const searchParams = new URL(request.url).searchParams;
+      const out = await handler({ request, params, searchParams, requestId });
+
+      let body: unknown;
+      let cache: CachePolicy;
+      let status = 200;
+
+      if (out.kind === 'collection') {
+        body = buildCollectionBody(out.data, out.pagination, out.updatedAt ?? null);
+        cache = out.cache ?? CACHE.standard;
+      } else if (out.kind === 'resource') {
+        body = buildResourceBody(out.data, out.updatedAt ?? null);
+        cache = out.cache ?? CACHE.standard;
+      } else {
+        body = out.body;
+        cache = out.cache ?? CACHE.none;
+        status = out.status ?? 200;
+      }
+
+      const payload = JSON.stringify(body);
+      const etag = weakEtag(payload);
+      const headers = baseHeaders(requestId, origin);
+      headers.set('Cache-Control', cache);
+      headers.set('ETag', etag);
+
+      if (status === 200 && request.headers.get('if-none-match') === etag) {
+        return new NextResponse(null, { status: 304, headers });
+      }
+
+      return new NextResponse(payload, { status, headers });
+    } catch (err) {
+      return buildErrorResponse(err, requestId, origin);
+    }
+  };
+}
+
+/** Shared CORS preflight handler for `OPTIONS` on any `/v1` route. */
+export function optionsRoute() {
+  return async function OPTIONS(request: NextRequest): Promise<NextResponse> {
+    const headers = new Headers();
+    applyCorsHeaders(headers, request.headers.get('origin'));
+    return new NextResponse(null, { status: 204, headers });
+  };
+}

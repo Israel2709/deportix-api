@@ -1,0 +1,52 @@
+{
+  "name": "deportix-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deportix API — public sports data REST API powered by Firestore.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "pnpm openapi:build && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "data:inspect": "tsx scripts/inspect-firestore.ts",
+    "openapi:build": "tsx scripts/build-openapi.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@scalar/nextjs-api-reference": "^0.11.5",
+    "firebase-admin": "^14.0.0",
+    "next": "^16.2.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@types/node": "^26.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "^16.2.9",
+    "prettier": "^3.8.4",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "unrs-resolver",
+      "sharp",
+      "@firebase/util",
+      "protobufjs"
+    ]
+  }
+}
