@@ -10,7 +10,7 @@ vi.mock('@/lib/firebase/admin', () => ({
 const { listLeagues, getLeague } = await import('@/lib/firebase/repositories/leagues.repository');
 const { listTeamsByLeague, getTeamById } = await import('@/lib/firebase/repositories/teams.repository');
 const { listStandingsByLeague } = await import('@/lib/firebase/repositories/standings.repository');
-const { listMatchesBySeason } = await import('@/lib/firebase/repositories/matches.repository');
+const { listMatchesBySeason, updateMatch } = await import('@/lib/firebase/repositories/matches.repository');
 const { buildDataStatus } = await import('@/lib/firebase/repositories/data-status.repository');
 
 const dataset: Dataset = {
@@ -97,6 +97,30 @@ describe('teams, standings, matches', () => {
 
   it('returns empty for an unknown season (no error)', async () => {
     expect(await listMatchesBySeason('soccer', 'nope', { sortDesc: true })).toEqual([]);
+  });
+
+  it('updates a match and returns the serialized dto', async () => {
+    const updated = await updateMatch('lg_ar', 'soccer', 'm1', {
+      status: 'FT',
+      home: { score: 2 },
+      away: { score: 0 },
+    });
+    expect(updated).toMatchObject({
+      id: 'm1',
+      status: 'FT',
+      home: { score: 2 },
+      away: { score: 0 },
+    });
+    expect(updated.updatedAt).toBeTruthy();
+
+    const matches = await listMatchesBySeason('soccer', 'se_ar26', { sortDesc: true });
+    expect(matches[0]).toMatchObject({ status: 'FT', home: { score: 2 }, away: { score: 0 } });
+  });
+
+  it('returns not found when the match belongs to another league', async () => {
+    await expect(
+      updateMatch('lg_mx', 'soccer', 'm1', { status: 'FT' }),
+    ).rejects.toMatchObject({ code: 'RESOURCE_NOT_FOUND' });
   });
 });
 

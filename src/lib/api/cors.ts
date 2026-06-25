@@ -31,7 +31,7 @@ export function applyCorsHeaders(headers: Headers, requestOrigin: string | null)
   const allowOrigin = resolveAllowOrigin(requestOrigin);
   headers.set('Access-Control-Allow-Origin', allowOrigin);
   if (allowOrigin !== '*') headers.append('Vary', 'Origin');
-  headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  headers.set('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
   headers.set('Access-Control-Allow-Headers', 'Content-Type, If-None-Match');
   headers.set('Access-Control-Max-Age', '86400');
 }

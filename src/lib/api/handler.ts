@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { ZodError } from 'zod';
-import { ApiError, httpStatusForCode, type ErrorCode } from './errors';
+import { ApiError, httpStatusForCode, invalidRequestBody, type ErrorCode } from './errors';
 import { applyCorsHeaders } from './cors';
 import { newRequestId } from './request-id';
 import { CACHE, type CachePolicy } from './cache';
@@ -19,6 +19,10 @@ export interface RouteContext {
   requestId: string;
 }
 
+export interface PatchRouteContext extends RouteContext {
+  body: unknown;
+}
+
 export type RouteOutput =
   | {
       kind: 'collection';
@@ -31,6 +35,7 @@ export type RouteOutput =
   | { kind: 'raw'; body: unknown; status?: number; cache?: CachePolicy };
 
 export type RouteHandler = (ctx: RouteContext) => Promise<RouteOutput>;
+export type PatchRouteHandler = (ctx: PatchRouteContext) => Promise<RouteOutput>;
 
 type NextRouteArgs = { params: Promise<Record<string, string>> };
 
@@ -123,6 +128,52 @@ export function getRoute(handler: RouteHandler) {
       }
 
       return new NextResponse(payload, { status, headers });
+    } catch (err) {
+      return buildErrorResponse(err, requestId, origin);
+    }
+  };
+}
+
+/**
+ * Wraps a PATCH handler with the same cross-cutting concerns as `getRoute`, but parses a JSON
+ * request body and skips ETag / conditional GET handling.
+ */
+export function patchRoute(handler: PatchRouteHandler) {
+  return async function PATCH(request: NextRequest, ctx: NextRouteArgs): Promise<NextResponse> {
+    const requestId = newRequestId();
+    const origin = request.headers.get('origin');
+
+    try {
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        throw invalidRequestBody('Request body must be valid JSON.');
+      }
+
+      const params = ctx?.params ? await ctx.params : {};
+      const searchParams = new URL(request.url).searchParams;
+      const out = await handler({ request, params, searchParams, requestId, body });
+
+      let responseBody: unknown;
+      let cache: CachePolicy;
+      let status = 200;
+
+      if (out.kind === 'collection') {
+        responseBody = buildCollectionBody(out.data, out.pagination, out.updatedAt ?? null);
+        cache = out.cache ?? CACHE.none;
+      } else if (out.kind === 'resource') {
+        responseBody = buildResourceBody(out.data, out.updatedAt ?? null);
+        cache = out.cache ?? CACHE.none;
+      } else {
+        responseBody = out.body;
+        cache = out.cache ?? CACHE.none;
+        status = out.status ?? 200;
+      }
+
+      const headers = baseHeaders(requestId, origin);
+      headers.set('Cache-Control', cache);
+      return new NextResponse(JSON.stringify(responseBody), { status, headers });
     } catch (err) {
       return buildErrorResponse(err, requestId, origin);
     }

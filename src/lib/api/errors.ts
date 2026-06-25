@@ -4,6 +4,7 @@
  */
 export const ERROR_CODES = {
   INVALID_QUERY_PARAMETER: 'INVALID_QUERY_PARAMETER',
+  INVALID_REQUEST_BODY: 'INVALID_REQUEST_BODY',
   INVALID_PATH_PARAMETER: 'INVALID_PATH_PARAMETER',
   RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
   DATA_NOT_AVAILABLE: 'DATA_NOT_AVAILABLE',
@@ -15,6 +16,7 @@ export type ErrorCode = keyof typeof ERROR_CODES;
 
 const STATUS_BY_CODE: Record<ErrorCode, number> = {
   INVALID_QUERY_PARAMETER: 400,
+  INVALID_REQUEST_BODY: 400,
   INVALID_PATH_PARAMETER: 400,
   RESOURCE_NOT_FOUND: 404,
   // The resource type is recognized but no backing data exists for it (e.g. a sport
@@ -51,6 +53,10 @@ export function notFound(message = 'The requested resource was not found.'): Api
 
 export function invalidPathParameter(message: string, details?: unknown): ApiError {
   return new ApiError('INVALID_PATH_PARAMETER', message, details);
+}
+
+export function invalidRequestBody(message: string, details?: unknown): ApiError {
+  return new ApiError('INVALID_REQUEST_BODY', message, details);
 }
 
 export function dataNotAvailable(message: string): ApiError {

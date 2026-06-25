@@ -21,12 +21,13 @@ describe('CORS', () => {
     expect(resolveAllowOrigin('https://evil.com')).toBe('https://a.com');
   });
 
-  it('sets GET/OPTIONS headers', () => {
+  it('sets GET/PATCH/OPTIONS headers', () => {
     delete process.env.CORS_ALLOWED_ORIGINS;
     const headers = new Headers();
     applyCorsHeaders(headers, null);
     expect(headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(headers.get('Access-Control-Allow-Methods')).toContain('GET');
+    expect(headers.get('Access-Control-Allow-Methods')).toContain('PATCH');
   });
 });
 
@@ -44,6 +45,7 @@ describe('sport registry', () => {
 describe('error status mapping', () => {
   it('maps codes to HTTP statuses', () => {
     expect(httpStatusForCode('INVALID_QUERY_PARAMETER')).toBe(400);
+    expect(httpStatusForCode('INVALID_REQUEST_BODY')).toBe(400);
     expect(httpStatusForCode('RESOURCE_NOT_FOUND')).toBe(404);
     expect(httpStatusForCode('DATA_SOURCE_NOT_CONFIGURED')).toBe(503);
     expect(httpStatusForCode('INTERNAL_SERVER_ERROR')).toBe(500);
@@ -65,6 +67,7 @@ describe('OpenAPI document', () => {
       '/v1/leagues',
       '/v1/leagues/{leagueId}',
       '/v1/leagues/{leagueId}/standings',
+      '/v1/leagues/{leagueId}/matches/{matchId}',
       '/v1/teams/{teamId}',
       '/v1/openapi.json',
     ]) {

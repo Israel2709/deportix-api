@@ -76,3 +76,11 @@ export async function countCollection(collection: string): Promise<number> {
   const snap = await getDb().collection(collection).count().get();
   return snap.data().count;
 }
+
+export async function updateDocFields(
+  collection: string,
+  id: string,
+  fields: Record<string, unknown>,
+): Promise<void> {
+  await getDb().collection(collection).doc(id).update(fields);
+}

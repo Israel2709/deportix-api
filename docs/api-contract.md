@@ -3,8 +3,8 @@
 The OpenAPI 3.1 document is the source of truth: [`openapi/openapi.yaml`](../openapi/openapi.yaml),
 served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This page summarizes it.
 
-- **Base path:** `/v1` · **Methods:** `GET` only · **Dates:** ISO-8601, **UTC**.
-- **Identifiers:** path params (`leagueId`, `teamId`) accept the API's `id` or the provider
+- **Base path:** `/v1` · **Methods:** `GET` (read) and `PATCH` (match edit) · **Dates:** ISO-8601, **UTC**.
+- **Identifiers:** path params (`leagueId`, `teamId`, `matchId`) accept the API's `id` or the provider
   `externalId` (e.g. `262` for Liga MX).
 
 ## Endpoints
@@ -20,6 +20,7 @@ served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This
 | GET | `/v1/leagues/{leagueId}/teams` | Teams. NFL also: `?conference=`, `?division=`. |
 | GET | `/v1/leagues/{leagueId}/standings` | Standings. `?season=` (defaults to current season). |
 | GET | `/v1/leagues/{leagueId}/matches` | Matches. `?season`,`?from`,`?to`,`?date`,`?teamId`,`?status`,`?sort=date|-date`. Defaults to current season. |
+| PATCH | `/v1/leagues/{leagueId}/matches/{matchId}` | Partially update a match. JSON body with only the fields to change. Returns the updated match. |
 | GET | `/v1/teams/{teamId}` | A team (searched across sport collections). |
 | GET | `/v1/teams/{teamId}/matches` | A team's matches. Same filters as league matches. |
 | GET | `/v1/openapi.json` | The OpenAPI document. |
@@ -46,6 +47,7 @@ served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This
 | Code | HTTP | When |
 | --- | --- | --- |
 | `INVALID_QUERY_PARAMETER` | 400 | A query param is malformed or out of range. |
+| `INVALID_REQUEST_BODY` | 400 | PATCH body is missing, malformed, or invalid. |
 | `INVALID_PATH_PARAMETER` | 400 | A path param is missing/invalid. |
 | `RESOURCE_NOT_FOUND` | 404 | League/team id does not exist. |
 | `DATA_NOT_AVAILABLE` | 404 | Resource type not served for this entity (e.g. generic endpoints for an F1 league). |
@@ -71,6 +73,30 @@ Every response includes `X-Request-Id`; error bodies echo it as `requestId`.
 
 **Empty results** return `200` with an empty `data` array — not an error. Coverage is partial; use
 `/v1/data-status` to discover what exists.
+
+## Match update (PATCH)
+
+`PATCH /v1/leagues/{leagueId}/matches/{matchId}` accepts a JSON object with **only the fields to
+change**. At least one property is required. Names mirror the public `Match` resource:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `externalId` | string \| null | Provider id. |
+| `seasonId` | string \| null | Season document id. |
+| `date` | ISO-8601 string \| null | Kick-off / game date (UTC). |
+| `status` | string \| null | Raw status code (e.g. `NS`, `FT`). |
+| `round` | string \| null | Round label. |
+| `venue` | string \| null | Venue name. |
+| `home` / `away` | object | Partial side update: `teamId`, `name`, `logo`, `score`. |
+
+**Example — set final score (soccer):**
+```bash
+curl -X PATCH "https://deportix-api.vercel.app/v1/leagues/128/matches/m1" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"FT","home":{"score":2},"away":{"score":1}}'
+```
+
+Response: `200` with the standard **resource** envelope containing the updated `Match`.
 
 ## Examples
 

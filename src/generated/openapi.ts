@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Read-only.** Only `GET` requests are supported in this phase. There is no\n  authentication, no API keys and no rate limiting yet (these will be added later\n  without breaking `/v1`).\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match editing is available via\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update — send only the fields\n  you want to change). Authentication and rate limiting are not enforced yet; access is\n  restricted operationally to authorized platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -497,6 +497,75 @@ export const openapiDocument = {
         }
       }
     },
+    "/v1/leagues/{leagueId}/matches/{matchId}": {
+      "patch": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Update a league match",
+        "description": "Partially updates a match belonging to the given league. Only the fields present in\nthe request body are modified; omitted fields are left unchanged.\n\nPath identifiers accept the API `id` or the provider `externalId`. The match must\nbelong to the league resolved from `{leagueId}`.\n\n**Soccer** denormalized fields (`fixture_date`, nested `goals`, `teams`, `league.round`,\netc.) are kept in sync when you update the corresponding public fields (`date`, `home.score`,\n`round`, …). **NFL** uses flat fields such as `game_date`, `home_score` and `away_score`.\n",
+        "operationId": "updateLeagueMatch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/leagueId"
+          },
+          {
+            "$ref": "#/components/parameters/matchIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchUpdate"
+              },
+              "examples": {
+                "updateScore": {
+                  "summary": "Set final score (soccer)",
+                  "value": {
+                    "status": "FT",
+                    "home": {
+                      "score": 2
+                    },
+                    "away": {
+                      "score": 1
+                    }
+                  }
+                },
+                "reschedule": {
+                  "summary": "Change kick-off time",
+                  "value": {
+                    "date": "2026-11-08T22:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated match.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestBody"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
     "/v1/teams/{teamId}": {
       "get": {
         "tags": [
@@ -720,6 +789,15 @@ export const openapiDocument = {
         "schema": {
           "type": "string"
         }
+      },
+      "matchIdPath": {
+        "name": "matchId",
+        "in": "path",
+        "required": true,
+        "description": "Match id (or external provider id).",
+        "schema": {
+          "type": "string"
+        }
       }
     },
     "responses": {
@@ -734,6 +812,23 @@ export const openapiDocument = {
               "error": {
                 "code": "INVALID_QUERY_PARAMETER",
                 "message": "The \"season\" parameter must be a 4-digit year (e.g. 2026).",
+                "requestId": "req_2f9c..."
+              }
+            }
+          }
+        }
+      },
+      "InvalidRequestBody": {
+        "description": "Request body is missing, malformed, or invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": {
+                "code": "INVALID_REQUEST_BODY",
+                "message": "At least one field must be provided.",
                 "requestId": "req_2f9c..."
               }
             }
@@ -1148,6 +1243,88 @@ export const openapiDocument = {
           }
         }
       },
+      "MatchSideUpdate": {
+        "type": "object",
+        "description": "Partial update for one side of a match. Only include fields to change.",
+        "properties": {
+          "teamId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "score": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "MatchUpdate": {
+        "type": "object",
+        "description": "Partial match update. All properties are optional, but at least one must be sent.\nField names mirror the public `Match` resource (camelCase).\n",
+        "minProperties": 1,
+        "properties": {
+          "externalId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "seasonId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Kick-off / game date (UTC)."
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "FT"
+          },
+          "round": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "venue": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "home": {
+            "$ref": "#/components/schemas/MatchSideUpdate"
+          },
+          "away": {
+            "$ref": "#/components/schemas/MatchSideUpdate"
+          }
+        }
+      },
       "Match": {
         "type": "object",
         "properties": {
@@ -1508,6 +1685,17 @@ export const openapiDocument = {
           },
           "meta": {
             "$ref": "#/components/schemas/CollectionMeta"
+          }
+        }
+      },
+      "MatchResource": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Match"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResourceMeta"
           }
         }
       },

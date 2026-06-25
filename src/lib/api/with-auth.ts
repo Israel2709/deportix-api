@@ -1,4 +1,4 @@
-import type { RouteHandler } from './handler';
+import type { RouteContext } from './handler';
 
 /**
  * Placeholder for the future authentication / rate-limiting / plan-gating layer.
@@ -14,6 +14,6 @@ import type { RouteHandler } from './handler';
  * rate limits, and throw an `ApiError` (e.g. a future `UNAUTHORIZED` / `RATE_LIMITED`) on
  * failure — all transparent to the route body.
  */
-export function withAuth(handler: RouteHandler): RouteHandler {
+export function withAuth<C extends RouteContext>(handler: (ctx: C) => Promise<import('./handler').RouteOutput>) {
   return handler;
 }

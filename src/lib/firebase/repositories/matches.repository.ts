@@ -1,7 +1,15 @@
 import { serializeMatch, type TeamMap } from '@/lib/api/serializers';
+import { buildMatchFirestorePatch, type MatchUpdate } from '@/lib/api/match-patch';
+import { notFound } from '@/lib/api/errors';
 import type { MatchDTO } from '@/lib/contracts/dto';
 import { getSportConfig, type SportSlug } from '../sport-registry';
-import { fetchWhereEq, type RawDoc } from './helpers';
+import {
+  fetchWhereEq,
+  getDocById,
+  resolveDoc,
+  updateDocFields,
+  type RawDoc,
+} from './helpers';
 import { buildTeamMapForLeague } from './teams.repository';
 
 export interface MatchFilters {
@@ -95,4 +103,40 @@ export async function listMatchesByTeam(
   const matches = [...byId.values()].map((doc) => serializeMatch(sport, doc.id, doc.data, teamMap));
   // teamId filter is already enforced by the queries; ignore it here.
   return applyFilters(matches, { ...filters, teamId: undefined });
+}
+
+export async function getMatchById(sport: SportSlug, matchId: string): Promise<RawDoc | null> {
+  const config = getSportConfig(sport);
+  if (!config) return null;
+  return resolveDoc(config.collections.matches, matchId);
+}
+
+export async function updateMatch(
+  leagueId: string,
+  sport: SportSlug,
+  matchId: string,
+  patch: MatchUpdate,
+  teamMap?: TeamMap,
+): Promise<MatchDTO> {
+  const config = getSportConfig(sport);
+  if (!config) throw notFound('Match not found.');
+
+  const existing = await resolveDoc(config.collections.matches, matchId);
+  if (!existing) throw notFound('Match not found.');
+
+  const storedLeagueId = existing.data.league_id;
+  if (typeof storedLeagueId !== 'string' || storedLeagueId !== leagueId) {
+    throw notFound('Match not found.');
+  }
+
+  const firestorePatch = buildMatchFirestorePatch(sport, patch);
+  firestorePatch.updated_at = new Date().toISOString();
+
+  await updateDocFields(config.collections.matches, existing.id, firestorePatch);
+
+  const updated = await getDocById(config.collections.matches, existing.id);
+  if (!updated) throw notFound('Match not found.');
+
+  const map = teamMap ?? (await buildTeamMapForLeague(leagueId, sport));
+  return serializeMatch(sport, updated.id, updated.data, map);
 }

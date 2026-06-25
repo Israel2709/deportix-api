@@ -12,6 +12,27 @@ function stripId(row: Row): Record<string, unknown> {
   return rest;
 }
 
+function setNested(row: Row, path: string, value: unknown): void {
+  const parts = path.split('.');
+  let current: Record<string, unknown> = row;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i]!;
+    const next = current[part];
+    if (!next || typeof next !== 'object' || Array.isArray(next)) {
+      current[part] = {};
+    }
+    current = current[part] as Record<string, unknown>;
+  }
+  current[parts[parts.length - 1]!] = value;
+}
+
+function applyUpdate(row: Row, fields: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(fields)) {
+    if (key.includes('.')) setNested(row, key, value);
+    else row[key] = value;
+  }
+}
+
 function makeQuery(rows: Row[], filters: Array<[string, unknown]>, limitN?: number) {
   const filtered = () => {
     let out = rows.filter((row) => filters.every(([field, value]) => row[field] === value));
@@ -56,6 +77,11 @@ export function makeFakeDb(data: Dataset) {
               id,
               data: () => (row ? stripId(row) : undefined),
             };
+          },
+          update: async (fields: Record<string, unknown>) => {
+            const row = rows.find((r) => r.id === id);
+            if (!row) throw new Error(`Document ${id} not found in ${name}`);
+            applyUpdate(row, fields);
           },
         }),
       };

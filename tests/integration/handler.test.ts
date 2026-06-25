@@ -1,14 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { getRoute, optionsRoute, type RouteHandler } from '@/lib/api/handler';
+import { getRoute, optionsRoute, patchRoute, type PatchRouteHandler, type RouteHandler } from '@/lib/api/handler';
 import { ApiError } from '@/lib/api/errors';
 
-function req(url = 'http://localhost/v1/x', headers?: Record<string, string>) {
-  return new Request(url, { headers }) as never;
+function req(url = 'http://localhost/v1/x', init?: RequestInit) {
+  return new Request(url, init) as never;
 }
 const noParams = { params: Promise.resolve({}) } as never;
 
 const run = (handler: RouteHandler, r = req()) => getRoute(handler)(r, noParams);
+const runPatch = (handler: PatchRouteHandler, r = req('http://localhost/v1/x', {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ status: 'FT' }),
+})) => patchRoute(handler)(r, noParams);
 
 describe('getRoute', () => {
   it('wraps collection output in the uniform envelope + headers', async () => {
@@ -35,7 +40,7 @@ describe('getRoute', () => {
     });
     const first = await run(handler);
     const etag = first.headers.get('etag') as string;
-    const second = await run(handler, req('http://localhost/v1/x', { 'if-none-match': etag }));
+    const second = await run(handler, req('http://localhost/v1/x', { headers: { 'if-none-match': etag } }));
     expect(second.status).toBe(304);
   });
 
@@ -71,10 +76,35 @@ describe('getRoute', () => {
   });
 });
 
+describe('patchRoute', () => {
+  it('wraps resource output without an etag', async () => {
+    const res = await runPatch(async () => ({
+      kind: 'resource',
+      data: { id: 'm1', status: 'FT' },
+      updatedAt: '2026-06-24T00:00:00.000Z',
+    }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('etag')).toBeNull();
+    expect(res.headers.get('cache-control')).toContain('no-store');
+    const body = await res.json();
+    expect(body).toMatchObject({ data: { id: 'm1', status: 'FT' }, meta: { apiVersion: 'v1' } });
+  });
+
+  it('maps invalid json to INVALID_REQUEST_BODY', async () => {
+    const res = await patchRoute(async () => ({ kind: 'resource', data: {} }))(
+      req('http://localhost/v1/x', { method: 'PATCH', body: 'not-json' }),
+      noParams,
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error.code).toBe('INVALID_REQUEST_BODY');
+  });
+});
+
 describe('optionsRoute', () => {
   it('answers preflight with 204 + CORS', async () => {
     const res = await optionsRoute()(req() as never);
     expect(res.status).toBe(204);
     expect(res.headers.get('access-control-allow-methods')).toContain('GET');
+    expect(res.headers.get('access-control-allow-methods')).toContain('PATCH');
   });
 });
