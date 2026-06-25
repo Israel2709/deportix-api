@@ -114,6 +114,18 @@ describe('teams, standings, matches', () => {
     expect(matches).toHaveLength(2);
   });
 
+  it('creates a match in a past season when seasonId is provided', async () => {
+    const created = await createMatch('lg_ar', 'soccer', 'se_ar25', {
+      date: '2025-03-01T00:00:00Z',
+      home: { teamId: 'tm_boca' },
+      away: { teamId: 'tm_river' },
+    });
+    expect(created).toMatchObject({ seasonId: 'se_ar25', date: '2025-03-01T00:00:00Z' });
+
+    expect(await listMatchesBySeason('soccer', 'se_ar25', { sortDesc: true })).toHaveLength(1);
+    expect(await listMatchesBySeason('soccer', 'se_ar26', { sortDesc: true })).toHaveLength(1);
+  });
+
   it('rejects teams that do not belong to the league', async () => {
     await expect(
       createMatch('lg_ar', 'soccer', 'se_ar26', {

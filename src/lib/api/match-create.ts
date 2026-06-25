@@ -14,6 +14,7 @@ const matchSideCreateSchema = z.object({
 export const matchCreateSchema = z
   .object({
     externalId: nullableString.optional(),
+    seasonId: nullableString.optional(),
     date: z.string().min(1),
     status: nullableString.optional(),
     round: nullableString.optional(),

@@ -21,3 +21,17 @@ export async function findSeasonByYear(leagueId: string, year: number): Promise<
   const seasons = await listSeasonsByLeague(leagueId);
   return seasons.find((season) => season.year === year) ?? null;
 }
+
+/** Resolve a season by document id or external provider id within a league. */
+export async function findSeasonInLeague(
+  leagueId: string,
+  seasonIdOrExternal: string,
+): Promise<SeasonDTO | null> {
+  const seasons = await listSeasonsByLeague(leagueId);
+  return (
+    seasons.find(
+      (season) =>
+        season.id === seasonIdOrExternal || season.externalId === seasonIdOrExternal,
+    ) ?? null
+  );
+}

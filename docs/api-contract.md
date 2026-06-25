@@ -20,7 +20,7 @@ served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This
 | GET | `/v1/leagues/{leagueId}/teams` | Teams. NFL also: `?conference=`, `?division=`. |
 | GET | `/v1/leagues/{leagueId}/standings` | Standings. `?season=` (defaults to current season). |
 | GET | `/v1/leagues/{leagueId}/matches` | Matches. `?season`,`?from`,`?to`,`?date`,`?teamId`,`?status`,`?sort=date|-date`. Defaults to current season. |
-| POST | `/v1/leagues/{leagueId}/matches` | Create a match in the **current season**. Returns `201` with the new match. |
+| POST | `/v1/leagues/{leagueId}/matches` | Create a match. Defaults to **current season**; use `?season=` (year) or body `seasonId` for any season. Returns `201`. |
 | PATCH | `/v1/leagues/{leagueId}/matches/{matchId}` | Partially update a match. JSON body with only the fields to change. Returns the updated match. |
 | DELETE | `/v1/leagues/{leagueId}/matches/{matchId}` | Permanently delete a match. Returns `204 No Content`. |
 | GET | `/v1/teams/{teamId}` | A team (searched across sport collections). |
@@ -78,8 +78,18 @@ Every response includes `X-Request-Id`; error bodies echo it as `requestId`.
 
 ## Match create (POST)
 
-`POST /v1/leagues/{leagueId}/matches` creates a match in the league's **current season**
-(`current: true`, or the most recent season as fallback). Required body fields:
+`POST /v1/leagues/{leagueId}/matches` creates a match in a league season.
+
+**Season targeting** (pick one approach):
+
+| Mechanism | Example | Notes |
+| --- | --- | --- |
+| *(omit both)* | `POST .../matches` | Uses the **current season** (`current: true`, or most recent). |
+| Query `?season=` | `POST .../matches?season=2025` | Season **year** (same as GET list). |
+| Body `seasonId` | `{ "seasonId": "se_ar25", ... }` | Season document id or provider `externalId`. |
+| Both | `?season=2025` + `"seasonId": "se_ar25"` | Must refer to the **same** season. |
+
+Required body fields:
 
 | Field | Required | Notes |
 | --- | --- | --- |
@@ -91,11 +101,18 @@ Every response includes `X-Request-Id`; error bodies echo it as `requestId`.
 
 Team ids must belong to the league. Names/logos are copied from the roster when omitted.
 
-**Example:**
+**Example — current season (default):**
 ```bash
 curl -X POST "https://deportix-api.vercel.app/v1/leagues/128/matches" \
   -H "Content-Type: application/json" \
   -d '{"date":"2026-11-08T21:00:00.000Z","home":{"teamId":"tm_boca"},"away":{"teamId":"tm_river"}}'
+```
+
+**Example — specific season by year:**
+```bash
+curl -X POST "https://deportix-api.vercel.app/v1/leagues/128/matches?season=2025" \
+  -H "Content-Type: application/json" \
+  -d '{"date":"2025-03-01T21:00:00.000Z","home":{"teamId":"tm_boca"},"away":{"teamId":"tm_river"}}'
 ```
 
 Response: `201 Created` with the standard **resource** envelope.

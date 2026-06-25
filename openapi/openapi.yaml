@@ -10,7 +10,8 @@ info:
 
     ## MVP notes & limitations
     - **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via
-      `POST /v1/leagues/{leagueId}/matches` (create in the current season),
+      `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any
+      season via `?season=` / body `seasonId`),
       `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and
       `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication
       and rate limiting are not enforced yet; access is restricted operationally to authorized
@@ -298,11 +299,12 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
       tags: [Leagues]
-      summary: Create a match in the current season
+      summary: Create a match
       description: |
-        Creates a new match for the league's **current season** (the season marked `current`,
-        or the most recent one as a fallback). The match is always assigned to that season;
-        there is no way to target a different season via this endpoint.
+        Creates a new match for the league. By default the match is assigned to the **current
+        season** (marked `current`, or the most recent one as fallback). To target another
+        season, pass `?season=` (year, e.g. `2025`) and/or body `seasonId` (document id or
+        provider `externalId`). When both are sent they must refer to the same season.
 
         `home.teamId` and `away.teamId` must refer to teams belonging to the league (API id or
         provider `externalId`). Team names and logos are denormalized from the league roster when
@@ -312,6 +314,7 @@ paths:
       operationId: createLeagueMatch
       parameters:
         - $ref: '#/components/parameters/leagueId'
+        - $ref: '#/components/parameters/season'
       requestBody:
         required: true
         content:
@@ -724,10 +727,16 @@ components:
       type: object
       required: [date, home, away]
       description: |
-        Payload to create a match in the league's current season. `status` defaults to `NS`
-        when omitted; scores default to `null`.
+        Payload to create a match. Defaults to the league's current season when neither `?season=`
+        nor body `seasonId` is provided. `status` defaults to `NS` when omitted; scores default
+        to `null`.
       properties:
         externalId: { type: [string, 'null'] }
+        seasonId:
+          type: [string, 'null']
+          description: |
+            Target season document id or provider `externalId`. Alternative to the `?season=`
+            query parameter (year). When both are sent they must refer to the same season.
         date: { type: string, format: date-time, description: Kick-off / game date (UTC). }
         status: { type: [string, 'null'], example: NS }
         round: { type: [string, 'null'] }

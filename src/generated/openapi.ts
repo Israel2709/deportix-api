@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create in the current season),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -500,12 +500,15 @@ export const openapiDocument = {
         "tags": [
           "Leagues"
         ],
-        "summary": "Create a match in the current season",
-        "description": "Creates a new match for the league's **current season** (the season marked `current`,\nor the most recent one as a fallback). The match is always assigned to that season;\nthere is no way to target a different season via this endpoint.\n\n`home.teamId` and `away.teamId` must refer to teams belonging to the league (API id or\nprovider `externalId`). Team names and logos are denormalized from the league roster when\nomitted in the body.\n\nReturns `201 Created` with the new match in the standard resource envelope.\n",
+        "summary": "Create a match",
+        "description": "Creates a new match for the league. By default the match is assigned to the **current\nseason** (marked `current`, or the most recent one as fallback). To target another\nseason, pass `?season=` (year, e.g. `2025`) and/or body `seasonId` (document id or\nprovider `externalId`). When both are sent they must refer to the same season.\n\n`home.teamId` and `away.teamId` must refer to teams belonging to the league (API id or\nprovider `externalId`). Team names and logos are denormalized from the league roster when\nomitted in the body.\n\nReturns `201 Created` with the new match in the standard resource envelope.\n",
         "operationId": "createLeagueMatch",
         "parameters": [
           {
             "$ref": "#/components/parameters/leagueId"
+          },
+          {
+            "$ref": "#/components/parameters/season"
           }
         ],
         "requestBody": {
@@ -1395,13 +1398,20 @@ export const openapiDocument = {
           "home",
           "away"
         ],
-        "description": "Payload to create a match in the league's current season. `status` defaults to `NS`\nwhen omitted; scores default to `null`.\n",
+        "description": "Payload to create a match. Defaults to the league's current season when neither `?season=`\nnor body `seasonId` is provided. `status` defaults to `NS` when omitted; scores default\nto `null`.\n",
         "properties": {
           "externalId": {
             "type": [
               "string",
               "null"
             ]
+          },
+          "seasonId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Target season document id or provider `externalId`. Alternative to the `?season=`\nquery parameter (year). When both are sent they must refer to the same season.\n"
           },
           "date": {
             "type": "string",

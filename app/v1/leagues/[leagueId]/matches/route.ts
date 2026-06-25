@@ -1,7 +1,7 @@
 import { getRoute, optionsRoute, postRoute } from '@/lib/api/handler';
 import { withAuth } from '@/lib/api/with-auth';
 import { CACHE } from '@/lib/api/cache';
-import { ApiError, dataNotAvailable, invalidRequestBody } from '@/lib/api/errors';
+import { ApiError, invalidRequestBody } from '@/lib/api/errors';
 import { matchCreateSchema } from '@/lib/api/match-create';
 import {
   paginateArray,
@@ -12,7 +12,7 @@ import {
   parseStringParam,
 } from '@/lib/api/query-validation';
 import { pickLatestUpdatedAt } from '@/lib/api/serializers';
-import { emptyCollection, requireGenericSport, requireLeague } from '@/lib/api/route-helpers';
+import { emptyCollection, requireGenericSport, requireLeague, resolveCreateSeason } from '@/lib/api/route-helpers';
 import { findSeasonByYear, getCurrentSeason } from '@/lib/firebase/repositories/seasons.repository';
 import {
   createMatch,
@@ -76,7 +76,7 @@ export const GET = getRoute(
 );
 
 export const POST = postRoute(
-  withAuth(async ({ params, body }) => {
+  withAuth(async ({ params, searchParams, body }) => {
     const league = await requireLeague(params);
     const sport = requireGenericSport(league, 'Matches');
 
@@ -91,10 +91,8 @@ export const POST = postRoute(
       );
     }
 
-    const season = await getCurrentSeason(league.id);
-    if (!season) {
-      throw dataNotAvailable('No current season configured for this league.');
-    }
+    const seasonYear = parseSeasonParam(searchParams.get('season'));
+    const season = await resolveCreateSeason(league.id, seasonYear, parsed.data.seasonId);
 
     const teamMap = await buildTeamMapForLeague(league.id, sport);
     const match = await createMatch(league.id, sport, season.id, parsed.data, teamMap);
