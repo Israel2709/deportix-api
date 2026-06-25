@@ -559,6 +559,8 @@ components:
         code: { type: [string, 'null'] }
         country: { type: [string, 'null'] }
         logo: { type: [string, 'null'] }
+        altName: { type: [string, 'null'], description: Alternative display name }
+        altLogo: { type: [string, 'null'], description: Alternative logo URL }
         city: { type: [string, 'null'], description: NFL teams }
         conference: { type: [string, 'null'], description: NFL teams }
         division: { type: [string, 'null'], description: NFL teams }

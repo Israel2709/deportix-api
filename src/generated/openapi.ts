@@ -1072,6 +1072,20 @@ export const openapiDocument = {
               "null"
             ]
           },
+          "altName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Alternative display name"
+          },
+          "altLogo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Alternative logo URL"
+          },
           "city": {
             "type": [
               "string",

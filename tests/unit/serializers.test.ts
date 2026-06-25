@@ -38,6 +38,19 @@ describe('serializeTeam', () => {
     expect(dto.venue).toBeNull();
   });
 
+  it('reads top-level alt name and alt logo for any sport', () => {
+    const dto = serializeTeam('soccer', 't3', {
+      team: { name: 'Club América' },
+      alt_name: 'Las Águilas',
+      alt_logo: 'https://example.com/alt.png',
+    });
+    expect(dto).toMatchObject({
+      name: 'Club América',
+      altName: 'Las Águilas',
+      altLogo: 'https://example.com/alt.png',
+    });
+  });
+
   it('is resilient to missing fields', () => {
     const dto = serializeTeam('soccer', 't2', {});
     expect(dto.name).toBeNull();

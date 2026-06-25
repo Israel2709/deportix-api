@@ -118,6 +118,8 @@ export function serializeTeam(sport: SportSlug | null, id: string, raw: Raw): Te
     code: null,
     country: null,
     logo: null,
+    altName: asStr(raw.alt_name),
+    altLogo: asStr(raw.alt_logo),
     city: null,
     conference: null,
     division: null,
