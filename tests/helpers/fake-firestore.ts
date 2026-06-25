@@ -83,6 +83,11 @@ export function makeFakeDb(data: Dataset) {
             if (!row) throw new Error(`Document ${id} not found in ${name}`);
             applyUpdate(row, fields);
           },
+          delete: async () => {
+            const idx = rows.findIndex((r) => r.id === id);
+            if (idx === -1) throw new Error(`Document ${id} not found in ${name}`);
+            rows.splice(idx, 1);
+          },
         }),
       };
     },

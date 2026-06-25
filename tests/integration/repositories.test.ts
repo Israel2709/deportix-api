@@ -10,7 +10,7 @@ vi.mock('@/lib/firebase/admin', () => ({
 const { listLeagues, getLeague } = await import('@/lib/firebase/repositories/leagues.repository');
 const { listTeamsByLeague, getTeamById } = await import('@/lib/firebase/repositories/teams.repository');
 const { listStandingsByLeague } = await import('@/lib/firebase/repositories/standings.repository');
-const { listMatchesBySeason, updateMatch } = await import('@/lib/firebase/repositories/matches.repository');
+const { listMatchesBySeason, updateMatch, deleteMatch } = await import('@/lib/firebase/repositories/matches.repository');
 const { buildDataStatus } = await import('@/lib/firebase/repositories/data-status.repository');
 
 const dataset: Dataset = {
@@ -51,7 +51,7 @@ const dataset: Dataset = {
 };
 
 beforeEach(() => {
-  state.db = makeFakeDb(dataset);
+  state.db = makeFakeDb(structuredClone(dataset));
 });
 
 describe('leagues repository', () => {
@@ -121,6 +121,17 @@ describe('teams, standings, matches', () => {
     await expect(
       updateMatch('lg_mx', 'soccer', 'm1', { status: 'FT' }),
     ).rejects.toMatchObject({ code: 'RESOURCE_NOT_FOUND' });
+  });
+
+  it('deletes a match from firestore', async () => {
+    await deleteMatch('lg_ar', 'soccer', 'm1');
+    expect(await listMatchesBySeason('soccer', 'se_ar26', { sortDesc: true })).toEqual([]);
+  });
+
+  it('returns not found when deleting a match from another league', async () => {
+    await expect(deleteMatch('lg_mx', 'soccer', 'm1')).rejects.toMatchObject({
+      code: 'RESOURCE_NOT_FOUND',
+    });
   });
 });
 

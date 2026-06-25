@@ -21,13 +21,14 @@ describe('CORS', () => {
     expect(resolveAllowOrigin('https://evil.com')).toBe('https://a.com');
   });
 
-  it('sets GET/PATCH/OPTIONS headers', () => {
+  it('sets GET/PATCH/DELETE/OPTIONS headers', () => {
     delete process.env.CORS_ALLOWED_ORIGINS;
     const headers = new Headers();
     applyCorsHeaders(headers, null);
     expect(headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(headers.get('Access-Control-Allow-Methods')).toContain('GET');
     expect(headers.get('Access-Control-Allow-Methods')).toContain('PATCH');
+    expect(headers.get('Access-Control-Allow-Methods')).toContain('DELETE');
   });
 });
 

@@ -36,6 +36,7 @@ export type RouteOutput =
 
 export type RouteHandler = (ctx: RouteContext) => Promise<RouteOutput>;
 export type PatchRouteHandler = (ctx: PatchRouteContext) => Promise<RouteOutput>;
+export type DeleteRouteHandler = (ctx: RouteContext) => Promise<void>;
 
 type NextRouteArgs = { params: Promise<Record<string, string>> };
 
@@ -174,6 +175,30 @@ export function patchRoute(handler: PatchRouteHandler) {
       const headers = baseHeaders(requestId, origin);
       headers.set('Cache-Control', cache);
       return new NextResponse(JSON.stringify(responseBody), { status, headers });
+    } catch (err) {
+      return buildErrorResponse(err, requestId, origin);
+    }
+  };
+}
+
+/**
+ * Wraps a DELETE handler. Returns `204 No Content` on success (no response body).
+ */
+export function deleteRoute(handler: DeleteRouteHandler) {
+  return async function DELETE(request: NextRequest, ctx: NextRouteArgs): Promise<NextResponse> {
+    const requestId = newRequestId();
+    const origin = request.headers.get('origin');
+
+    try {
+      const params = ctx?.params ? await ctx.params : {};
+      const searchParams = new URL(request.url).searchParams;
+      await handler({ request, params, searchParams, requestId });
+
+      const headers = new Headers();
+      headers.set('X-Request-Id', requestId);
+      applyCorsHeaders(headers, origin);
+      headers.set('Cache-Control', CACHE.none);
+      return new NextResponse(null, { status: 204, headers });
     } catch (err) {
       return buildErrorResponse(err, requestId, origin);
     }

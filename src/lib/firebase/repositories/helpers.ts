@@ -84,3 +84,7 @@ export async function updateDocFields(
 ): Promise<void> {
   await getDb().collection(collection).doc(id).update(fields);
 }
+
+export async function deleteDoc(collection: string, id: string): Promise<void> {
+  await getDb().collection(collection).doc(id).delete();
+}

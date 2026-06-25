@@ -1,21 +1,25 @@
-import { patchRoute, optionsRoute } from '@/lib/api/handler';
+import { deleteRoute, patchRoute, optionsRoute } from '@/lib/api/handler';
 import { withAuth } from '@/lib/api/with-auth';
 import { CACHE } from '@/lib/api/cache';
 import { invalidPathParameter, invalidRequestBody } from '@/lib/api/errors';
 import { matchUpdateSchema } from '@/lib/api/match-patch';
 import { requireGenericSport, requireLeague } from '@/lib/api/route-helpers';
-import { updateMatch } from '@/lib/firebase/repositories/matches.repository';
+import { deleteMatch, updateMatch } from '@/lib/firebase/repositories/matches.repository';
 import { buildTeamMapForLeague } from '@/lib/firebase/repositories/teams.repository';
 
 export const runtime = 'nodejs';
+
+function requireMatchId(params: Record<string, string>): string {
+  const matchId = params.matchId;
+  if (!matchId) throw invalidPathParameter('Missing "matchId" path parameter.');
+  return matchId;
+}
 
 export const PATCH = patchRoute(
   withAuth(async ({ params, body }) => {
     const league = await requireLeague(params);
     const sport = requireGenericSport(league, 'Matches');
-
-    const matchId = params.matchId;
-    if (!matchId) throw invalidPathParameter('Missing "matchId" path parameter.');
+    const matchId = requireMatchId(params);
 
     const parsed = matchUpdateSchema.safeParse(body);
     if (!parsed.success) {
@@ -37,6 +41,15 @@ export const PATCH = patchRoute(
       updatedAt: match.updatedAt,
       cache: CACHE.none,
     };
+  }),
+);
+
+export const DELETE = deleteRoute(
+  withAuth(async ({ params }) => {
+    const league = await requireLeague(params);
+    const sport = requireGenericSport(league, 'Matches');
+    const matchId = requireMatchId(params);
+    await deleteMatch(league.id, sport, matchId);
   }),
 );
 

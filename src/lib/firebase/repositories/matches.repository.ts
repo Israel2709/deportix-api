@@ -2,8 +2,9 @@ import { serializeMatch, type TeamMap } from '@/lib/api/serializers';
 import { buildMatchFirestorePatch, type MatchUpdate } from '@/lib/api/match-patch';
 import { notFound } from '@/lib/api/errors';
 import type { MatchDTO } from '@/lib/contracts/dto';
-import { getSportConfig, type SportSlug } from '../sport-registry';
+import { getSportConfig, type SportConfig, type SportSlug } from '../sport-registry';
 import {
+  deleteDoc,
   fetchWhereEq,
   getDocById,
   resolveDoc,
@@ -111,13 +112,11 @@ export async function getMatchById(sport: SportSlug, matchId: string): Promise<R
   return resolveDoc(config.collections.matches, matchId);
 }
 
-export async function updateMatch(
+async function requireLeagueMatch(
   leagueId: string,
   sport: SportSlug,
   matchId: string,
-  patch: MatchUpdate,
-  teamMap?: TeamMap,
-): Promise<MatchDTO> {
+): Promise<{ config: SportConfig; doc: RawDoc }> {
   const config = getSportConfig(sport);
   if (!config) throw notFound('Match not found.');
 
@@ -129,6 +128,18 @@ export async function updateMatch(
     throw notFound('Match not found.');
   }
 
+  return { config, doc: existing };
+}
+
+export async function updateMatch(
+  leagueId: string,
+  sport: SportSlug,
+  matchId: string,
+  patch: MatchUpdate,
+  teamMap?: TeamMap,
+): Promise<MatchDTO> {
+  const { config, doc: existing } = await requireLeagueMatch(leagueId, sport, matchId);
+
   const firestorePatch = buildMatchFirestorePatch(sport, patch);
   firestorePatch.updated_at = new Date().toISOString();
 
@@ -139,4 +150,13 @@ export async function updateMatch(
 
   const map = teamMap ?? (await buildTeamMapForLeague(leagueId, sport));
   return serializeMatch(sport, updated.id, updated.data, map);
+}
+
+export async function deleteMatch(
+  leagueId: string,
+  sport: SportSlug,
+  matchId: string,
+): Promise<void> {
+  const { config, doc: existing } = await requireLeagueMatch(leagueId, sport, matchId);
+  await deleteDoc(config.collections.matches, existing.id);
 }

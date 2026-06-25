@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { getRoute, optionsRoute, patchRoute, type PatchRouteHandler, type RouteHandler } from '@/lib/api/handler';
+import { getRoute, optionsRoute, patchRoute, deleteRoute, type PatchRouteHandler, type RouteHandler } from '@/lib/api/handler';
 import { ApiError } from '@/lib/api/errors';
 
 function req(url = 'http://localhost/v1/x', init?: RequestInit) {
@@ -100,11 +100,29 @@ describe('patchRoute', () => {
   });
 });
 
+describe('deleteRoute', () => {
+  it('returns 204 with no body on success', async () => {
+    const res = await deleteRoute(async () => {})(req('http://localhost/v1/x', { method: 'DELETE' }), noParams);
+    expect(res.status).toBe(204);
+    expect(res.headers.get('x-request-id')).toMatch(/^req_/);
+    expect(await res.text()).toBe('');
+  });
+
+  it('maps ApiError to the uniform error envelope', async () => {
+    const res = await deleteRoute(async () => {
+      throw new ApiError('RESOURCE_NOT_FOUND', 'Match not found.');
+    })(req('http://localhost/v1/x', { method: 'DELETE' }), noParams);
+    expect(res.status).toBe(404);
+    expect((await res.json()).error.code).toBe('RESOURCE_NOT_FOUND');
+  });
+});
+
 describe('optionsRoute', () => {
   it('answers preflight with 204 + CORS', async () => {
     const res = await optionsRoute()(req() as never);
     expect(res.status).toBe(204);
     expect(res.headers.get('access-control-allow-methods')).toContain('GET');
     expect(res.headers.get('access-control-allow-methods')).toContain('PATCH');
+    expect(res.headers.get('access-control-allow-methods')).toContain('DELETE');
   });
 });

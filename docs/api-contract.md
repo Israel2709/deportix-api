@@ -3,7 +3,7 @@
 The OpenAPI 3.1 document is the source of truth: [`openapi/openapi.yaml`](../openapi/openapi.yaml),
 served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This page summarizes it.
 
-- **Base path:** `/v1` · **Methods:** `GET` (read) and `PATCH` (match edit) · **Dates:** ISO-8601, **UTC**.
+- **Base path:** `/v1` · **Methods:** `GET` (read), `PATCH` (match edit), `DELETE` (match remove) · **Dates:** ISO-8601, **UTC**.
 - **Identifiers:** path params (`leagueId`, `teamId`, `matchId`) accept the API's `id` or the provider
   `externalId` (e.g. `262` for Liga MX).
 
@@ -21,6 +21,7 @@ served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This
 | GET | `/v1/leagues/{leagueId}/standings` | Standings. `?season=` (defaults to current season). |
 | GET | `/v1/leagues/{leagueId}/matches` | Matches. `?season`,`?from`,`?to`,`?date`,`?teamId`,`?status`,`?sort=date|-date`. Defaults to current season. |
 | PATCH | `/v1/leagues/{leagueId}/matches/{matchId}` | Partially update a match. JSON body with only the fields to change. Returns the updated match. |
+| DELETE | `/v1/leagues/{leagueId}/matches/{matchId}` | Permanently delete a match. Returns `204 No Content`. |
 | GET | `/v1/teams/{teamId}` | A team (searched across sport collections). |
 | GET | `/v1/teams/{teamId}/matches` | A team's matches. Same filters as league matches. |
 | GET | `/v1/openapi.json` | The OpenAPI document. |
@@ -97,6 +98,17 @@ curl -X PATCH "https://deportix-api.vercel.app/v1/leagues/128/matches/m1" \
 ```
 
 Response: `200` with the standard **resource** envelope containing the updated `Match`.
+
+## Match delete (DELETE)
+
+`DELETE /v1/leagues/{leagueId}/matches/{matchId}` permanently removes the match document from
+Firestore. The match must belong to the league in the path. Returns **`204 No Content`** on success
+(no response body).
+
+**Example:**
+```bash
+curl -X DELETE "https://deportix-api.vercel.app/v1/leagues/128/matches/m1"
+```
 
 ## Examples
 

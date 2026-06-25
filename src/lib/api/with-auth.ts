@@ -14,6 +14,6 @@ import type { RouteContext } from './handler';
  * rate limits, and throw an `ApiError` (e.g. a future `UNAUTHORIZED` / `RATE_LIMITED`) on
  * failure — all transparent to the route body.
  */
-export function withAuth<C extends RouteContext>(handler: (ctx: C) => Promise<import('./handler').RouteOutput>) {
+export function withAuth<C extends RouteContext, R>(handler: (ctx: C) => Promise<R>) {
   return handler;
 }

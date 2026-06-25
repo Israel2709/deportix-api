@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match editing is available via\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update — send only the fields\n  you want to change). Authentication and rate limiting are not enforced yet; access is\n  restricted operationally to authorized platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -556,6 +556,33 @@ export const openapiDocument = {
           },
           "400": {
             "$ref": "#/components/responses/InvalidRequestBody"
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Delete a league match",
+        "description": "Permanently removes a match from Firestore. The match must belong to the league\nresolved from `{leagueId}`. Path identifiers accept the API `id` or the provider\n`externalId`.\n\nReturns `204 No Content` on success (no response body).\n",
+        "operationId": "deleteLeagueMatch",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/leagueId"
+          },
+          {
+            "$ref": "#/components/parameters/matchIdPath"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Match deleted successfully."
           },
           "404": {
             "$ref": "#/components/responses/ResourceNotFound"
