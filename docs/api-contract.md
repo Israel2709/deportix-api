@@ -3,7 +3,7 @@
 The OpenAPI 3.1 document is the source of truth: [`openapi/openapi.yaml`](../openapi/openapi.yaml),
 served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This page summarizes it.
 
-- **Base path:** `/v1` · **Methods:** `GET` (read), `PATCH` (match edit), `DELETE` (match remove) · **Dates:** ISO-8601, **UTC**.
+- **Base path:** `/v1` · **Methods:** `GET` (read), `POST` (match create), `PATCH` (match edit), `DELETE` (match remove) · **Dates:** ISO-8601, **UTC**.
 - **Identifiers:** path params (`leagueId`, `teamId`, `matchId`) accept the API's `id` or the provider
   `externalId` (e.g. `262` for Liga MX).
 
@@ -20,6 +20,7 @@ served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This
 | GET | `/v1/leagues/{leagueId}/teams` | Teams. NFL also: `?conference=`, `?division=`. |
 | GET | `/v1/leagues/{leagueId}/standings` | Standings. `?season=` (defaults to current season). |
 | GET | `/v1/leagues/{leagueId}/matches` | Matches. `?season`,`?from`,`?to`,`?date`,`?teamId`,`?status`,`?sort=date|-date`. Defaults to current season. |
+| POST | `/v1/leagues/{leagueId}/matches` | Create a match in the **current season**. Returns `201` with the new match. |
 | PATCH | `/v1/leagues/{leagueId}/matches/{matchId}` | Partially update a match. JSON body with only the fields to change. Returns the updated match. |
 | DELETE | `/v1/leagues/{leagueId}/matches/{matchId}` | Permanently delete a match. Returns `204 No Content`. |
 | GET | `/v1/teams/{teamId}` | A team (searched across sport collections). |
@@ -74,6 +75,30 @@ Every response includes `X-Request-Id`; error bodies echo it as `requestId`.
 
 **Empty results** return `200` with an empty `data` array — not an error. Coverage is partial; use
 `/v1/data-status` to discover what exists.
+
+## Match create (POST)
+
+`POST /v1/leagues/{leagueId}/matches` creates a match in the league's **current season**
+(`current: true`, or the most recent season as fallback). Required body fields:
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `date` | yes | ISO-8601 kick-off / game date (UTC). |
+| `home` | yes | `{ teamId }` required; `name`, `logo`, `score` optional. |
+| `away` | yes | Same shape as `home`. Must differ from `home.teamId`. |
+| `status` | no | Defaults to `NS`. |
+| `round`, `venue`, `externalId` | no | Optional metadata. |
+
+Team ids must belong to the league. Names/logos are copied from the roster when omitted.
+
+**Example:**
+```bash
+curl -X POST "https://deportix-api.vercel.app/v1/leagues/128/matches" \
+  -H "Content-Type: application/json" \
+  -d '{"date":"2026-11-08T21:00:00.000Z","home":{"teamId":"tm_boca"},"away":{"teamId":"tm_river"}}'
+```
+
+Response: `201 Created` with the standard **resource** envelope.
 
 ## Match update (PATCH)
 

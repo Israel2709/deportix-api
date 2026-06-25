@@ -136,6 +136,53 @@ export function getRoute(handler: RouteHandler) {
 }
 
 /**
+ * Wraps a POST handler. Returns `201 Created` for resource responses.
+ */
+export function postRoute(handler: PatchRouteHandler) {
+  return async function POST(request: NextRequest, ctx: NextRouteArgs): Promise<NextResponse> {
+    const requestId = newRequestId();
+    const origin = request.headers.get('origin');
+
+    try {
+      let body: unknown;
+      try {
+        body = await request.json();
+      } catch {
+        throw invalidRequestBody('Request body must be valid JSON.');
+      }
+
+      const params = ctx?.params ? await ctx.params : {};
+      const searchParams = new URL(request.url).searchParams;
+      const out = await handler({ request, params, searchParams, requestId, body });
+
+      let responseBody: unknown;
+      let cache: CachePolicy;
+      let status = 201;
+
+      if (out.kind === 'collection') {
+        responseBody = buildCollectionBody(out.data, out.pagination, out.updatedAt ?? null);
+        cache = out.cache ?? CACHE.none;
+        status = 200;
+      } else if (out.kind === 'resource') {
+        responseBody = buildResourceBody(out.data, out.updatedAt ?? null);
+        cache = out.cache ?? CACHE.none;
+        status = 201;
+      } else {
+        responseBody = out.body;
+        cache = out.cache ?? CACHE.none;
+        status = out.status ?? 201;
+      }
+
+      const headers = baseHeaders(requestId, origin);
+      headers.set('Cache-Control', cache);
+      return new NextResponse(JSON.stringify(responseBody), { status, headers });
+    } catch (err) {
+      return buildErrorResponse(err, requestId, origin);
+    }
+  };
+}
+
+/**
  * Wraps a PATCH handler with the same cross-cutting concerns as `getRoute`, but parses a JSON
  * request body and skips ETag / conditional GET handling.
  */

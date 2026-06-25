@@ -1,7 +1,8 @@
-import { getRoute, optionsRoute } from '@/lib/api/handler';
+import { getRoute, optionsRoute, postRoute } from '@/lib/api/handler';
 import { withAuth } from '@/lib/api/with-auth';
 import { CACHE } from '@/lib/api/cache';
-import { ApiError } from '@/lib/api/errors';
+import { ApiError, dataNotAvailable, invalidRequestBody } from '@/lib/api/errors';
+import { matchCreateSchema } from '@/lib/api/match-create';
 import {
   paginateArray,
   parseDateParam,
@@ -14,6 +15,7 @@ import { pickLatestUpdatedAt } from '@/lib/api/serializers';
 import { emptyCollection, requireGenericSport, requireLeague } from '@/lib/api/route-helpers';
 import { findSeasonByYear, getCurrentSeason } from '@/lib/firebase/repositories/seasons.repository';
 import {
+  createMatch,
   listMatchesByLeague,
   listMatchesBySeason,
 } from '@/lib/firebase/repositories/matches.repository';
@@ -69,6 +71,39 @@ export const GET = getRoute(
       pagination: { page, pageSize, total: matches.length },
       updatedAt: pickLatestUpdatedAt(data),
       cache: CACHE.dynamic,
+    };
+  }),
+);
+
+export const POST = postRoute(
+  withAuth(async ({ params, body }) => {
+    const league = await requireLeague(params);
+    const sport = requireGenericSport(league, 'Matches');
+
+    const parsed = matchCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      throw invalidRequestBody(
+        parsed.error.issues[0]?.message ?? 'Request body is invalid.',
+        parsed.error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      );
+    }
+
+    const season = await getCurrentSeason(league.id);
+    if (!season) {
+      throw dataNotAvailable('No current season configured for this league.');
+    }
+
+    const teamMap = await buildTeamMapForLeague(league.id, sport);
+    const match = await createMatch(league.id, sport, season.id, parsed.data, teamMap);
+
+    return {
+      kind: 'resource',
+      data: match,
+      updatedAt: match.updatedAt,
+      cache: CACHE.none,
     };
   }),
 );

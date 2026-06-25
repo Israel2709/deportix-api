@@ -1,9 +1,15 @@
 import { serializeMatch, type TeamMap } from '@/lib/api/serializers';
+import {
+  buildMatchFirestoreDocument,
+  resolveSide,
+  type MatchCreate,
+} from '@/lib/api/match-create';
 import { buildMatchFirestorePatch, type MatchUpdate } from '@/lib/api/match-patch';
-import { notFound } from '@/lib/api/errors';
+import { dataNotAvailable, invalidRequestBody, notFound } from '@/lib/api/errors';
 import type { MatchDTO } from '@/lib/contracts/dto';
 import { getSportConfig, type SportConfig, type SportSlug } from '../sport-registry';
 import {
+  createDoc,
   deleteDoc,
   fetchWhereEq,
   getDocById,
@@ -129,6 +135,61 @@ async function requireLeagueMatch(
   }
 
   return { config, doc: existing };
+}
+
+async function requireTeamInLeague(
+  leagueId: string,
+  sport: SportSlug,
+  teamIdOrExternal: string,
+  side: 'home' | 'away',
+): Promise<string> {
+  const config = getSportConfig(sport);
+  if (!config) {
+    throw invalidRequestBody(`${side}.teamId is not valid for this league.`);
+  }
+
+  const doc = await resolveDoc(config.collections.teams, teamIdOrExternal);
+  if (!doc || doc.data.league_id !== leagueId) {
+    throw invalidRequestBody(`${side}.teamId is not valid for this league.`);
+  }
+
+  return doc.id;
+}
+
+export async function createMatch(
+  leagueId: string,
+  sport: SportSlug,
+  seasonId: string,
+  input: MatchCreate,
+  teamMap?: TeamMap,
+): Promise<MatchDTO> {
+  const config = getSportConfig(sport);
+  if (!config) throw dataNotAvailable('Matches are not available for this league\'s sport.');
+
+  const map = teamMap ?? (await buildTeamMapForLeague(leagueId, sport));
+
+  const homeTeamId = await requireTeamInLeague(leagueId, sport, input.home.teamId, 'home');
+  const awayTeamId = await requireTeamInLeague(leagueId, sport, input.away.teamId, 'away');
+
+  const home = resolveSide({ ...input.home, teamId: homeTeamId }, map);
+  const away = resolveSide({ ...input.away, teamId: awayTeamId }, map);
+
+  const docId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const document = buildMatchFirestoreDocument(
+    sport,
+    docId,
+    leagueId,
+    seasonId,
+    input,
+    home,
+    away,
+    now,
+  );
+
+  await createDoc(config.collections.matches, docId, document);
+
+  return serializeMatch(sport, docId, document, map);
 }
 
 export async function updateMatch(

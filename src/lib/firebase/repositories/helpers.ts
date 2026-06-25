@@ -88,3 +88,11 @@ export async function updateDocFields(
 export async function deleteDoc(collection: string, id: string): Promise<void> {
   await getDb().collection(collection).doc(id).delete();
 }
+
+export async function createDoc(
+  collection: string,
+  id: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  await getDb().collection(collection).doc(id).set(data);
+}

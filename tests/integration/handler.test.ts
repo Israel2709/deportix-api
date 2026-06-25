@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { getRoute, optionsRoute, patchRoute, deleteRoute, type PatchRouteHandler, type RouteHandler } from '@/lib/api/handler';
+import { getRoute, optionsRoute, patchRoute, postRoute, deleteRoute, type PatchRouteHandler, type RouteHandler } from '@/lib/api/handler';
 import { ApiError } from '@/lib/api/errors';
 
 function req(url = 'http://localhost/v1/x', init?: RequestInit) {
@@ -100,6 +100,25 @@ describe('patchRoute', () => {
   });
 });
 
+describe('postRoute', () => {
+  it('returns 201 with the resource envelope', async () => {
+    const res = await postRoute(async () => ({
+      kind: 'resource',
+      data: { id: 'm1' },
+      updatedAt: '2026-06-24T00:00:00.000Z',
+    }))(
+      req('http://localhost/v1/x', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: '2026-01-01', home: { teamId: 'a' }, away: { teamId: 'b' } }),
+      }),
+      noParams,
+    );
+    expect(res.status).toBe(201);
+    expect((await res.json()).data).toEqual({ id: 'm1' });
+  });
+});
+
 describe('deleteRoute', () => {
   it('returns 204 with no body on success', async () => {
     const res = await deleteRoute(async () => {})(req('http://localhost/v1/x', { method: 'DELETE' }), noParams);
@@ -122,6 +141,7 @@ describe('optionsRoute', () => {
     const res = await optionsRoute()(req() as never);
     expect(res.status).toBe(204);
     expect(res.headers.get('access-control-allow-methods')).toContain('GET');
+    expect(res.headers.get('access-control-allow-methods')).toContain('POST');
     expect(res.headers.get('access-control-allow-methods')).toContain('PATCH');
     expect(res.headers.get('access-control-allow-methods')).toContain('DELETE');
   });

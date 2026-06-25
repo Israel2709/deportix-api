@@ -10,6 +10,7 @@ info:
 
     ## MVP notes & limitations
     - **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via
+      `POST /v1/leagues/{leagueId}/matches` (create in the current season),
       `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and
       `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication
       and rate limiting are not enforced yet; access is restricted operationally to authorized
@@ -291,6 +292,48 @@ paths:
                 $ref: '#/components/schemas/MatchCollection'
         '400':
           $ref: '#/components/responses/InvalidQueryParameter'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    post:
+      tags: [Leagues]
+      summary: Create a match in the current season
+      description: |
+        Creates a new match for the league's **current season** (the season marked `current`,
+        or the most recent one as a fallback). The match is always assigned to that season;
+        there is no way to target a different season via this endpoint.
+
+        `home.teamId` and `away.teamId` must refer to teams belonging to the league (API id or
+        provider `externalId`). Team names and logos are denormalized from the league roster when
+        omitted in the body.
+
+        Returns `201 Created` with the new match in the standard resource envelope.
+      operationId: createLeagueMatch
+      parameters:
+        - $ref: '#/components/parameters/leagueId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchCreate'
+            example:
+              date: '2026-11-08T21:00:00.000Z'
+              status: NS
+              round: Clausura - 16
+              venue: Estadio Monumental
+              home: { teamId: tm_boca }
+              away: { teamId: tm_river }
+      responses:
+        '201':
+          description: The created match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchResource'
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
         '404':
           $ref: '#/components/responses/ResourceNotFound'
         '503':
@@ -669,6 +712,28 @@ components:
         name: { type: [string, 'null'] }
         logo: { type: [string, 'null'] }
         score: { type: [integer, 'null'] }
+    MatchSideCreate:
+      type: object
+      required: [teamId]
+      properties:
+        teamId: { type: string, description: Team id or external provider id in this league. }
+        name: { type: [string, 'null'], description: Override denormalized name (optional). }
+        logo: { type: [string, 'null'], description: Override denormalized logo (optional). }
+        score: { type: [integer, 'null'] }
+    MatchCreate:
+      type: object
+      required: [date, home, away]
+      description: |
+        Payload to create a match in the league's current season. `status` defaults to `NS`
+        when omitted; scores default to `null`.
+      properties:
+        externalId: { type: [string, 'null'] }
+        date: { type: string, format: date-time, description: Kick-off / game date (UTC). }
+        status: { type: [string, 'null'], example: NS }
+        round: { type: [string, 'null'] }
+        venue: { type: [string, 'null'] }
+        home: { $ref: '#/components/schemas/MatchSideCreate' }
+        away: { $ref: '#/components/schemas/MatchSideCreate' }
     MatchUpdate:
       type: object
       description: |

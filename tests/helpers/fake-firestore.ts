@@ -88,6 +88,12 @@ export function makeFakeDb(data: Dataset) {
             if (idx === -1) throw new Error(`Document ${id} not found in ${name}`);
             rows.splice(idx, 1);
           },
+          set: async (data: Record<string, unknown>) => {
+            const idx = rows.findIndex((r) => r.id === id);
+            const row = { id, ...data } as Row;
+            if (idx === -1) rows.push(row);
+            else rows[idx] = row;
+          },
         }),
       };
     },

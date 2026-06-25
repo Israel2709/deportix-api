@@ -10,7 +10,7 @@ vi.mock('@/lib/firebase/admin', () => ({
 const { listLeagues, getLeague } = await import('@/lib/firebase/repositories/leagues.repository');
 const { listTeamsByLeague, getTeamById } = await import('@/lib/firebase/repositories/teams.repository');
 const { listStandingsByLeague } = await import('@/lib/firebase/repositories/standings.repository');
-const { listMatchesBySeason, updateMatch, deleteMatch } = await import('@/lib/firebase/repositories/matches.repository');
+const { listMatchesBySeason, updateMatch, deleteMatch, createMatch } = await import('@/lib/firebase/repositories/matches.repository');
 const { buildDataStatus } = await import('@/lib/firebase/repositories/data-status.repository');
 
 const dataset: Dataset = {
@@ -93,6 +93,35 @@ describe('teams, standings, matches', () => {
     const matches = await listMatchesBySeason('soccer', 'se_ar26', { sortDesc: true });
     expect(matches).toHaveLength(1);
     expect(matches[0]).toMatchObject({ status: 'NS', home: { name: 'Boca' }, away: { name: 'River' } });
+  });
+
+  it('creates a match in the current season', async () => {
+    const created = await createMatch('lg_ar', 'soccer', 'se_ar26', {
+      date: '2026-09-15T00:00:00Z',
+      home: { teamId: 'tm_boca' },
+      away: { teamId: 'tm_river' },
+    });
+    expect(created).toMatchObject({
+      leagueId: 'lg_ar',
+      seasonId: 'se_ar26',
+      status: 'NS',
+      date: '2026-09-15T00:00:00Z',
+      home: { teamId: 'tm_boca', name: 'Boca' },
+      away: { teamId: 'tm_river', name: 'River' },
+    });
+
+    const matches = await listMatchesBySeason('soccer', 'se_ar26', { sortDesc: true });
+    expect(matches).toHaveLength(2);
+  });
+
+  it('rejects teams that do not belong to the league', async () => {
+    await expect(
+      createMatch('lg_ar', 'soccer', 'se_ar26', {
+        date: '2026-09-15T00:00:00Z',
+        home: { teamId: 'ghost' },
+        away: { teamId: 'tm_river' },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_REQUEST_BODY' });
   });
 
   it('returns empty for an unknown season (no error)', async () => {
