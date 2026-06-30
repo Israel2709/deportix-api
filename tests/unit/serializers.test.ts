@@ -90,6 +90,47 @@ describe('serializeMatch', () => {
     expect(dto.home.name).toBe('Home FC');
     expect(dto.away.name).toBeNull();
   });
+
+  it('prefers canonical team map logos over denormalized soccer match snapshots', () => {
+    const teamMap = new Map([
+      [
+        'h',
+        {
+          name: 'Tigre',
+          logo: 'https://firebasestorage.googleapis.com/v0/b/deportix/tigre.png',
+        },
+      ],
+      [
+        'a',
+        {
+          name: 'Sarmiento',
+          logo: 'https://firebasestorage.googleapis.com/v0/b/deportix/sarmiento.png',
+        },
+      ],
+    ]);
+    const dto = serializeMatch(
+      'soccer',
+      'm3',
+      {
+        home_team_id: 'h',
+        away_team_id: 'a',
+        goals: { home: 1, away: 0 },
+        teams: {
+          home: {
+            name: 'Tigre',
+            logo: 'https://media.api-sports.io/football/teams/1.png',
+          },
+          away: {
+            name: 'Sarmiento',
+            logo: 'https://media.api-sports.io/football/teams/2.png',
+          },
+        },
+      },
+      teamMap,
+    );
+    expect(dto.home.logo).toBe('https://firebasestorage.googleapis.com/v0/b/deportix/tigre.png');
+    expect(dto.away.logo).toBe('https://firebasestorage.googleapis.com/v0/b/deportix/sarmiento.png');
+  });
 });
 
 describe('serializeStanding', () => {

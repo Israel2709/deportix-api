@@ -8,6 +8,7 @@ import type {
   TeamDTO,
   VenueDTO,
 } from '@/lib/contracts/dto';
+import { preferCanonicalString } from '@/lib/api/canonical-fields';
 import type { SportSlug } from '@/lib/firebase/sport-registry';
 
 /**
@@ -169,8 +170,8 @@ function side(
   const fromMap = teamId && teamMap ? teamMap.get(teamId) : undefined;
   return {
     teamId,
-    name: denormName ?? fromMap?.name ?? null,
-    logo: denormLogo ?? fromMap?.logo ?? null,
+    name: preferCanonicalString(fromMap?.name, denormName),
+    logo: preferCanonicalString(fromMap?.logo, denormLogo),
     score,
   };
 }

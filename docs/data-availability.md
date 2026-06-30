@@ -1,8 +1,8 @@
 # Data Availability
-_Generated 2026-06-23T22:10:59.121Z from project `deportix-api-dac8e`. All figures are real Firestore counts._
+_Generated 2026-06-30T01:58:38.504Z from project `deportix-api-dac8e`. All figures are real Firestore counts._
 ## Headline findings
 - **Sports present:** `nfl`, `soccer`, `f1` (3).
-- **Leagues:** 1230. **Seasons:** 8213.
+- **Leagues:** 1230. **Seasons:** 0.
 - **NFL & F1** exist as `sports` entries but have **no leagues and no team/game collections** loaded — their endpoints return empty collections (honest "no data yet").
 - **Liga MX (ext 262)** has season metadata only (no teams/matches/standings loaded yet).
 - Other soccer leagues (e.g. Liga Profesional Argentina ext 128, Ligue 1 ext 61) are data-rich and exercise the full endpoint set.
@@ -11,12 +11,12 @@ _Generated 2026-06-23T22:10:59.121Z from project `deportix-api-dac8e`. All figur
 | Sport | Name | Leagues | Team docs | Match docs | Standing docs |
 | --- | --- | ---: | ---: | ---: | ---: |
 | `nfl` | NFL | 0 | 0 | 0 | 0 |
-| `soccer` | Soccer | 1230 | 15386 | 70408 | 4153 |
-| `f1` | Formula 1 | 0 | 20 | 0 | 0 |
+| `soccer` | Soccer | 1230 | 15386 | 0 | 0 |
+| `f1` | Formula 1 | 0 | 0 | 0 | 0 |
 ## Featured leagues (configured in `src/lib/firebase/featured-leagues.ts`)
 | External id | League | Sport | Teams | Matches | Standings | Seasons |
 | --- | --- | --- | ---: | ---: | ---: | --- |
-| 262 | Liga MX | soccer | 0 | 0 | 0 | 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016 |
+| 262 | Liga MX | soccer | 18 | 153 | 0 | 2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016 |
 | 128 | Liga Profesional Argentina | soccer | 24 | 4874 | 332 | 2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015 |
 | 61 | Ligue 1 | soccer | 0 | 5870 | 314 | 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010 |
 | 71 | Serie A | soccer | 1 | 3717 | 180 | 2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010 |

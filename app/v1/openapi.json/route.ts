@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 
 /**
  * Serves the OpenAPI 3.1 document (generated from openapi/openapi.yaml). Returned raw —
- * it is a spec document, not a Deportix envelope — so tools like Scalar/Swagger can read it.
+ * it is a spec document, not a Deportix envelope — so tools like Swagger UI can read it.
  */
 export const GET = getRoute(async () => ({
   kind: 'raw',

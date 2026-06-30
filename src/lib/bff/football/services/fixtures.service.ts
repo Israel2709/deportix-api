@@ -5,8 +5,11 @@ import {
   listRawMatchesBySeason,
 } from '@/lib/firebase/repositories/matches.repository';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
+import { buildCountryMap } from '@/lib/firebase/repositories/countries.repository';
+import { getLeague } from '@/lib/firebase/repositories/leagues.repository';
 import { getTeamById } from '@/lib/firebase/repositories/teams.repository';
 import { buildTeamExternalIdMap, buildTeamMapForLeague } from '@/lib/firebase/repositories/teams.repository';
+import type { FixtureLeagueContext } from '../mappers/fixture.mapper';
 import {
   isLiveMatch,
   mapRawSoccerMatchToApiSports,
@@ -16,10 +19,43 @@ import {
   matchVenueName,
 } from '../mappers/fixture.mapper';
 import type { FixtureQuery } from '../query-params';
+import { buildFixtureLeagueContext } from './fixture-league-context';
 import { resolveSoccerLeague, resolveSoccerSeason } from './leagues.service';
 
 function upperBound(to: string): string {
   return to.length <= 10 ? `${to}T23:59:59.999Z` : to;
+}
+
+async function loadFixtureLeagueContext(leagueId: string): Promise<FixtureLeagueContext | null> {
+  const league = await getLeague(leagueId);
+  if (!league || league.sportSlug !== 'soccer') return null;
+
+  const countryMap = await buildCountryMap();
+  const country = league.dto.country
+    ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
+    : null;
+
+  return buildFixtureLeagueContext(league.dto, country);
+}
+
+async function mapDocsForLeague(leagueId: string, docs: RawDoc[]): Promise<unknown[]> {
+  const [teamMap, externalIds, leagueContext] = await Promise.all([
+    buildTeamMapForLeague(leagueId, 'soccer'),
+    buildTeamExternalIdMap(leagueId, 'soccer'),
+    loadFixtureLeagueContext(leagueId),
+  ]);
+
+  return docs.map((doc) =>
+    mapRawSoccerMatchToApiSports(
+      doc,
+      teamMap,
+      {
+        home: externalIds.get(asStr(doc.data.home_team_id) ?? '') ?? null,
+        away: externalIds.get(asStr(doc.data.away_team_id) ?? '') ?? null,
+      },
+      leagueContext,
+    ),
+  );
 }
 
 function applyFixtureFilters(docs: RawDoc[], query: FixtureQuery): RawDoc[] {
@@ -80,20 +116,6 @@ function applyFixtureFilters(docs: RawDoc[], query: FixtureQuery): RawDoc[] {
   }
 
   return filtered;
-}
-
-async function mapDocsForLeague(leagueId: string, docs: RawDoc[]): Promise<unknown[]> {
-  const [teamMap, externalIds] = await Promise.all([
-    buildTeamMapForLeague(leagueId, 'soccer'),
-    buildTeamExternalIdMap(leagueId, 'soccer'),
-  ]);
-
-  return docs.map((doc) =>
-    mapRawSoccerMatchToApiSports(doc, teamMap, {
-      home: externalIds.get(asStr(doc.data.home_team_id) ?? '') ?? null,
-      away: externalIds.get(asStr(doc.data.away_team_id) ?? '') ?? null,
-    }),
-  );
 }
 
 async function fetchByIds(ids: string[]): Promise<unknown[]> {

@@ -1,5 +1,6 @@
 import { asStr } from '@/lib/api/serializers';
 import type { TeamMap } from '@/lib/api/serializers';
+import { preferCanonicalString } from '@/lib/api/canonical-fields';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
 
 type Raw = Record<string, unknown>;
@@ -37,11 +38,29 @@ function enrichTeamSide(
   const enriched = { ...side };
   const fromMap = teamId && teamMap ? teamMap.get(teamId) : undefined;
 
-  if (!enriched.name && fromMap?.name) enriched.name = fromMap.name;
-  if (!enriched.logo && fromMap?.logo) enriched.logo = fromMap.logo;
+  enriched.name = preferCanonicalString(fromMap?.name, asStr(enriched.name));
+  enriched.logo = preferCanonicalString(fromMap?.logo, asStr(enriched.logo));
   if (enriched.id == null && externalId != null) enriched.id = externalNumericId(externalId);
 
   return enriched;
+}
+
+export interface FixtureLeagueContext {
+  name: string | null;
+  logo: string | null;
+  countryName: string | null;
+  countryFlag: string | null;
+}
+
+function enrichLeague(league: Raw, context: FixtureLeagueContext | null | undefined): Raw {
+  if (!context) return league;
+
+  league.name = preferCanonicalString(context.name, asStr(league.name));
+  league.logo = preferCanonicalString(context.logo, asStr(league.logo));
+  league.country = preferCanonicalString(context.countryName, asStr(league.country));
+  league.flag = preferCanonicalString(context.countryFlag, asStr(league.flag));
+
+  return league;
 }
 
 /** Map a raw soccer match document to the API-Sports fixture shape. */
@@ -49,10 +68,11 @@ export function mapRawSoccerMatchToApiSports(
   doc: RawDoc,
   teamMap?: TeamMap,
   teamExternalIds?: { home?: string | null; away?: string | null },
+  leagueContext?: FixtureLeagueContext | null,
 ): Raw {
   const raw = doc.data;
   const fixture = cloneObj(raw.fixture);
-  const league = cloneObj(raw.league);
+  const league = enrichLeague(cloneObj(raw.league), leagueContext);
   const goals = cloneObj(raw.goals);
   const teamsRaw = asObj(raw.teams) ?? {};
   const home = enrichTeamSide(
