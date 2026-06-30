@@ -1,7 +1,18 @@
-# API Contract — Deportix API `/v1`
+# API Contract — Deportix API
 
-The OpenAPI 3.1 document is the source of truth: [`openapi/openapi.yaml`](../openapi/openapi.yaml),
-served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This page summarizes it.
+The OpenAPI 3.1 document is the **single source of truth**: [`openapi/openapi.yaml`](../openapi/openapi.yaml),
+served at `GET /v1/openapi.json` and rendered with **Swagger UI** at `GET /docs`.
+
+The spec documents **two surfaces**:
+
+| Surface | Base paths | Response envelope | Consumers |
+| --- | --- | --- | --- |
+| **Deportix API** | `/v1/*` | `{ data, meta }` | Portal, internal tools |
+| **BFF (API-Sports)** | `/countries`, `/leagues`, `/fixtures`, … | `{ response, results, errors }` | Flutter app (soccer) |
+
+---
+
+## Deportix API `/v1`
 
 - **Base path:** `/v1` · **Methods:** `GET` (read), `POST` (match create), `PATCH` (match edit), `DELETE` (match remove) · **Dates:** ISO-8601, **UTC**.
 - **Identifiers:** path params (`leagueId`, `teamId`, `matchId`) accept the API's `id` or the provider
@@ -26,9 +37,34 @@ served at `GET /v1/openapi.json` and rendered interactively at `GET /docs`. This
 | GET | `/v1/teams/{teamId}` | A team (searched across sport collections). |
 | GET | `/v1/teams/{teamId}/matches` | A team's matches. Same filters as league matches. |
 | GET | `/v1/openapi.json` | The OpenAPI document. |
-| GET | `/docs` | Scalar reference UI. |
+| GET | `/docs` | Swagger UI (interactive reference). |
 
-## Response envelopes
+---
+
+## BFF — API-Sports compatibility (soccer)
+
+Read-only endpoints that mirror API-Sports Football v3. Change only the **base URL** in Flutter;
+paths and query params stay the same.
+
+| Method | Path | Required params | Notes |
+| --- | --- | --- | --- |
+| GET | `/countries` | — | `?name`, `?code` optional filters. |
+| GET | `/leagues` | — | `?id`, `?country`, `?season`, `?current` filters. |
+| GET | `/leagues/seasons` | — | Global list of season years. |
+| GET | `/fixtures` | `league` and/or `team`, or `id`/`ids` | Full filter set in OpenAPI. |
+| GET | `/fixtures/rounds` | `league`, `season` | Returns round name strings. |
+| GET | `/standings` | `league`, `season` | Nested `league.standings` table. |
+
+**Envelope**
+```json
+{ "response": [], "results": 0, "errors": {} }
+```
+
+**Errors** use the same envelope with `errors: { "parameters": "…" }` (HTTP 400) instead of the Deportix `{ error }` shape.
+
+---
+
+## Deportix response envelopes
 
 **Collection**
 ```json

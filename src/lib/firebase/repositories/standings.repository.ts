@@ -1,7 +1,7 @@
 import { serializeStanding } from '@/lib/api/serializers';
 import type { StandingDTO } from '@/lib/contracts/dto';
 import { getSportConfig, type SportSlug } from '../sport-registry';
-import { fetchWhereEq } from './helpers';
+import { fetchWhereEq, type RawDoc } from './helpers';
 import { buildTeamMapForLeague } from './teams.repository';
 
 export async function listStandingsByLeague(
@@ -27,4 +27,15 @@ export async function listStandingsByLeague(
     const scoreB = b.points ?? b.wins ?? 0;
     return scoreB - scoreA;
   });
+}
+
+export async function listRawStandingsByLeague(
+  leagueId: string,
+  sport: SportSlug,
+  opts: { seasonId?: string },
+): Promise<RawDoc[]> {
+  const config = getSportConfig(sport);
+  if (!config) return [];
+  const docs = await fetchWhereEq(config.collections.standings, 'league_id', leagueId);
+  return docs.filter((doc) => !opts.seasonId || doc.data.season_id === opts.seasonId);
 }

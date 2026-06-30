@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public, read-only sports-data API powered by Cloud Firestore.\n\nIt exposes leagues, seasons, teams, matches and standings for the sports currently\nloaded into the platform. All endpoints are versioned under `/v1` and return data in a\nuniform envelope.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes two complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports compatibility** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nsoccer endpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter app: change only the base URL.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -38,6 +38,10 @@ export const openapiDocument = {
     {
       "name": "Teams",
       "description": "Team resources"
+    },
+    {
+      "name": "BFF",
+      "description": "API-Sports compatible layer for soccer (Flutter). Returns `{ response, results, errors }`.\nLeague/team/fixture ids in query params use provider `externalId` values (e.g. `262` for Liga MX).\n"
     }
   ],
   "paths": {
@@ -751,13 +755,394 @@ export const openapiDocument = {
         }
       }
     },
+    "/countries": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "List countries (API-Sports)",
+        "description": "Soccer reference data. Filter by `name` (substring) or `code` (ISO, exact).",
+        "operationId": "bffListCountries",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "MX"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with country objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsCountryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BffInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/leagues": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "List leagues (API-Sports)",
+        "description": "Soccer leagues with nested `seasons[]`. Filter by `id` (provider league id), `country`\n(name substring), `season` (year — league must have that season), or `current=true`.\n",
+        "operationId": "bffListLeagues",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Provider league id (e.g. `262`).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "example": 2026
+            }
+          },
+          {
+            "name": "current",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with league, country, and seasons entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsLeagueList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BffInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/leagues/seasons": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "List global season years (API-Sports)",
+        "description": "Distinct season years across all leagues in the platform.",
+        "operationId": "bffListGlobalSeasons",
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with an array of years (integers).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsIntegerList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/fixtures": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "List fixtures (API-Sports)",
+        "description": "Soccer matches in API-Sports shape (`fixture`, `league`, `teams`, `goals`).\nRequires `league` and/or `team` (provider ids), or `id` / `ids` for direct lookup.\nSupports `season`, `date`, `from`/`to`, `round`, `status`, `last`, `next`, `live`.\n",
+        "operationId": "bffListFixtures",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "Hyphen-separated fixture ids (e.g. `1-2-3`).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "live",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "league",
+            "in": "query",
+            "description": "Provider league id (required unless `id`, `ids`, or `team` is set).",
+            "schema": {
+              "type": "string",
+              "example": "262"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "example": 2026
+            }
+          },
+          {
+            "name": "team",
+            "in": "query",
+            "description": "Provider team id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "round",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "NS"
+            }
+          },
+          {
+            "name": "venue",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "next",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Accepted for compatibility; dates are stored in UTC.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with fixture objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsFixtureList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BffInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/fixtures/rounds": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "List fixture rounds (API-Sports)",
+        "description": "Round name strings for a league season. `league` and `season` are required.",
+        "operationId": "bffListFixtureRounds",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "262"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 2026
+            }
+          },
+          {
+            "name": "current",
+            "in": "query",
+            "description": "When `season` is omitted, use the league's current season.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with round name strings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsStringList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BffInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/standings": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "List standings (API-Sports)",
+        "description": "League standings table for a season. `league` and `season` are required.",
+        "operationId": "bffListStandings",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "262"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 2026
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with nested league.standings table objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsStandingsList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BffInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
     "/v1/openapi.json": {
       "get": {
         "tags": [
           "Meta"
         ],
         "summary": "OpenAPI document",
-        "description": "This document, served as JSON. Source of truth for the API contract.",
+        "description": "This document, served as JSON. Rendered interactively at `GET /docs` (Swagger UI).",
         "operationId": "getOpenApi",
         "responses": {
           "200": {
@@ -954,9 +1339,367 @@ export const openapiDocument = {
             }
           }
         }
+      },
+      "BffInvalidParameter": {
+        "description": "Invalid query parameter (API-Sports error envelope).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiSportsErrorEnvelope"
+            },
+            "example": {
+              "response": [],
+              "results": 0,
+              "errors": {
+                "parameters": "The \"league\" parameter is required."
+              }
+            }
+          }
+        }
       }
     },
     "schemas": {
+      "ApiSportsEnvelope": {
+        "type": "object",
+        "required": [
+          "response",
+          "results",
+          "errors"
+        ],
+        "properties": {
+          "response": {
+            "type": "array",
+            "items": {}
+          },
+          "results": {
+            "type": "integer",
+            "example": 0
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ApiSportsErrorEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          }
+        ],
+        "example": {
+          "response": [],
+          "results": 0,
+          "errors": {
+            "parameters": "Invalid query parameter."
+          }
+        }
+      },
+      "ApiSportsCountry": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Mexico"
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "MX"
+          },
+          "flag": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ApiSportsCountryList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ApiSportsCountry"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ApiSportsLeagueEntry": {
+        "type": "object",
+        "properties": {
+          "league": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "integer",
+                  "string",
+                  "null"
+                ],
+                "example": 262
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "logo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "country": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "flag": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "year": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "start": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date"
+                },
+                "end": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date"
+                },
+                "current": {
+                  "type": "boolean"
+                },
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ApiSportsLeagueList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ApiSportsLeagueEntry"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ApiSportsIntegerList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ApiSportsStringList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ApiSportsFixture": {
+        "type": "object",
+        "description": "API-Sports fixture object (subset — see Firestore `soccer_matches` blobs).",
+        "properties": {
+          "fixture": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "league": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "teams": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "goals": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "score": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiSportsFixtureList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ApiSportsFixture"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ApiSportsStandingsList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "league": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": [
+                            "integer",
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "country": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "logo": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "flag": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "season": {
+                          "type": "integer"
+                        },
+                        "standings": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "additionalProperties": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
       "Pagination": {
         "type": "object",
         "required": [

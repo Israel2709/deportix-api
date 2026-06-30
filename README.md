@@ -12,7 +12,7 @@ TypeScript (strict), and the Firebase Admin SDK. Deployable to Vercel.
 - **Sport-aware adapter**: generic `/v1/leagues/{id}/teams|matches|standings` over sport-specific,
   flat Firestore collections (`soccer_*`, `nfl_*`, `f1_*`).
 - **`/v1/data-status`** derives coverage from real Firestore counts (never hardcoded).
-- OpenAPI 3.1 (source of truth) served at `/v1/openapi.json` and rendered with **Scalar** at `/docs`.
+- OpenAPI 3.1 (source of truth) served at `/v1/openapi.json` and rendered with **Swagger UI** at `/docs`.
 - Read-only **Firestore audit** script (`pnpm data:inspect`) → sanitized inventory docs.
 - Vitest unit + integration tests (no real Firestore). Strict TS, ESLint, Prettier.
 
@@ -61,7 +61,11 @@ CORS_ALLOWED_ORIGINS=*
 
 `/v1/health` · `/v1/data-status` · `/v1/sports` · `/v1/leagues` · `/v1/leagues/{id}` ·
 `/v1/leagues/{id}/{seasons,teams,standings,matches}` · `/v1/teams/{id}` · `/v1/teams/{id}/matches` ·
-`/v1/openapi.json` · `/docs`. Full contract: [docs/api-contract.md](./docs/api-contract.md).
+`/v1/openapi.json` · `/docs` (Swagger UI).
+
+**BFF (API-Sports, soccer):** `/countries` · `/leagues` · `/leagues/seasons` · `/fixtures` · `/fixtures/rounds` · `/standings`.
+
+Full contract: [docs/api-contract.md](./docs/api-contract.md).
 
 ## Deploy to Vercel
 

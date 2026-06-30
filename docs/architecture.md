@@ -26,7 +26,7 @@ deportix-portal  ──>  consumes ONLY NEXT_PUBLIC_API_BASE_URL
 | Repositories | `src/lib/firebase/repositories/*` | All Firestore reads. Equality-only queries + in-memory shaping. Return public DTOs. |
 | Admin bootstrap | `src/lib/firebase/admin.ts` | Lazy, cached Firebase Admin init from 3 env vars. Server-only. |
 | Contracts | `src/lib/contracts/dto.ts` | Public DTO shapes. |
-| OpenAPI | `openapi/openapi.yaml` → `src/generated/openapi.ts` | Source of truth, built into a bundled module served at `/v1/openapi.json` and rendered at `/docs`. |
+| OpenAPI | `openapi/openapi.yaml` → `src/generated/openapi.ts` | Source of truth, built into a bundled module served at `/v1/openapi.json` and rendered at `/docs` (Swagger UI). |
 
 ## The adapter (key decision)
 

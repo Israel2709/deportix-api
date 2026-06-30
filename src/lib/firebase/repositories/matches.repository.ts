@@ -118,6 +118,24 @@ export async function getMatchById(sport: SportSlug, matchId: string): Promise<R
   return resolveDoc(config.collections.matches, matchId);
 }
 
+export async function listRawMatchesBySeason(
+  sport: SportSlug,
+  seasonId: string,
+): Promise<RawDoc[]> {
+  const config = getSportConfig(sport);
+  if (!config) return [];
+  return fetchWhereEq(config.collections.matches, 'season_id', seasonId);
+}
+
+export async function listRawMatchesByLeague(
+  sport: SportSlug,
+  leagueId: string,
+): Promise<RawDoc[]> {
+  const config = getSportConfig(sport);
+  if (!config) return [];
+  return fetchWhereEq(config.collections.matches, 'league_id', leagueId);
+}
+
 async function requireLeagueMatch(
   leagueId: string,
   sport: SportSlug,

@@ -1,6 +1,6 @@
 import { serializeSeason } from '@/lib/api/serializers';
 import type { SeasonDTO } from '@/lib/contracts/dto';
-import { fetchWhereEq } from './helpers';
+import { fetchAll, fetchWhereEq } from './helpers';
 
 const COLLECTION = 'seasons';
 
@@ -34,4 +34,15 @@ export async function findSeasonInLeague(
         season.id === seasonIdOrExternal || season.externalId === seasonIdOrExternal,
     ) ?? null
   );
+}
+
+/** Distinct season years across the platform (API-Sports `/leagues/seasons`). */
+export async function listDistinctSeasonYears(): Promise<number[]> {
+  const docs = await fetchAll(COLLECTION, 10_000);
+  const years = new Set<number>();
+  for (const doc of docs) {
+    const year = typeof doc.data.year === 'number' ? doc.data.year : null;
+    if (year != null) years.add(year);
+  }
+  return [...years].sort((a, b) => b - a);
 }

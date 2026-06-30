@@ -71,6 +71,12 @@ describe('OpenAPI document', () => {
       '/v1/leagues/{leagueId}/standings',
       '/v1/leagues/{leagueId}/matches/{matchId}',
       '/v1/teams/{teamId}',
+      '/countries',
+      '/leagues',
+      '/leagues/seasons',
+      '/fixtures',
+      '/fixtures/rounds',
+      '/standings',
       '/v1/openapi.json',
     ]) {
       expect(paths).toContain(p);

@@ -32,6 +32,6 @@ export function applyCorsHeaders(headers: Headers, requestOrigin: string | null)
   headers.set('Access-Control-Allow-Origin', allowOrigin);
   if (allowOrigin !== '*') headers.append('Vary', 'Origin');
   headers.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, If-None-Match');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, If-None-Match, x-rapidapi-key, x-apisports-key, x-rapidapi-host');
   headers.set('Access-Control-Max-Age', '86400');
 }

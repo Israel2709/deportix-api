@@ -8,7 +8,7 @@ export default function HomePage() {
       <ul style={{ lineHeight: 2, marginTop: '2rem' }}>
         <li>
           <a style={{ color: '#60a5fa' }} href="/docs">
-            Interactive documentation (/docs)
+            Swagger documentation (/docs)
           </a>
         </li>
         <li>
@@ -17,13 +17,18 @@ export default function HomePage() {
           </a>
         </li>
         <li>
-          <a style={{ color: '#60a5fa' }} href="/v1/health">
-            Health check (/v1/health)
+          <a style={{ color: '#94a3b8' }} href="/v1/health">
+            Deportix API — health (/v1/health)
           </a>
         </li>
         <li>
-          <a style={{ color: '#60a5fa' }} href="/v1/data-status">
-            Data coverage status (/v1/data-status)
+          <a style={{ color: '#94a3b8' }} href="/v1/data-status">
+            Deportix API — data coverage (/v1/data-status)
+          </a>
+        </li>
+        <li>
+          <a style={{ color: '#94a3b8' }} href="/fixtures?league=262&season=2026">
+            BFF example — fixtures (/fixtures)
           </a>
         </li>
       </ul>
