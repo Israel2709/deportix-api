@@ -82,6 +82,7 @@ export function serializeLeague(
     sport: resolved.sport,
     country: resolved.country,
     logo: asStr(raw.logo),
+    altLogo: asStr(raw.alt_logo),
     updatedAt: updatedAtOf(raw),
   };
 }
@@ -149,6 +150,7 @@ export function serializeTeam(sport: SportSlug | null, id: string, raw: Raw): Te
       conference: asStr(raw.conference),
       division: asStr(raw.division),
       logo: asStr(raw.logo),
+      altLogo: asStr(raw.alt_logo) ?? base.altLogo,
     };
   }
 

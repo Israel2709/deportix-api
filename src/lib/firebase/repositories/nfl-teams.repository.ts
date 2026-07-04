@@ -33,6 +33,7 @@ export async function createNflTeam(
     external_id: String(item.id),
     name: item.name,
     logo: item.logo ?? null,
+    alt_logo: item.altLogo ?? null,
     api_sports_payload: item,
     created_at: now,
     updated_at: now,
@@ -62,6 +63,7 @@ export async function updateNflTeam(
   };
   if (patch.name !== undefined) fields.name = patch.name;
   if (patch.logo !== undefined) fields.logo = patch.logo;
+  if (patch.altLogo !== undefined) fields.alt_logo = patch.altLogo;
   if (patch.id !== undefined) fields.external_id = String(patch.id);
 
   await updateDocFields(COLLECTION, existing.id, fields);

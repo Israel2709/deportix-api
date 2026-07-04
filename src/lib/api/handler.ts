@@ -53,7 +53,7 @@ function baseHeaders(requestId: string, origin: string | null): Headers {
   return headers;
 }
 
-function buildErrorResponse(
+export function buildErrorResponse(
   err: unknown,
   requestId: string,
   origin: string | null,

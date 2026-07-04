@@ -32,6 +32,7 @@ export function mapNflLeagueToApiSports(
       name: league.name ?? '',
       type: league.type,
       logo: league.logo,
+      altLogo: league.altLogo,
     },
     country: {
       name: country?.name ?? league.country ?? '',

@@ -2,6 +2,7 @@ import { getRoute, optionsRoute } from '@/lib/api/handler';
 import { CACHE } from '@/lib/api/cache';
 import { API_VERSION } from '@/lib/api/responses';
 import { isDataSourceConfigured } from '@/lib/firebase/admin';
+import { isStorageConfigured } from '@/lib/firebase/storage';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,7 @@ export const GET = getRoute(async () => ({
     status: 'ok',
     apiVersion: API_VERSION,
     dataSourceConfigured: isDataSourceConfigured(),
+    storageConfigured: isStorageConfigured(),
     timestamp: new Date().toISOString(),
   },
   cache: CACHE.none,

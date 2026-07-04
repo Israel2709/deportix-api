@@ -51,6 +51,7 @@ export const nflLeagueItemSchema = z
         name: z.string(),
         type: nullableString.optional(),
         logo: nullableString.optional(),
+        altLogo: nullableString.optional(),
       })
       .strict(),
     country: countryRefSchema,

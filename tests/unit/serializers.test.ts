@@ -151,6 +151,14 @@ describe('serializeLeague + pickLatestUpdatedAt', () => {
     expect(dto).toMatchObject({ name: 'Liga MX', sport: 'soccer', country: 'Mexico' });
   });
 
+  it('maps alt_logo to altLogo', () => {
+    const dto = serializeLeague('lg', { alt_logo: 'https://example.com/alt.png' }, {
+      sport: null,
+      country: null,
+    });
+    expect(dto.altLogo).toBe('https://example.com/alt.png');
+  });
+
   it('picks the latest updatedAt', () => {
     expect(
       pickLatestUpdatedAt([{ updatedAt: '2026-01-01' }, { updatedAt: '2026-05-01' }, { updatedAt: null }]),

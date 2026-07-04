@@ -58,6 +58,7 @@ export async function createLeague(input: {
   externalId?: string | null;
   type?: string | null;
   logo?: string | null;
+  altLogo?: string | null;
   countryId?: string | null;
   apiSportsPayload?: unknown;
 }): Promise<LeagueRecord> {
@@ -73,6 +74,7 @@ export async function createLeague(input: {
     external_id: input.externalId ?? null,
     type: input.type ?? 'league',
     logo: input.logo ?? null,
+    alt_logo: input.altLogo ?? null,
     country_id: input.countryId ?? null,
     created_at: now,
     updated_at: now,

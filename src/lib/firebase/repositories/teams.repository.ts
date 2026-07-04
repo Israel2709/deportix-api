@@ -1,7 +1,11 @@
 import { asStr, serializeTeam, type TeamMap } from '@/lib/api/serializers';
 import type { TeamDTO } from '@/lib/contracts/dto';
+import { notFound } from '@/lib/api/errors';
+import type { TeamUpdate } from '@/lib/api/team-patch';
+import { buildTeamFirestorePatch } from '@/lib/api/team-patch';
+import type { NflTeamItem } from '@/lib/bff/nfl/schemas/team.schema';
 import { getSportConfig, TEAM_COLLECTIONS, type SportSlug } from '../sport-registry';
-import { fetchWhereEq, resolveDoc } from './helpers';
+import { fetchWhereEq, getDocById, resolveDoc, updateDocFields } from './helpers';
 
 export async function listTeamsByLeague(leagueId: string, sport: SportSlug): Promise<TeamDTO[]> {
   const config = getSportConfig(sport);
@@ -52,4 +56,42 @@ export async function buildTeamExternalIdMap(
     map.set(doc.id, asStr(doc.data.external_id));
   }
   return map;
+}
+
+export async function updateTeam(
+  idOrExternalId: string,
+  patch: TeamUpdate,
+): Promise<TeamRecord> {
+  const existing = await getTeamById(idOrExternalId);
+  if (!existing) throw notFound('Team not found.');
+
+  const config = getSportConfig(existing.sport);
+  if (!config) throw notFound('Team not found.');
+
+  const doc = await resolveDoc(config.collections.teams, idOrExternalId);
+  if (!doc) throw notFound('Team not found.');
+
+  const fields = buildTeamFirestorePatch(existing.sport, patch);
+  fields.updated_at = new Date().toISOString();
+
+  if (existing.sport === 'nfl') {
+    const payload = {
+      ...((doc.data.api_sports_payload as NflTeamItem | undefined) ?? {}),
+    } as NflTeamItem;
+    const external = asStr(doc.data.external_id);
+    payload.id = payload.id ?? (external && !Number.isNaN(Number(external)) ? Number(external) : external ?? doc.id);
+    payload.name = payload.name ?? asStr(doc.data.name) ?? '';
+    if (patch.name !== undefined) payload.name = patch.name ?? '';
+    if (patch.logo !== undefined) payload.logo = patch.logo;
+    if (patch.altLogo !== undefined) payload.altLogo = patch.altLogo;
+    fields.api_sports_payload = payload;
+  }
+
+  await updateDocFields(config.collections.teams, doc.id, fields);
+  const updated = await getDocById(config.collections.teams, doc.id);
+  if (!updated) throw notFound('Team not found.');
+  return {
+    team: serializeTeam(existing.sport, updated.id, updated.data),
+    sport: existing.sport,
+  };
 }

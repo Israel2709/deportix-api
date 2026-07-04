@@ -63,6 +63,7 @@ export async function createNflLeagueEntry(body: unknown) {
     externalId: item.league.id != null ? String(item.league.id) : null,
     type: item.league.type ?? 'league',
     logo: item.league.logo ?? null,
+    altLogo: item.league.altLogo ?? null,
     countryId,
     apiSportsPayload: item,
   });
@@ -93,6 +94,7 @@ export async function updateNflLeagueEntry(id: string, body: unknown) {
     external_id: item.league.id != null ? String(item.league.id) : null,
     type: item.league.type ?? 'league',
     logo: item.league.logo ?? null,
+    alt_logo: item.league.altLogo ?? null,
     api_sports_payload: item,
   });
 

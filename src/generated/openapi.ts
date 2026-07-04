@@ -70,6 +70,7 @@ export const openapiDocument = {
                     "status": "ok",
                     "apiVersion": "v1",
                     "dataSourceConfigured": true,
+                    "storageConfigured": true,
                     "timestamp": "2026-06-23T00:00:00.000Z"
                   },
                   "meta": {
@@ -79,6 +80,79 @@ export const openapiDocument = {
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/v1/uploads": {
+      "post": {
+        "tags": [
+          "Meta"
+        ],
+        "summary": "Upload image to Firebase Storage",
+        "description": "Accepts `multipart/form-data` with an image file. Returns a public Firebase Storage URL\nfor league/team logos and country flags (used by the Deportix portal).\n",
+        "operationId": "uploadImage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "PNG, JPEG, WebP, or SVG (max 5 MB)."
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "logo",
+                      "alt_logo",
+                      "flag",
+                      "league_logo",
+                      "team_logo",
+                      "asset"
+                    ],
+                    "default": "asset"
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "description": "Optional id used in the storage path (league id, team id, etc.)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Image uploaded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResource"
+                },
+                "example": {
+                  "data": {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/deportix.appspot.com/o/uploads%2Fleague_logo%2F1%2F1730000000000-abc.png?alt=media"
+                  },
+                  "meta": {
+                    "apiVersion": "v1",
+                    "updatedAt": "2026-06-23T00:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestBody"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
           }
         }
       }
@@ -4020,6 +4094,13 @@ export const openapiDocument = {
               "null"
             ]
           },
+          "altLogo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Alternative logo URL"
+          },
           "updatedAt": {
             "type": [
               "string",
@@ -4597,9 +4678,34 @@ export const openapiDocument = {
               "dataSourceConfigured": {
                 "type": "boolean"
               },
+              "storageConfigured": {
+                "type": "boolean",
+                "description": "Whether Firebase Storage is configured for image uploads."
+              },
               "timestamp": {
                 "type": "string",
                 "format": "date-time"
+              }
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResourceMeta"
+          }
+        }
+      },
+      "UploadResource": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "url"
+            ],
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Public Firebase Storage URL for the uploaded image."
               }
             }
           },

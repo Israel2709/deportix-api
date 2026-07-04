@@ -21,6 +21,7 @@ export function mapNflTeamDocToApiSports(
       id: item.id ?? externalNumericId(asStr(raw.external_id)),
       name: item.name ?? asStr(raw.name) ?? '',
       logo: item.logo ?? asStr(raw.logo),
+      altLogo: item.altLogo ?? asStr(raw.alt_logo),
     };
   }
 
@@ -28,6 +29,7 @@ export function mapNflTeamDocToApiSports(
     id: externalNumericId(externalId ?? asStr(raw.external_id)) ?? doc.id,
     name: asStr(raw.name) ?? '',
     logo: asStr(raw.logo),
+    altLogo: asStr(raw.alt_logo),
   };
 }
 

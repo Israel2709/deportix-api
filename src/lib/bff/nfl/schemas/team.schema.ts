@@ -6,6 +6,7 @@ export const nflTeamItemSchema = z
     id: idSchema,
     name: z.string(),
     logo: nullableString.optional(),
+    altLogo: nullableString.optional(),
   })
   .strict();
 

@@ -102,6 +102,7 @@ export async function buildNflLeagueContext(
     name: league.dto.name,
     season: seasonYear ?? null,
     logo: league.dto.logo,
+    altLogo: league.dto.altLogo,
     country: {
       name: country?.name ?? league.dto.country,
       code: country?.code ?? null,

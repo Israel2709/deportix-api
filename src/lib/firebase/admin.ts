@@ -30,6 +30,11 @@ function readCredentials(): ServiceAccountCredentials | null {
   return { projectId, clientEmail, privateKey };
 }
 
+/** Exposed for storage bucket resolution (same credentials as Firestore). */
+export function readCredentialsForStorage(): ServiceAccountCredentials | null {
+  return readCredentials();
+}
+
 /** True when all three Firebase Admin env vars are present. */
 export function isDataSourceConfigured(): boolean {
   return readCredentials() !== null;
