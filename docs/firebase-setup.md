@@ -20,6 +20,8 @@ The API initializes from three env vars (no JSON file is committed):
 FIREBASE_PROJECT_ID=deportix-api-dac8e
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@deportix-api-dac8e.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n"
+# Optional — only if the default bucket name fails (see Firebase Console → Storage):
+# FIREBASE_STORAGE_BUCKET=deportix-api-dac8e.firebasestorage.app
 ```
 
 ### Private key newlines (the common footgun)

@@ -18,11 +18,7 @@ vi.mock('firebase-admin/app', () => ({
 vi.mock('@/lib/firebase/admin', () => ({
   getDb: vi.fn(),
   isDataSourceConfigured: () => true,
-  readCredentialsForStorage: () => ({
-    projectId: 'deportix',
-    clientEmail: 'test@deportix.iam.gserviceaccount.com',
-    privateKey: 'key',
-  }),
+  resolveStorageBucket: () => 'deportix-api-dac8e.firebasestorage.app',
 }));
 
 const { uploadImage } = await import('@/lib/firebase/storage');
@@ -37,6 +33,8 @@ describe('uploadImage', () => {
     });
     expect(save).toHaveBeenCalledOnce();
     expect(makePublic).toHaveBeenCalledOnce();
-    expect(url).toMatch(/^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/deportix\.appspot\.com\/o\/uploads%2Fleague_logo%2F1%2F/);
+    expect(url).toMatch(
+      /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/deportix-api-dac8e\.firebasestorage\.app\/o\/uploads%2Fleague_logo%2F1%2F/,
+    );
   });
 });

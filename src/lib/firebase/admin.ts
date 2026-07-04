@@ -41,6 +41,22 @@ export function isDataSourceConfigured(): boolean {
 }
 
 /**
+ * Firebase Storage bucket name. Prefer FIREBASE_STORAGE_BUCKET; otherwise the default bucket
+ * for projects created after 2024 ({projectId}.firebasestorage.app). Legacy buckets use
+ * {projectId}.appspot.com — set the env var explicitly if uploads fail with "bucket not found".
+ */
+export function resolveStorageBucket(): string {
+  const explicit = process.env.FIREBASE_STORAGE_BUCKET?.trim();
+  if (explicit) return explicit.replace(/^gs:\/\//, '');
+
+  const credentials = readCredentials();
+  if (!credentials) {
+    throw new ApiError('DATA_SOURCE_NOT_CONFIGURED', 'Storage is not configured.');
+  }
+  return `${credentials.projectId}.firebasestorage.app`;
+}
+
+/**
  * Returns a cached Firestore instance, initializing the Admin app on first use.
  * Throws `DATA_SOURCE_NOT_CONFIGURED` (-> HTTP 503) when credentials are missing, so the
  * API degrades gracefully instead of crashing when env vars are not yet set.
@@ -65,6 +81,7 @@ export function getDb(): Firestore {
         privateKey: credentials.privateKey,
       }),
       projectId: credentials.projectId,
+      storageBucket: resolveStorageBucket(),
     });
 
   cachedDb = getFirestore(app);
