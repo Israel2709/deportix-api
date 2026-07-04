@@ -35,11 +35,17 @@ open  http://localhost:3000/docs
 Without credentials the server still runs: `/v1/health` reports `dataSourceConfigured: false` and
 data endpoints return `503 DATA_SOURCE_NOT_CONFIGURED`. See [docs/firebase-setup.md](./docs/firebase-setup.md).
 
+### Acceso desde otro dispositivo en la red
+
+Con `pnpm dev`, Next.js muestra una URL `Network:` (ej. `http://192.168.x.x:3000`). Otros equipos
+en la misma Wi‑Fi pueden usar esa URL. CORS está abierto (`CORS_ALLOWED_ORIGINS=*` por defecto).
+Levanta también el portal (`../deportix-portal`, puerto 3001) para la UI.
+
 ## Scripts
 
 | Script | Description |
 | --- | --- |
-| `pnpm dev` | Dev server (port 3000). |
+| `pnpm dev` | Dev server (port 3000, all interfaces — LAN via `Network:` URL). |
 | `pnpm build` | `openapi:build` + `next build`. |
 | `pnpm start` | Production server. |
 | `pnpm lint` / `pnpm typecheck` | ESLint / `tsc --noEmit`. |
