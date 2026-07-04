@@ -66,6 +66,7 @@ describe('OpenAPI document', () => {
       '/v1/health',
       '/v1/data-status',
       '/v1/sports',
+      '/v1/countries',
       '/v1/leagues',
       '/v1/leagues/{leagueId}',
       '/v1/leagues/{leagueId}/standings',

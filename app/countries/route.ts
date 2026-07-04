@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 
 export const GET = bffGetRoute(async ({ searchParams }) => {
   const response = await fetchFootballCountries(parseCountryQuery(searchParams));
-  return { response, cache: CACHE.standard };
+  return { response, cache: CACHE.none };
 });
 
 export const OPTIONS = bffOptionsRoute();

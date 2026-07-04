@@ -3,9 +3,8 @@ import type { SportDTO } from '@/lib/contracts/dto';
 import { fetchAll } from './helpers';
 
 /**
- * Catalog repository: sports + reference maps used to resolve a league's sport slug and
- * country name. `sports` and `countries` are small reference collections, so they are read
- * in full and indexed in memory per request.
+ * Catalog repository: sports + countries reference data shared by all sports.
+ * `countries` is the global country catalog (API-Sports Football v3 shape).
  */
 
 const SPORTS_COLLECTION = 'sports';

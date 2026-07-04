@@ -280,6 +280,170 @@ export const openapiDocument = {
         }
       }
     },
+    "/v1/countries": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List countries (global catalog)",
+        "description": "Shared country catalog for all sports. Backed by the Firestore `countries` collection.\nSame data as BFF `/countries` and `/american-football/countries`.\n",
+        "operationId": "listCatalogCountries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 250,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated country catalog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountryCollection"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Create country",
+        "operationId": "createCatalogCountry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogCountry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Country created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountryResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestBody"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Update country",
+        "operationId": "updateCatalogCountry",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogCountry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Country updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountryResource"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Delete country",
+        "operationId": "deleteCatalogCountry",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Country deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/ResourceNotFound"
+          }
+        }
+      }
+    },
     "/v1/leagues": {
       "get": {
         "tags": [
@@ -4787,6 +4951,53 @@ export const openapiDocument = {
           },
           "meta": {
             "$ref": "#/components/schemas/CollectionMeta"
+          }
+        }
+      },
+      "CatalogCountry": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Mexico"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true,
+            "example": "MX"
+          },
+          "flag": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        }
+      },
+      "CountryCollection": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogCountry"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CollectionMeta"
+          }
+        }
+      },
+      "CountryResource": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CatalogCountry"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResourceMeta"
           }
         }
       },

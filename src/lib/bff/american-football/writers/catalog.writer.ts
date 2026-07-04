@@ -1,14 +1,12 @@
 import { z } from 'zod';
 import { invalidRequestBody, notFound } from '@/lib/api/errors';
-import { americanFootballCountryItemSchema } from '../schemas/country.schema';
-import { americanFootballLeagueItemSchema } from '../schemas/league.schema';
 import {
-  buildCountryMap,
-  createCountry,
-  deleteCountry,
-  getCountryByKey,
-  updateCountry,
-} from '@/lib/firebase/repositories/countries.repository';
+  createCatalogCountry,
+  deleteCatalogCountry,
+  updateCatalogCountry,
+} from '@/lib/catalog/countries.service';
+import { buildCountryMap, getCountryByKey } from '@/lib/firebase/repositories/countries.repository';
+import { americanFootballLeagueItemSchema } from '../schemas/league.schema';
 import {
   createLeague,
   deleteLeague,
@@ -19,6 +17,7 @@ import {
   createSeason,
   deleteSeason,
   findSeasonByYear,
+  listSeasonsByLeague,
 } from '@/lib/firebase/repositories/seasons.repository';
 import {
   createTimezone,
@@ -28,25 +27,20 @@ import {
 import { mapAmericanFootballCountryToApiSports } from '../mappers/country.mapper';
 import { mapAmericanFootballLeagueToApiSports } from '../mappers/league.mapper';
 import { resolveAmericanFootballLeague } from '../services/leagues.service';
-import { listSeasonsByLeague } from '@/lib/firebase/repositories/seasons.repository';
 
 const seasonYearSchema = z.object({ year: z.number().int() }).strict();
 const timezoneSchema = z.object({ timezone: z.string().min(1) }).strict();
 
 export async function createAmericanFootballCountryEntry(body: unknown) {
-  const item = americanFootballCountryItemSchema.parse(body);
-  const country = await createCountry(item);
-  return mapAmericanFootballCountryToApiSports(country);
+  return createCatalogCountry(body);
 }
 
 export async function updateAmericanFootballCountryEntry(key: string, body: unknown) {
-  const item = americanFootballCountryItemSchema.parse(body);
-  const country = await updateCountry(key, item);
-  return mapAmericanFootballCountryToApiSports(country);
+  return updateCatalogCountry(key, body);
 }
 
 export async function deleteAmericanFootballCountryEntry(key: string) {
-  await deleteCountry(key);
+  await deleteCatalogCountry(key);
 }
 
 export async function createAmericanFootballLeagueEntry(body: unknown) {

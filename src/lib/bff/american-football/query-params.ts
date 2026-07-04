@@ -3,6 +3,7 @@ import { parseSeasonParam, parseStringParam } from '@/lib/api/query-validation';
 
 export interface AmericanFootballCountryQuery {
   name?: string;
+  code?: string;
 }
 
 export interface AmericanFootballLeagueQuery {
@@ -35,7 +36,10 @@ export interface AmericanFootballStandingsQuery {
 }
 
 export function parseAmericanFootballCountryQuery(searchParams: URLSearchParams): AmericanFootballCountryQuery {
-  return { name: parseStringParam(searchParams.get('name')) };
+  return {
+    name: parseStringParam(searchParams.get('name')),
+    code: parseStringParam(searchParams.get('code')),
+  };
 }
 
 export function parseAmericanFootballLeagueQuery(searchParams: URLSearchParams): AmericanFootballLeagueQuery {

@@ -1,6 +1,1 @@
-import { mapCountryToApiSports } from '@/lib/bff/football/mappers/country.mapper';
-import type { CountryRecord } from '@/lib/firebase/repositories/countries.repository';
-
-export function mapAmericanFootballCountryToApiSports(country: CountryRecord) {
-  return mapCountryToApiSports(country);
-}
+export { toCatalogCountryDto as mapAmericanFootballCountryToApiSports } from '@/lib/catalog/countries.service';

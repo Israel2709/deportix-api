@@ -1,11 +1,7 @@
-import { listCountries } from '@/lib/firebase/repositories/countries.repository';
-import { mapCountryToApiSports } from '../mappers/country.mapper';
+import { listCatalogCountries } from '@/lib/catalog/countries.service';
 import type { CountryQuery } from '../query-params';
 
+/** Soccer BFF — reads the global country catalog. */
 export async function fetchFootballCountries(query: CountryQuery): Promise<unknown[]> {
-  const countries = await listCountries({
-    name: query.name,
-    code: query.code,
-  });
-  return countries.map(mapCountryToApiSports);
+  return listCatalogCountries({ name: query.name, code: query.code });
 }
