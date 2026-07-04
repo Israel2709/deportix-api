@@ -72,7 +72,7 @@ CORS_ALLOWED_ORIGINS=*
 
 **BFF (API-Sports, soccer):** `/countries` · `/leagues` · `/leagues/seasons` · `/fixtures` · `/fixtures/rounds` · `/standings`.
 
-**BFF NFL (API-Sports American Football v1):** `/nfl/timezone` · `/nfl/seasons` · `/nfl/countries` · `/nfl/leagues` · `/nfl/games` · `/nfl/teams` · `/nfl/standings` — full api-sports envelope + CRUD for portal loading. See [docs/nfl-api-reference.md](./docs/nfl-api-reference.md).
+**BFF American Football (API-Sports American Football v1):** `/american-football/timezone` · `/american-football/seasons` · `/american-football/countries` · `/american-football/leagues` · `/american-football/games` · `/american-football/teams` · `/american-football/standings` — full api-sports envelope + CRUD for portal loading. See [docs/american-football-api-reference.md](./docs/american-football-api-reference.md).
 
 Full contract: [docs/api-contract.md](./docs/api-contract.md).
 

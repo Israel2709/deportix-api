@@ -13,7 +13,7 @@ info:
     endpoints that mirror API-Sports Football v3 paths and response shape
     (`{ response, results, errors }`). Intended for the Flutter soccer app.
 
-    **BFF NFL** (`/nfl/*`) — API-Sports American Football v1 compatibility with the **full**
+    **BFF American Football** (`/american-football/*`) — API-Sports American Football v1 compatibility with the **full**
     envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and
     CRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal. Request bodies
     must match the objects returned in `response[]` (same shapes as api-sports NFL).
@@ -28,7 +28,7 @@ info:
       platform users.
     - **Partial coverage is expected.** The platform is fed manually. Some resources may be
       empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.
-    - **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may
+    - **American football coverage is partial and evolving** as data is loaded; some sub-resources may
       return empty collections or be unavailable.
     - **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches
       and standings may not yet exist even when teams do.
@@ -62,9 +62,9 @@ tags:
     description: |
       API-Sports compatible layer for soccer (Flutter). Returns `{ response, results, errors }`.
       League/team/fixture ids in query params use provider `externalId` values (e.g. `262` for Liga MX).
-  - name: BFF NFL
+  - name: BFF American Football
     description: |
-      API-Sports American Football v1 compatibility under `/nfl/*`. Returns the full api-sports
+      API-Sports American Football v1 compatibility under `/american-football/*`. Returns the full api-sports
       envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD
       for portal data loading.
 paths:
@@ -163,7 +163,7 @@ paths:
                     - id: a91d...77
                       externalId: '1'
                       name: NFL
-                      sport: nfl
+                      sport: american-football
                       availableSeasons: []
                       coverage: { teams: true, matches: false, standings: false, statistics: false }
                       updatedAt: '2026-06-23T00:00:00.000Z'
@@ -174,8 +174,8 @@ paths:
                       leagueCount: 1230
                       coverage: { teams: true, matches: true, standings: true, statistics: false }
                     - id: 9590fe3b
-                      slug: nfl
-                      name: NFL
+                      slug: american-football
+                      name: American Football
                       leagueCount: 0
                       coverage: { teams: false, matches: false, standings: false, statistics: false }
                 meta:
@@ -210,7 +210,7 @@ paths:
         - $ref: '#/components/parameters/pageSize'
         - name: sport
           in: query
-          description: Filter leagues by sport slug (e.g. `soccer`, `nfl`).
+          description: Filter leagues by sport slug (e.g. `soccer`, `american-football`).
           required: false
           schema:
             type: string
@@ -721,141 +721,141 @@ paths:
           $ref: '#/components/responses/BffInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/timezone:
+  /american-football/timezone:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List timezones
       description: IANA timezone strings for the `games` endpoint. Seeds common defaults when the catalog is empty.
-      operationId: nflListTimezones
+      operationId: americanFootballListTimezones
       responses:
         '200':
           description: Full api-sports envelope with timezone strings in `response`.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsTimezoneList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsTimezoneList'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Add timezone
-      operationId: nflCreateTimezone
+      operationId: americanFootballCreateTimezone
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflTimezoneCreateBody'
+              $ref: '#/components/schemas/AmericanFootballTimezoneCreateBody'
       responses:
         '201':
           description: Timezone created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsTimezoneList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsTimezoneList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Rename timezone
-      operationId: nflUpdateTimezone
+      operationId: americanFootballUpdateTimezone
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflTimezoneUpdateBody'
+              $ref: '#/components/schemas/AmericanFootballTimezoneUpdateBody'
       responses:
         '200':
           description: Timezone updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsTimezoneList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsTimezoneList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete timezone
-      operationId: nflDeleteTimezone
+      operationId: americanFootballDeleteTimezone
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflTimezoneDeleteBody'
+              $ref: '#/components/schemas/AmericanFootballTimezoneDeleteBody'
       responses:
         '204':
           description: Timezone deleted.
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/seasons:
+  /american-football/seasons:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List NFL season years
       description: Distinct season years across NFL leagues in the platform.
-      operationId: nflListSeasons
+      operationId: americanFootballListSeasons
       responses:
         '200':
           description: Full api-sports envelope with integer years in `response`.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsIntegerList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsIntegerList'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Register season year
       description: Creates a season document on the first NFL league when leagues already exist.
-      operationId: nflCreateSeasonYear
+      operationId: americanFootballCreateSeasonYear
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflSeasonYearBody'
+              $ref: '#/components/schemas/AmericanFootballSeasonYearBody'
       responses:
         '201':
           description: Season year registered.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsIntegerList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsIntegerList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete season year
       description: Removes all season documents matching the year across NFL leagues.
-      operationId: nflDeleteSeasonYear
+      operationId: americanFootballDeleteSeasonYear
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflSeasonYearBody'
+              $ref: '#/components/schemas/AmericanFootballSeasonYearBody'
       responses:
         '204':
           description: Season year deleted.
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/countries:
+  /american-football/countries:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List countries
       description: Football v3 country shape (`{ name, code, flag }`). Filter by `name` substring.
-      operationId: nflListCountries
+      operationId: americanFootballListCountries
       parameters:
         - name: name
           in: query
@@ -866,34 +866,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsCountryList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsCountryList'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Create country
-      operationId: nflCreateCountry
+      operationId: americanFootballCreateCountry
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflCountryItem'
+              $ref: '#/components/schemas/AmericanFootballCountryItem'
       responses:
         '201':
           description: Country created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsCountryList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsCountryList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Update country
-      operationId: nflUpdateCountry
+      operationId: americanFootballUpdateCountry
       parameters:
         - name: name
           in: query
@@ -905,24 +905,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflCountryItem'
+              $ref: '#/components/schemas/AmericanFootballCountryItem'
       responses:
         '200':
           description: Country updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsCountryList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsCountryList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete country
-      operationId: nflDeleteCountry
+      operationId: americanFootballDeleteCountry
       parameters:
         - name: name
           in: query
@@ -932,17 +932,17 @@ paths:
         '204':
           description: Country deleted.
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/leagues:
+  /american-football/leagues:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List NFL leagues
       description: League entries with nested `seasons[]` and NFL-specific `coverage` objects.
-      operationId: nflListLeagues
+      operationId: americanFootballListLeagues
       parameters:
         - { name: id, in: query, description: Provider league id, schema: { type: string } }
         - { name: name, in: query, schema: { type: string } }
@@ -957,35 +957,35 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsLeagueList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsLeagueList'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Create NFL league
       description: Creates the league and nested seasons from the api-sports league object.
-      operationId: nflCreateLeague
+      operationId: americanFootballCreateLeague
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflLeagueItem'
+              $ref: '#/components/schemas/AmericanFootballLeagueItem'
       responses:
         '201':
           description: League created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsLeagueList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsLeagueList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Update NFL league
-      operationId: nflUpdateLeague
+      operationId: americanFootballUpdateLeague
       parameters:
         - name: id
           in: query
@@ -997,24 +997,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflLeagueItem'
+              $ref: '#/components/schemas/AmericanFootballLeagueItem'
       responses:
         '200':
           description: League updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsLeagueList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsLeagueList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete NFL league
-      operationId: nflDeleteLeague
+      operationId: americanFootballDeleteLeague
       parameters:
         - name: id
           in: query
@@ -1024,21 +1024,21 @@ paths:
         '204':
           description: League deleted.
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/games:
+  /american-football/games:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List or lookup NFL games
       description: |
         Three query modes:
         - `league` + `season` (+ optional `timezone`) — games in a season
         - `id` — single game by provider id
         - `league` + `season` + `team` — games for a team
-      operationId: nflListGames
+      operationId: americanFootballListGames
       parameters:
         - { name: id, in: query, description: Provider game id, schema: { type: string } }
         - { name: league, in: query, description: Provider league id, schema: { type: string } }
@@ -1051,40 +1051,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsGameList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsGameList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Create NFL game
       description: Body must be a complete api-sports game object (same shape as `response[]` items).
-      operationId: nflCreateGame
+      operationId: americanFootballCreateGame
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflGameItem'
+              $ref: '#/components/schemas/AmericanFootballGameItem'
       responses:
         '201':
           description: Game created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsGameList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsGameList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/games/{gameId}:
+  /american-football/games/{gameId}:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Get NFL game by id
-      operationId: nflGetGame
+      operationId: americanFootballGetGame
       parameters:
         - name: gameId
           in: path
@@ -1097,18 +1097,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsGameList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsGameList'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Update NFL game
       description: |
         Default: merge partial fields into stored api-sports payload.
-        Pass `replace=true` to require a full `NflGameItem` body.
-      operationId: nflPatchGame
+        Pass `replace=true` to require a full `AmericanFootballGameItem` body.
+      operationId: americanFootballPatchGame
       parameters:
         - name: gameId
           in: path
@@ -1123,24 +1123,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflGameItem'
+              $ref: '#/components/schemas/AmericanFootballGameItem'
       responses:
         '200':
           description: Game updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsGameList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsGameList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete NFL game
-      operationId: nflDeleteGame
+      operationId: americanFootballDeleteGame
       parameters:
         - name: gameId
           in: path
@@ -1150,15 +1150,15 @@ paths:
         '204':
           description: Game deleted.
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/teams:
+  /american-football/teams:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List NFL teams
       description: Teams for a league and season. Both query params are required.
-      operationId: nflListTeams
+      operationId: americanFootballListTeams
       parameters:
         - { name: league, in: query, required: true, description: Provider league id, schema: { type: string } }
         - { name: season, in: query, required: true, schema: { type: integer } }
@@ -1168,15 +1168,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsTeamList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsTeamList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Create NFL team
-      operationId: nflCreateTeam
+      operationId: americanFootballCreateTeam
       parameters:
         - name: league
           in: query
@@ -1187,22 +1187,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflTeamItem'
+              $ref: '#/components/schemas/AmericanFootballTeamItem'
       responses:
         '201':
           description: Team created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsTeamList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsTeamList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Update NFL team
-      operationId: nflUpdateTeam
+      operationId: americanFootballUpdateTeam
       parameters:
         - name: id
           in: query
@@ -1214,24 +1214,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflTeamItem'
+              $ref: '#/components/schemas/AmericanFootballTeamItem'
       responses:
         '200':
           description: Team updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsTeamList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsTeamList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete NFL team
-      operationId: nflDeleteTeam
+      operationId: americanFootballDeleteTeam
       parameters:
         - name: id
           in: query
@@ -1241,17 +1241,17 @@ paths:
         '204':
           description: Team deleted.
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
-  /nfl/standings:
+  /american-football/standings:
     get:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: List NFL standings
       description: Standing rows for a league and season. Optional `conference` filter.
-      operationId: nflListStandings
+      operationId: americanFootballListStandings
       parameters:
         - { name: league, in: query, required: true, schema: { type: string } }
         - { name: season, in: query, required: true, schema: { type: integer } }
@@ -1262,39 +1262,39 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsStandingList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsStandingList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Create standing row
       description: Body is one api-sports standing row. Team (`team.id`) must already exist in the league.
-      operationId: nflCreateStanding
+      operationId: americanFootballCreateStanding
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflStandingItem'
+              $ref: '#/components/schemas/AmericanFootballStandingItem'
       responses:
         '201':
           description: Standing row created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsStandingList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsStandingList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Update standing row
-      operationId: nflUpdateStanding
+      operationId: americanFootballUpdateStanding
       parameters:
         - name: id
           in: query
@@ -1306,24 +1306,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NflStandingItem'
+              $ref: '#/components/schemas/AmericanFootballStandingItem'
       responses:
         '200':
           description: Standing row updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NflApiSportsStandingList'
+                $ref: '#/components/schemas/AmericanFootballApiSportsStandingList'
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF NFL]
+      tags: [BFF American Football]
       summary: Delete standing row
-      operationId: nflDeleteStanding
+      operationId: americanFootballDeleteStanding
       parameters:
         - name: id
           in: query
@@ -1333,9 +1333,9 @@ paths:
         '204':
           description: Standing row deleted.
         '400':
-          $ref: '#/components/responses/NflInvalidParameter'
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
-          $ref: '#/components/responses/NflNotFound'
+          $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
   /v1/openapi.json:
@@ -1496,12 +1496,12 @@ components:
             results: 0
             errors:
               parameters: The "league" parameter is required.
-    NflInvalidParameter:
+    AmericanFootballInvalidParameter:
       description: Invalid query or request body (full api-sports NFL envelope).
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/NflApiSportsErrorEnvelope'
+            $ref: '#/components/schemas/AmericanFootballApiSportsErrorEnvelope'
           example:
             get: teams
             parameters: { league: '1' }
@@ -1510,12 +1510,12 @@ components:
             results: 0
             paging: { current: 1, total: 1 }
             response: []
-    NflNotFound:
+    AmericanFootballNotFound:
       description: Resource not found (full api-sports NFL envelope).
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/NflApiSportsErrorEnvelope'
+            $ref: '#/components/schemas/AmericanFootballApiSportsErrorEnvelope'
           example:
             get: games
             parameters: {}
@@ -1652,7 +1652,7 @@ components:
                         items:
                           type: array
                           items: { type: object, additionalProperties: true }
-    NflApiSportsEnvelope:
+    AmericanFootballApiSportsEnvelope:
       type: object
       required: [get, parameters, errors, results, response]
       properties:
@@ -1683,9 +1683,9 @@ components:
         response:
           type: array
           items: {}
-    NflApiSportsErrorEnvelope:
+    AmericanFootballApiSportsErrorEnvelope:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
       example:
         get: teams
         parameters: { league: '1' }
@@ -1694,53 +1694,53 @@ components:
         results: 0
         paging: { current: 1, total: 1 }
         response: []
-    NflCountryRef:
+    AmericanFootballCountryRef:
       type: object
       required: [name]
       properties:
         name: { type: string, example: USA }
         code: { type: [string, 'null'], example: US }
         flag: { type: [string, 'null'] }
-    NflCountryItem:
+    AmericanFootballCountryItem:
       type: object
       required: [name]
       properties:
         name: { type: string, example: USA }
         code: { type: [string, 'null'], example: US }
         flag: { type: [string, 'null'], example: 'https://media.api-sports.io/flags/us.svg' }
-    NflTeamRef:
+    AmericanFootballTeamRef:
       type: object
       required: [id, name]
       properties:
         id: { type: [integer, string], example: 25 }
         name: { type: string, example: Miami Dolphins }
         logo: { type: [string, 'null'] }
-    NflTeamItem:
+    AmericanFootballTeamItem:
       type: object
       required: [id, name]
       properties:
         id: { type: [integer, string], example: 25 }
         name: { type: string, example: Miami Dolphins }
         logo: { type: [string, 'null'], example: 'https://media.api-sports.io/american-football/teams/25.png' }
-    NflGameDate:
+    AmericanFootballGameDate:
       type: object
       properties:
         timezone: { type: [string, 'null'], example: UTC }
         date: { type: [string, 'null'], format: date, example: '2022-09-30' }
         time: { type: [string, 'null'], example: '00:00' }
         timestamp: { type: [integer, 'null'], example: 1664496000 }
-    NflGameVenue:
+    AmericanFootballGameVenue:
       type: object
       properties:
         name: { type: [string, 'null'] }
         city: { type: [string, 'null'] }
-    NflGameStatus:
+    AmericanFootballGameStatus:
       type: object
       properties:
         short: { type: [string, 'null'], example: FT }
         long: { type: [string, 'null'], example: Finished }
         timer: { type: [string, 'null'] }
-    NflQuarterScores:
+    AmericanFootballQuarterScores:
       type: object
       properties:
         quarter_1: { type: [integer, 'null'] }
@@ -1749,17 +1749,17 @@ components:
         quarter_4: { type: [integer, 'null'] }
         overtime: { type: [integer, 'null'] }
         total: { type: [integer, 'null'] }
-    NflGameCore:
+    AmericanFootballGameCore:
       type: object
       required: [id]
       properties:
         id: { type: [integer, string], example: 4550 }
         stage: { type: [string, 'null'], example: Regular Season }
         week: { type: [string, 'null'], example: '5' }
-        date: { $ref: '#/components/schemas/NflGameDate' }
-        venue: { $ref: '#/components/schemas/NflGameVenue' }
-        status: { $ref: '#/components/schemas/NflGameStatus' }
-    NflGameLeagueRef:
+        date: { $ref: '#/components/schemas/AmericanFootballGameDate' }
+        venue: { $ref: '#/components/schemas/AmericanFootballGameVenue' }
+        status: { $ref: '#/components/schemas/AmericanFootballGameStatus' }
+    AmericanFootballGameLeagueRef:
       type: object
       required: [id, name]
       properties:
@@ -1767,28 +1767,28 @@ components:
         name: { type: string, example: NFL }
         season: { oneOf: [{ type: integer }, { type: string }], example: '2022' }
         logo: { type: [string, 'null'] }
-        country: { $ref: '#/components/schemas/NflCountryRef' }
-    NflGameTeams:
+        country: { $ref: '#/components/schemas/AmericanFootballCountryRef' }
+    AmericanFootballGameTeams:
       type: object
       required: [home, away]
       properties:
-        home: { $ref: '#/components/schemas/NflTeamRef' }
-        away: { $ref: '#/components/schemas/NflTeamRef' }
-    NflGameScores:
+        home: { $ref: '#/components/schemas/AmericanFootballTeamRef' }
+        away: { $ref: '#/components/schemas/AmericanFootballTeamRef' }
+    AmericanFootballGameScores:
       type: object
       properties:
-        home: { $ref: '#/components/schemas/NflQuarterScores' }
-        away: { $ref: '#/components/schemas/NflQuarterScores' }
-    NflGameItem:
+        home: { $ref: '#/components/schemas/AmericanFootballQuarterScores' }
+        away: { $ref: '#/components/schemas/AmericanFootballQuarterScores' }
+    AmericanFootballGameItem:
       type: object
       required: [game, league, teams]
       description: api-sports NFL game object — same shape for GET responses and POST/PATCH bodies.
       properties:
-        game: { $ref: '#/components/schemas/NflGameCore' }
-        league: { $ref: '#/components/schemas/NflGameLeagueRef' }
-        teams: { $ref: '#/components/schemas/NflGameTeams' }
-        scores: { $ref: '#/components/schemas/NflGameScores' }
-    NflLeagueCore:
+        game: { $ref: '#/components/schemas/AmericanFootballGameCore' }
+        league: { $ref: '#/components/schemas/AmericanFootballGameLeagueRef' }
+        teams: { $ref: '#/components/schemas/AmericanFootballGameTeams' }
+        scores: { $ref: '#/components/schemas/AmericanFootballGameScores' }
+    AmericanFootballLeagueCore:
       type: object
       required: [id, name]
       properties:
@@ -1796,7 +1796,7 @@ components:
         name: { type: string, example: NFL }
         type: { type: [string, 'null'], example: league }
         logo: { type: [string, 'null'] }
-    NflSeasonCoverage:
+    AmericanFootballSeasonCoverage:
       type: object
       description: NFL-specific coverage flags (api-sports American Football v1).
       properties:
@@ -1820,7 +1820,7 @@ components:
         players: { type: boolean }
         injuries: { type: boolean }
         standings: { type: boolean }
-    NflSeasonItem:
+    AmericanFootballSeasonItem:
       type: object
       required: [year, current]
       properties:
@@ -1828,17 +1828,17 @@ components:
         start: { type: [string, 'null'], format: date }
         end: { type: [string, 'null'], format: date }
         current: { type: boolean }
-        coverage: { $ref: '#/components/schemas/NflSeasonCoverage' }
-    NflLeagueItem:
+        coverage: { $ref: '#/components/schemas/AmericanFootballSeasonCoverage' }
+    AmericanFootballLeagueItem:
       type: object
       required: [league, country, seasons]
       properties:
-        league: { $ref: '#/components/schemas/NflLeagueCore' }
-        country: { $ref: '#/components/schemas/NflCountryRef' }
+        league: { $ref: '#/components/schemas/AmericanFootballLeagueCore' }
+        country: { $ref: '#/components/schemas/AmericanFootballCountryRef' }
         seasons:
           type: array
-          items: { $ref: '#/components/schemas/NflSeasonItem' }
-    NflStandingLeagueRef:
+          items: { $ref: '#/components/schemas/AmericanFootballSeasonItem' }
+    AmericanFootballStandingLeagueRef:
       type: object
       required: [id, name]
       properties:
@@ -1846,21 +1846,21 @@ components:
         name: { type: string, example: NFL }
         season: { oneOf: [{ type: integer }, { type: string }], example: 2022 }
         logo: { type: [string, 'null'] }
-        country: { $ref: '#/components/schemas/NflCountryRef' }
-    NflPointsBlock:
+        country: { $ref: '#/components/schemas/AmericanFootballCountryRef' }
+    AmericanFootballPointsBlock:
       type: object
       properties:
         for: { type: [integer, 'null'] }
         against: { type: [integer, 'null'] }
         difference: { type: [integer, 'null'] }
-    NflRecords:
+    AmericanFootballRecords:
       type: object
       properties:
         home: { type: [string, 'null'], example: '2-0' }
         road: { type: [string, 'null'], example: '1-1' }
         conference: { type: [string, 'null'] }
         division: { type: [string, 'null'] }
-    NflNcaaConference:
+    AmericanFootballNcaaConference:
       type: object
       properties:
         won: { type: [integer, 'null'] }
@@ -1870,107 +1870,107 @@ components:
           properties:
             for: { type: [integer, 'null'] }
             against: { type: [integer, 'null'] }
-    NflStandingItem:
+    AmericanFootballStandingItem:
       type: object
       required: [league, team]
       description: One standing row — same shape for GET responses and POST/PATCH bodies.
       properties:
-        league: { $ref: '#/components/schemas/NflStandingLeagueRef' }
+        league: { $ref: '#/components/schemas/AmericanFootballStandingLeagueRef' }
         conference: { type: [string, 'null'], example: American Football Conference }
         division: { type: [string, 'null'], example: East }
         position: { type: [integer, 'null'], example: 1 }
-        team: { $ref: '#/components/schemas/NflTeamRef' }
+        team: { $ref: '#/components/schemas/AmericanFootballTeamRef' }
         won: { type: [integer, 'null'] }
         lost: { type: [integer, 'null'] }
         ties: { type: [integer, 'null'] }
-        points: { $ref: '#/components/schemas/NflPointsBlock' }
-        records: { $ref: '#/components/schemas/NflRecords' }
+        points: { $ref: '#/components/schemas/AmericanFootballPointsBlock' }
+        records: { $ref: '#/components/schemas/AmericanFootballRecords' }
         streak: { type: [string, 'null'], example: L1 }
-        ncaa_conference: { $ref: '#/components/schemas/NflNcaaConference' }
-    NflTimezoneCreateBody:
+        ncaa_conference: { $ref: '#/components/schemas/AmericanFootballNcaaConference' }
+    AmericanFootballTimezoneCreateBody:
       type: object
       required: [timezone]
       properties:
         timezone: { type: string, example: America/Chicago }
-    NflTimezoneUpdateBody:
+    AmericanFootballTimezoneUpdateBody:
       type: object
       required: [timezone, newTimezone]
       properties:
         timezone: { type: string }
         newTimezone: { type: string }
-    NflTimezoneDeleteBody:
+    AmericanFootballTimezoneDeleteBody:
       type: object
       required: [timezone]
       properties:
         timezone: { type: string }
-    NflSeasonYearBody:
+    AmericanFootballSeasonYearBody:
       type: object
       required: [year]
       properties:
         year: { type: integer, example: 2024 }
-    NflApiSportsTimezoneList:
+    AmericanFootballApiSportsTimezoneList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: timezone }
             response:
               type: array
               items: { type: string, example: America/New_York }
-    NflApiSportsIntegerList:
+    AmericanFootballApiSportsIntegerList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: seasons }
             response:
               type: array
               items: { type: integer, example: 2022 }
-    NflApiSportsCountryList:
+    AmericanFootballApiSportsCountryList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: countries }
             response:
               type: array
-              items: { $ref: '#/components/schemas/NflCountryItem' }
-    NflApiSportsLeagueList:
+              items: { $ref: '#/components/schemas/AmericanFootballCountryItem' }
+    AmericanFootballApiSportsLeagueList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: leagues }
             response:
               type: array
-              items: { $ref: '#/components/schemas/NflLeagueItem' }
-    NflApiSportsGameList:
+              items: { $ref: '#/components/schemas/AmericanFootballLeagueItem' }
+    AmericanFootballApiSportsGameList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: games }
             response:
               type: array
-              items: { $ref: '#/components/schemas/NflGameItem' }
-    NflApiSportsTeamList:
+              items: { $ref: '#/components/schemas/AmericanFootballGameItem' }
+    AmericanFootballApiSportsTeamList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: teams }
             response:
               type: array
-              items: { $ref: '#/components/schemas/NflTeamItem' }
-    NflApiSportsStandingList:
+              items: { $ref: '#/components/schemas/AmericanFootballTeamItem' }
+    AmericanFootballApiSportsStandingList:
       allOf:
-        - $ref: '#/components/schemas/NflApiSportsEnvelope'
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
         - type: object
           properties:
             get: { type: string, example: standings }
             response:
               type: array
-              items: { $ref: '#/components/schemas/NflStandingItem' }
+              items: { $ref: '#/components/schemas/AmericanFootballStandingItem' }
     Pagination:
       type: object
       required: [page, pageSize, total]

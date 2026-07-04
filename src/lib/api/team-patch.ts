@@ -80,7 +80,7 @@ export function buildTeamFirestorePatch(
     return out;
   }
 
-  if (sport === 'nfl') {
+  if (sport === 'american-football') {
     if (patch.name !== undefined) out.name = patch.name;
     if (patch.code !== undefined) out.code = patch.code;
     if (patch.city !== undefined) out.city = patch.city;

@@ -17,7 +17,7 @@ describe('buildTeamFirestorePatch', () => {
 
   it('maps nfl altLogo to alt_logo', () => {
     expect(
-      buildTeamFirestorePatch('nfl', {
+      buildTeamFirestorePatch('american-football', {
         logo: 'https://cdn.example/logo.png',
         altLogo: 'https://cdn.example/alt.png',
       }),

@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF NFL** (`/nfl/*`) — API-Sports American Football v1 compatibility with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal. Request bodies\nmust match the objects returned in `response[]` (same shapes as api-sports NFL).\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — API-Sports American Football v1 compatibility with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal. Request bodies\nmust match the objects returned in `response[]` (same shapes as api-sports NFL).\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -44,8 +44,8 @@ export const openapiDocument = {
       "description": "API-Sports compatible layer for soccer (Flutter). Returns `{ response, results, errors }`.\nLeague/team/fixture ids in query params use provider `externalId` values (e.g. `262` for Liga MX).\n"
     },
     {
-      "name": "BFF NFL",
-      "description": "API-Sports American Football v1 compatibility under `/nfl/*`. Returns the full api-sports\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD\nfor portal data loading.\n"
+      "name": "BFF American Football",
+      "description": "API-Sports American Football v1 compatibility under `/american-football/*`. Returns the full api-sports\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD\nfor portal data loading.\n"
     }
   ],
   "paths": {
@@ -196,7 +196,7 @@ export const openapiDocument = {
                         "id": "a91d...77",
                         "externalId": "1",
                         "name": "NFL",
-                        "sport": "nfl",
+                        "sport": "american-football",
                         "availableSeasons": [],
                         "coverage": {
                           "teams": true,
@@ -222,8 +222,8 @@ export const openapiDocument = {
                       },
                       {
                         "id": "9590fe3b",
-                        "slug": "nfl",
-                        "name": "NFL",
+                        "slug": "american-football",
+                        "name": "American Football",
                         "leagueCount": 0,
                         "coverage": {
                           "teams": false,
@@ -298,7 +298,7 @@ export const openapiDocument = {
           {
             "name": "sport",
             "in": "query",
-            "description": "Filter leagues by sport slug (e.g. `soccer`, `nfl`).",
+            "description": "Filter leagues by sport slug (e.g. `soccer`, `american-football`).",
             "required": false,
             "schema": {
               "type": "string"
@@ -1214,21 +1214,21 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/timezone": {
+    "/american-football/timezone": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List timezones",
         "description": "IANA timezone strings for the `games` endpoint. Seeds common defaults when the catalog is empty.",
-        "operationId": "nflListTimezones",
+        "operationId": "americanFootballListTimezones",
         "responses": {
           "200": {
             "description": "Full api-sports envelope with timezone strings in `response`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsTimezoneList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsTimezoneList"
                 }
               }
             }
@@ -1240,16 +1240,16 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Add timezone",
-        "operationId": "nflCreateTimezone",
+        "operationId": "americanFootballCreateTimezone",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflTimezoneCreateBody"
+                "$ref": "#/components/schemas/AmericanFootballTimezoneCreateBody"
               }
             }
           }
@@ -1260,13 +1260,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsTimezoneList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsTimezoneList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1275,16 +1275,16 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Rename timezone",
-        "operationId": "nflUpdateTimezone",
+        "operationId": "americanFootballUpdateTimezone",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflTimezoneUpdateBody"
+                "$ref": "#/components/schemas/AmericanFootballTimezoneUpdateBody"
               }
             }
           }
@@ -1295,13 +1295,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsTimezoneList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsTimezoneList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1310,16 +1310,16 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete timezone",
-        "operationId": "nflDeleteTimezone",
+        "operationId": "americanFootballDeleteTimezone",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflTimezoneDeleteBody"
+                "$ref": "#/components/schemas/AmericanFootballTimezoneDeleteBody"
               }
             }
           }
@@ -1329,7 +1329,7 @@ export const openapiDocument = {
             "description": "Timezone deleted."
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1337,21 +1337,21 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/seasons": {
+    "/american-football/seasons": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List NFL season years",
         "description": "Distinct season years across NFL leagues in the platform.",
-        "operationId": "nflListSeasons",
+        "operationId": "americanFootballListSeasons",
         "responses": {
           "200": {
             "description": "Full api-sports envelope with integer years in `response`.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsIntegerList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsIntegerList"
                 }
               }
             }
@@ -1363,17 +1363,17 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Register season year",
         "description": "Creates a season document on the first NFL league when leagues already exist.",
-        "operationId": "nflCreateSeasonYear",
+        "operationId": "americanFootballCreateSeasonYear",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflSeasonYearBody"
+                "$ref": "#/components/schemas/AmericanFootballSeasonYearBody"
               }
             }
           }
@@ -1384,13 +1384,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsIntegerList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsIntegerList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1399,17 +1399,17 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete season year",
         "description": "Removes all season documents matching the year across NFL leagues.",
-        "operationId": "nflDeleteSeasonYear",
+        "operationId": "americanFootballDeleteSeasonYear",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflSeasonYearBody"
+                "$ref": "#/components/schemas/AmericanFootballSeasonYearBody"
               }
             }
           }
@@ -1419,7 +1419,7 @@ export const openapiDocument = {
             "description": "Season year deleted."
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1427,14 +1427,14 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/countries": {
+    "/american-football/countries": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List countries",
         "description": "Football v3 country shape (`{ name, code, flag }`). Filter by `name` substring.",
-        "operationId": "nflListCountries",
+        "operationId": "americanFootballListCountries",
         "parameters": [
           {
             "name": "name",
@@ -1450,7 +1450,7 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsCountryList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsCountryList"
                 }
               }
             }
@@ -1462,16 +1462,16 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Create country",
-        "operationId": "nflCreateCountry",
+        "operationId": "americanFootballCreateCountry",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflCountryItem"
+                "$ref": "#/components/schemas/AmericanFootballCountryItem"
               }
             }
           }
@@ -1482,13 +1482,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsCountryList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsCountryList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1497,10 +1497,10 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Update country",
-        "operationId": "nflUpdateCountry",
+        "operationId": "americanFootballUpdateCountry",
         "parameters": [
           {
             "name": "name",
@@ -1517,7 +1517,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflCountryItem"
+                "$ref": "#/components/schemas/AmericanFootballCountryItem"
               }
             }
           }
@@ -1528,16 +1528,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsCountryList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsCountryList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1546,10 +1546,10 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete country",
-        "operationId": "nflDeleteCountry",
+        "operationId": "americanFootballDeleteCountry",
         "parameters": [
           {
             "name": "name",
@@ -1565,10 +1565,10 @@ export const openapiDocument = {
             "description": "Country deleted."
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1576,14 +1576,14 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/leagues": {
+    "/american-football/leagues": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List NFL leagues",
         "description": "League entries with nested `seasons[]` and NFL-specific `coverage` objects.",
-        "operationId": "nflListLeagues",
+        "operationId": "americanFootballListLeagues",
         "parameters": [
           {
             "name": "id",
@@ -1644,7 +1644,7 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsLeagueList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsLeagueList"
                 }
               }
             }
@@ -1656,17 +1656,17 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Create NFL league",
         "description": "Creates the league and nested seasons from the api-sports league object.",
-        "operationId": "nflCreateLeague",
+        "operationId": "americanFootballCreateLeague",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflLeagueItem"
+                "$ref": "#/components/schemas/AmericanFootballLeagueItem"
               }
             }
           }
@@ -1677,13 +1677,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsLeagueList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsLeagueList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1692,10 +1692,10 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Update NFL league",
-        "operationId": "nflUpdateLeague",
+        "operationId": "americanFootballUpdateLeague",
         "parameters": [
           {
             "name": "id",
@@ -1712,7 +1712,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflLeagueItem"
+                "$ref": "#/components/schemas/AmericanFootballLeagueItem"
               }
             }
           }
@@ -1723,16 +1723,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsLeagueList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsLeagueList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1741,10 +1741,10 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete NFL league",
-        "operationId": "nflDeleteLeague",
+        "operationId": "americanFootballDeleteLeague",
         "parameters": [
           {
             "name": "id",
@@ -1760,10 +1760,10 @@ export const openapiDocument = {
             "description": "League deleted."
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1771,14 +1771,14 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/games": {
+    "/american-football/games": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List or lookup NFL games",
         "description": "Three query modes:\n- `league` + `season` (+ optional `timezone`) — games in a season\n- `id` — single game by provider id\n- `league` + `season` + `team` — games for a team\n",
-        "operationId": "nflListGames",
+        "operationId": "americanFootballListGames",
         "parameters": [
           {
             "name": "id",
@@ -1826,13 +1826,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsGameList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1841,17 +1841,17 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Create NFL game",
         "description": "Body must be a complete api-sports game object (same shape as `response[]` items).",
-        "operationId": "nflCreateGame",
+        "operationId": "americanFootballCreateGame",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflGameItem"
+                "$ref": "#/components/schemas/AmericanFootballGameItem"
               }
             }
           }
@@ -1862,16 +1862,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsGameList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1879,13 +1879,13 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/games/{gameId}": {
+    "/american-football/games/{gameId}": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Get NFL game by id",
-        "operationId": "nflGetGame",
+        "operationId": "americanFootballGetGame",
         "parameters": [
           {
             "name": "gameId",
@@ -1903,13 +1903,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsGameList"
                 }
               }
             }
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1918,11 +1918,11 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Update NFL game",
-        "description": "Default: merge partial fields into stored api-sports payload.\nPass `replace=true` to require a full `NflGameItem` body.\n",
-        "operationId": "nflPatchGame",
+        "description": "Default: merge partial fields into stored api-sports payload.\nPass `replace=true` to require a full `AmericanFootballGameItem` body.\n",
+        "operationId": "americanFootballPatchGame",
         "parameters": [
           {
             "name": "gameId",
@@ -1946,7 +1946,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflGameItem"
+                "$ref": "#/components/schemas/AmericanFootballGameItem"
               }
             }
           }
@@ -1957,16 +1957,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsGameList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -1975,10 +1975,10 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete NFL game",
-        "operationId": "nflDeleteGame",
+        "operationId": "americanFootballDeleteGame",
         "parameters": [
           {
             "name": "gameId",
@@ -1994,7 +1994,7 @@ export const openapiDocument = {
             "description": "Game deleted."
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2002,14 +2002,14 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/teams": {
+    "/american-football/teams": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List NFL teams",
         "description": "Teams for a league and season. Both query params are required.",
-        "operationId": "nflListTeams",
+        "operationId": "americanFootballListTeams",
         "parameters": [
           {
             "name": "league",
@@ -2035,13 +2035,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsTeamList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsTeamList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2050,10 +2050,10 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Create NFL team",
-        "operationId": "nflCreateTeam",
+        "operationId": "americanFootballCreateTeam",
         "parameters": [
           {
             "name": "league",
@@ -2069,7 +2069,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflTeamItem"
+                "$ref": "#/components/schemas/AmericanFootballTeamItem"
               }
             }
           }
@@ -2080,13 +2080,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsTeamList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsTeamList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2095,10 +2095,10 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Update NFL team",
-        "operationId": "nflUpdateTeam",
+        "operationId": "americanFootballUpdateTeam",
         "parameters": [
           {
             "name": "id",
@@ -2115,7 +2115,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflTeamItem"
+                "$ref": "#/components/schemas/AmericanFootballTeamItem"
               }
             }
           }
@@ -2126,16 +2126,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsTeamList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsTeamList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2144,10 +2144,10 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete NFL team",
-        "operationId": "nflDeleteTeam",
+        "operationId": "americanFootballDeleteTeam",
         "parameters": [
           {
             "name": "id",
@@ -2163,10 +2163,10 @@ export const openapiDocument = {
             "description": "Team deleted."
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2174,14 +2174,14 @@ export const openapiDocument = {
         }
       }
     },
-    "/nfl/standings": {
+    "/american-football/standings": {
       "get": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "List NFL standings",
         "description": "Standing rows for a league and season. Optional `conference` filter.",
-        "operationId": "nflListStandings",
+        "operationId": "americanFootballListStandings",
         "parameters": [
           {
             "name": "league",
@@ -2213,13 +2213,13 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsStandingList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsStandingList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2228,17 +2228,17 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Create standing row",
         "description": "Body is one api-sports standing row. Team (`team.id`) must already exist in the league.",
-        "operationId": "nflCreateStanding",
+        "operationId": "americanFootballCreateStanding",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflStandingItem"
+                "$ref": "#/components/schemas/AmericanFootballStandingItem"
               }
             }
           }
@@ -2249,16 +2249,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsStandingList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsStandingList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2267,10 +2267,10 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Update standing row",
-        "operationId": "nflUpdateStanding",
+        "operationId": "americanFootballUpdateStanding",
         "parameters": [
           {
             "name": "id",
@@ -2287,7 +2287,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NflStandingItem"
+                "$ref": "#/components/schemas/AmericanFootballStandingItem"
               }
             }
           }
@@ -2298,16 +2298,16 @@ export const openapiDocument = {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NflApiSportsStandingList"
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsStandingList"
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2316,10 +2316,10 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF NFL"
+          "BFF American Football"
         ],
         "summary": "Delete standing row",
-        "operationId": "nflDeleteStanding",
+        "operationId": "americanFootballDeleteStanding",
         "parameters": [
           {
             "name": "id",
@@ -2335,10 +2335,10 @@ export const openapiDocument = {
             "description": "Standing row deleted."
           },
           "400": {
-            "$ref": "#/components/responses/NflInvalidParameter"
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
-            "$ref": "#/components/responses/NflNotFound"
+            "$ref": "#/components/responses/AmericanFootballNotFound"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -2567,12 +2567,12 @@ export const openapiDocument = {
           }
         }
       },
-      "NflInvalidParameter": {
+      "AmericanFootballInvalidParameter": {
         "description": "Invalid query or request body (full api-sports NFL envelope).",
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/NflApiSportsErrorEnvelope"
+              "$ref": "#/components/schemas/AmericanFootballApiSportsErrorEnvelope"
             },
             "example": {
               "get": "teams",
@@ -2592,12 +2592,12 @@ export const openapiDocument = {
           }
         }
       },
-      "NflNotFound": {
+      "AmericanFootballNotFound": {
         "description": "Resource not found (full api-sports NFL envelope).",
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/NflApiSportsErrorEnvelope"
+              "$ref": "#/components/schemas/AmericanFootballApiSportsErrorEnvelope"
             },
             "example": {
               "get": "games",
@@ -2958,7 +2958,7 @@ export const openapiDocument = {
           }
         ]
       },
-      "NflApiSportsEnvelope": {
+      "AmericanFootballApiSportsEnvelope": {
         "type": "object",
         "required": [
           "get",
@@ -3022,10 +3022,10 @@ export const openapiDocument = {
           }
         }
       },
-      "NflApiSportsErrorEnvelope": {
+      "AmericanFootballApiSportsErrorEnvelope": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           }
         ],
         "example": {
@@ -3044,7 +3044,7 @@ export const openapiDocument = {
           "response": []
         }
       },
-      "NflCountryRef": {
+      "AmericanFootballCountryRef": {
         "type": "object",
         "required": [
           "name"
@@ -3069,7 +3069,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflCountryItem": {
+      "AmericanFootballCountryItem": {
         "type": "object",
         "required": [
           "name"
@@ -3095,7 +3095,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflTeamRef": {
+      "AmericanFootballTeamRef": {
         "type": "object",
         "required": [
           "id",
@@ -3121,7 +3121,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflTeamItem": {
+      "AmericanFootballTeamItem": {
         "type": "object",
         "required": [
           "id",
@@ -3148,7 +3148,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflGameDate": {
+      "AmericanFootballGameDate": {
         "type": "object",
         "properties": {
           "timezone": {
@@ -3182,7 +3182,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflGameVenue": {
+      "AmericanFootballGameVenue": {
         "type": "object",
         "properties": {
           "name": {
@@ -3199,7 +3199,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflGameStatus": {
+      "AmericanFootballGameStatus": {
         "type": "object",
         "properties": {
           "short": {
@@ -3224,7 +3224,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflQuarterScores": {
+      "AmericanFootballQuarterScores": {
         "type": "object",
         "properties": {
           "quarter_1": {
@@ -3265,7 +3265,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflGameCore": {
+      "AmericanFootballGameCore": {
         "type": "object",
         "required": [
           "id"
@@ -3293,17 +3293,17 @@ export const openapiDocument = {
             "example": "5"
           },
           "date": {
-            "$ref": "#/components/schemas/NflGameDate"
+            "$ref": "#/components/schemas/AmericanFootballGameDate"
           },
           "venue": {
-            "$ref": "#/components/schemas/NflGameVenue"
+            "$ref": "#/components/schemas/AmericanFootballGameVenue"
           },
           "status": {
-            "$ref": "#/components/schemas/NflGameStatus"
+            "$ref": "#/components/schemas/AmericanFootballGameStatus"
           }
         }
       },
-      "NflGameLeagueRef": {
+      "AmericanFootballGameLeagueRef": {
         "type": "object",
         "required": [
           "id",
@@ -3339,11 +3339,11 @@ export const openapiDocument = {
             ]
           },
           "country": {
-            "$ref": "#/components/schemas/NflCountryRef"
+            "$ref": "#/components/schemas/AmericanFootballCountryRef"
           }
         }
       },
-      "NflGameTeams": {
+      "AmericanFootballGameTeams": {
         "type": "object",
         "required": [
           "home",
@@ -3351,25 +3351,25 @@ export const openapiDocument = {
         ],
         "properties": {
           "home": {
-            "$ref": "#/components/schemas/NflTeamRef"
+            "$ref": "#/components/schemas/AmericanFootballTeamRef"
           },
           "away": {
-            "$ref": "#/components/schemas/NflTeamRef"
+            "$ref": "#/components/schemas/AmericanFootballTeamRef"
           }
         }
       },
-      "NflGameScores": {
+      "AmericanFootballGameScores": {
         "type": "object",
         "properties": {
           "home": {
-            "$ref": "#/components/schemas/NflQuarterScores"
+            "$ref": "#/components/schemas/AmericanFootballQuarterScores"
           },
           "away": {
-            "$ref": "#/components/schemas/NflQuarterScores"
+            "$ref": "#/components/schemas/AmericanFootballQuarterScores"
           }
         }
       },
-      "NflGameItem": {
+      "AmericanFootballGameItem": {
         "type": "object",
         "required": [
           "game",
@@ -3379,20 +3379,20 @@ export const openapiDocument = {
         "description": "api-sports NFL game object — same shape for GET responses and POST/PATCH bodies.",
         "properties": {
           "game": {
-            "$ref": "#/components/schemas/NflGameCore"
+            "$ref": "#/components/schemas/AmericanFootballGameCore"
           },
           "league": {
-            "$ref": "#/components/schemas/NflGameLeagueRef"
+            "$ref": "#/components/schemas/AmericanFootballGameLeagueRef"
           },
           "teams": {
-            "$ref": "#/components/schemas/NflGameTeams"
+            "$ref": "#/components/schemas/AmericanFootballGameTeams"
           },
           "scores": {
-            "$ref": "#/components/schemas/NflGameScores"
+            "$ref": "#/components/schemas/AmericanFootballGameScores"
           }
         }
       },
-      "NflLeagueCore": {
+      "AmericanFootballLeagueCore": {
         "type": "object",
         "required": [
           "id",
@@ -3425,7 +3425,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflSeasonCoverage": {
+      "AmericanFootballSeasonCoverage": {
         "type": "object",
         "description": "NFL-specific coverage flags (api-sports American Football v1).",
         "properties": {
@@ -3473,7 +3473,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflSeasonItem": {
+      "AmericanFootballSeasonItem": {
         "type": "object",
         "required": [
           "year",
@@ -3502,11 +3502,11 @@ export const openapiDocument = {
             "type": "boolean"
           },
           "coverage": {
-            "$ref": "#/components/schemas/NflSeasonCoverage"
+            "$ref": "#/components/schemas/AmericanFootballSeasonCoverage"
           }
         }
       },
-      "NflLeagueItem": {
+      "AmericanFootballLeagueItem": {
         "type": "object",
         "required": [
           "league",
@@ -3515,20 +3515,20 @@ export const openapiDocument = {
         ],
         "properties": {
           "league": {
-            "$ref": "#/components/schemas/NflLeagueCore"
+            "$ref": "#/components/schemas/AmericanFootballLeagueCore"
           },
           "country": {
-            "$ref": "#/components/schemas/NflCountryRef"
+            "$ref": "#/components/schemas/AmericanFootballCountryRef"
           },
           "seasons": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/NflSeasonItem"
+              "$ref": "#/components/schemas/AmericanFootballSeasonItem"
             }
           }
         }
       },
-      "NflStandingLeagueRef": {
+      "AmericanFootballStandingLeagueRef": {
         "type": "object",
         "required": [
           "id",
@@ -3564,11 +3564,11 @@ export const openapiDocument = {
             ]
           },
           "country": {
-            "$ref": "#/components/schemas/NflCountryRef"
+            "$ref": "#/components/schemas/AmericanFootballCountryRef"
           }
         }
       },
-      "NflPointsBlock": {
+      "AmericanFootballPointsBlock": {
         "type": "object",
         "properties": {
           "for": {
@@ -3591,7 +3591,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflRecords": {
+      "AmericanFootballRecords": {
         "type": "object",
         "properties": {
           "home": {
@@ -3622,7 +3622,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflNcaaConference": {
+      "AmericanFootballNcaaConference": {
         "type": "object",
         "properties": {
           "won": {
@@ -3656,7 +3656,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflStandingItem": {
+      "AmericanFootballStandingItem": {
         "type": "object",
         "required": [
           "league",
@@ -3665,7 +3665,7 @@ export const openapiDocument = {
         "description": "One standing row — same shape for GET responses and POST/PATCH bodies.",
         "properties": {
           "league": {
-            "$ref": "#/components/schemas/NflStandingLeagueRef"
+            "$ref": "#/components/schemas/AmericanFootballStandingLeagueRef"
           },
           "conference": {
             "type": [
@@ -3689,7 +3689,7 @@ export const openapiDocument = {
             "example": 1
           },
           "team": {
-            "$ref": "#/components/schemas/NflTeamRef"
+            "$ref": "#/components/schemas/AmericanFootballTeamRef"
           },
           "won": {
             "type": [
@@ -3710,10 +3710,10 @@ export const openapiDocument = {
             ]
           },
           "points": {
-            "$ref": "#/components/schemas/NflPointsBlock"
+            "$ref": "#/components/schemas/AmericanFootballPointsBlock"
           },
           "records": {
-            "$ref": "#/components/schemas/NflRecords"
+            "$ref": "#/components/schemas/AmericanFootballRecords"
           },
           "streak": {
             "type": [
@@ -3723,11 +3723,11 @@ export const openapiDocument = {
             "example": "L1"
           },
           "ncaa_conference": {
-            "$ref": "#/components/schemas/NflNcaaConference"
+            "$ref": "#/components/schemas/AmericanFootballNcaaConference"
           }
         }
       },
-      "NflTimezoneCreateBody": {
+      "AmericanFootballTimezoneCreateBody": {
         "type": "object",
         "required": [
           "timezone"
@@ -3739,7 +3739,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflTimezoneUpdateBody": {
+      "AmericanFootballTimezoneUpdateBody": {
         "type": "object",
         "required": [
           "timezone",
@@ -3754,7 +3754,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflTimezoneDeleteBody": {
+      "AmericanFootballTimezoneDeleteBody": {
         "type": "object",
         "required": [
           "timezone"
@@ -3765,7 +3765,7 @@ export const openapiDocument = {
           }
         }
       },
-      "NflSeasonYearBody": {
+      "AmericanFootballSeasonYearBody": {
         "type": "object",
         "required": [
           "year"
@@ -3777,10 +3777,10 @@ export const openapiDocument = {
           }
         }
       },
-      "NflApiSportsTimezoneList": {
+      "AmericanFootballApiSportsTimezoneList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3800,10 +3800,10 @@ export const openapiDocument = {
           }
         ]
       },
-      "NflApiSportsIntegerList": {
+      "AmericanFootballApiSportsIntegerList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3823,10 +3823,10 @@ export const openapiDocument = {
           }
         ]
       },
-      "NflApiSportsCountryList": {
+      "AmericanFootballApiSportsCountryList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3838,17 +3838,17 @@ export const openapiDocument = {
               "response": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/NflCountryItem"
+                  "$ref": "#/components/schemas/AmericanFootballCountryItem"
                 }
               }
             }
           }
         ]
       },
-      "NflApiSportsLeagueList": {
+      "AmericanFootballApiSportsLeagueList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3860,17 +3860,17 @@ export const openapiDocument = {
               "response": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/NflLeagueItem"
+                  "$ref": "#/components/schemas/AmericanFootballLeagueItem"
                 }
               }
             }
           }
         ]
       },
-      "NflApiSportsGameList": {
+      "AmericanFootballApiSportsGameList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3882,17 +3882,17 @@ export const openapiDocument = {
               "response": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/NflGameItem"
+                  "$ref": "#/components/schemas/AmericanFootballGameItem"
                 }
               }
             }
           }
         ]
       },
-      "NflApiSportsTeamList": {
+      "AmericanFootballApiSportsTeamList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3904,17 +3904,17 @@ export const openapiDocument = {
               "response": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/NflTeamItem"
+                  "$ref": "#/components/schemas/AmericanFootballTeamItem"
                 }
               }
             }
           }
         ]
       },
-      "NflApiSportsStandingList": {
+      "AmericanFootballApiSportsStandingList": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
           },
           {
             "type": "object",
@@ -3926,7 +3926,7 @@ export const openapiDocument = {
               "response": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/NflStandingItem"
+                  "$ref": "#/components/schemas/AmericanFootballStandingItem"
                 }
               }
             }

@@ -30,7 +30,7 @@ describe('buildMatchFirestorePatch', () => {
 
   it('maps nfl flat score and date fields', () => {
     expect(
-      buildMatchFirestorePatch('nfl', {
+      buildMatchFirestorePatch('american-football', {
         date: '2026-09-01T00:00:00Z',
         status: 'FT',
         home: { score: 24 },

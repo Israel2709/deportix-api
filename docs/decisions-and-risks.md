@@ -33,8 +33,8 @@
 
 ## What the audit revealed (project `deportix-api-dac8e`)
 
-- 3 sports: `soccer`, `nfl`, `f1`. **NFL and F1 have no leagues**, and there are **no `nfl_*`
-  collections** — NFL is registered as a sport only. F1 has its own `f1_*` collections (out of scope
+- 3 sports: `soccer`, `american-football`, `f1`. **American football and F1 have no leagues**, and there are **no `nfl_*`
+  collections** — american football is registered as a sport only. F1 has its own `f1_*` collections (out of scope
   for generic endpoints).
 - **Soccer is data-rich**: ~1,230 leagues, ~15k teams, ~70k matches, ~4k standings; ~1,227 leagues
   have a current season.

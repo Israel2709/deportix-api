@@ -1,8 +1,8 @@
 # Data Availability
-_Generated 2026-06-30T01:58:38.504Z from project `deportix-api-dac8e`. All figures are real Firestore counts._
+_Generated 2026-07-04T05:40:31.174Z from project `deportix-api-dac8e`. All figures are real Firestore counts._
 ## Headline findings
 - **Sports present:** `nfl`, `soccer`, `f1` (3).
-- **Leagues:** 1230. **Seasons:** 0.
+- **Leagues:** 0. **Seasons:** 0.
 - **NFL & F1** exist as `sports` entries but have **no leagues and no team/game collections** loaded — their endpoints return empty collections (honest "no data yet").
 - **Liga MX (ext 262)** has season metadata only (no teams/matches/standings loaded yet).
 - Other soccer leagues (e.g. Liga Profesional Argentina ext 128, Ligue 1 ext 61) are data-rich and exercise the full endpoint set.
@@ -10,8 +10,8 @@ _Generated 2026-06-30T01:58:38.504Z from project `deportix-api-dac8e`. All figur
 ## Sport-level coverage
 | Sport | Name | Leagues | Team docs | Match docs | Standing docs |
 | --- | --- | ---: | ---: | ---: | ---: |
-| `nfl` | NFL | 0 | 0 | 0 | 0 |
-| `soccer` | Soccer | 1230 | 15386 | 0 | 0 |
+| `nfl` | NFL | 2 | 0 | 0 | 0 |
+| `soccer` | Soccer | 1230 | 0 | 0 | 0 |
 | `f1` | Formula 1 | 0 | 0 | 0 | 0 |
 ## Featured leagues (configured in `src/lib/firebase/featured-leagues.ts`)
 | External id | League | Sport | Teams | Matches | Standings | Seasons |

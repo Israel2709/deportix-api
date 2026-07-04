@@ -3,7 +3,7 @@ import type { TeamDTO } from '@/lib/contracts/dto';
 import { notFound } from '@/lib/api/errors';
 import type { TeamUpdate } from '@/lib/api/team-patch';
 import { buildTeamFirestorePatch } from '@/lib/api/team-patch';
-import type { NflTeamItem } from '@/lib/bff/nfl/schemas/team.schema';
+import type { AmericanFootballTeamItem } from '@/lib/bff/american-football/schemas/team.schema';
 import { getSportConfig, TEAM_COLLECTIONS, type SportSlug } from '../sport-registry';
 import { fetchWhereEq, getDocById, resolveDoc, updateDocFields } from './helpers';
 
@@ -74,10 +74,10 @@ export async function updateTeam(
   const fields = buildTeamFirestorePatch(existing.sport, patch);
   fields.updated_at = new Date().toISOString();
 
-  if (existing.sport === 'nfl') {
+  if (existing.sport === 'american-football') {
     const payload = {
-      ...((doc.data.api_sports_payload as NflTeamItem | undefined) ?? {}),
-    } as NflTeamItem;
+      ...((doc.data.api_sports_payload as AmericanFootballTeamItem | undefined) ?? {}),
+    } as AmericanFootballTeamItem;
     const external = asStr(doc.data.external_id);
     payload.id = payload.id ?? (external && !Number.isNaN(Number(external)) ? Number(external) : external ?? doc.id);
     payload.name = payload.name ?? asStr(doc.data.name) ?? '';

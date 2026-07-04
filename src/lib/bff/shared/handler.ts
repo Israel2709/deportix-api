@@ -8,8 +8,8 @@ import { CACHE, type CachePolicy } from '@/lib/api/cache';
 import {
   buildApiSportsBody,
   buildApiSportsError,
-  buildNflApiSportsBody,
-  buildNflApiSportsError,
+  buildAmericanFootballApiSportsBody,
+  buildAmericanFootballApiSportsError,
   searchParamsToParameters,
 } from './responses';
 
@@ -40,7 +40,7 @@ export interface BffWriteOutput extends BffRouteOutput {
 
 export type BffWriteHandler = (ctx: BffWriteContext) => Promise<BffWriteOutput>;
 
-type EnvelopeKind = 'soccer' | 'nfl';
+type EnvelopeKind = 'soccer' | 'american-football';
 
 function weakEtag(payload: string): string {
   const hash = createHash('sha1').update(payload).digest('base64');
@@ -71,8 +71,8 @@ function buildEnvelope(
   errors?: unknown[] | Record<string, string>,
   paging?: { current: number; total: number },
 ) {
-  if (kind === 'nfl' && get) {
-    return buildNflApiSportsBody(get, parameters, response, errors ?? [], paging);
+  if (kind === 'american-football' && get) {
+    return buildAmericanFootballApiSportsBody(get, parameters, response, errors ?? [], paging);
   }
   return buildApiSportsBody(response, (errors as Record<string, string>) ?? {});
 }
@@ -84,8 +84,8 @@ function buildEnvelopeError(
   message: string,
   field: string,
 ) {
-  if (kind === 'nfl' && get) {
-    return buildNflApiSportsError(get, parameters, message, field);
+  if (kind === 'american-football' && get) {
+    return buildAmericanFootballApiSportsError(get, parameters, message, field);
   }
   return buildApiSportsError(message, field);
 }
@@ -130,9 +130,15 @@ async function parseJsonBody(request: NextRequest): Promise<unknown> {
   }
 }
 
+async function parseOptionalJsonBody(request: NextRequest): Promise<unknown | undefined> {
+  const contentType = request.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) return undefined;
+  return parseJsonBody(request);
+}
+
 function defaultCacheForKind(kind: EnvelopeKind): CachePolicy {
   // NFL BFF feeds the manual data-loader portal — avoid CDN stale reads after POST/PATCH.
-  return kind === 'nfl' ? CACHE.none : CACHE.standard;
+  return kind === 'american-football' ? CACHE.none : CACHE.standard;
 }
 
 function createRouteResponder(kind: EnvelopeKind, get?: string) {
@@ -212,7 +218,10 @@ export function createBffWriteRoute(
 
       try {
         const params = ctx?.params ? await ctx.params : {};
-        const body = method === 'DELETE' ? undefined : await parseJsonBody(request);
+        const body =
+          method === 'DELETE'
+            ? await parseOptionalJsonBody(request)
+            : await parseJsonBody(request);
         const out = await handler({ request, params, searchParams, requestId, body });
         const status = out.status ?? defaultStatus;
 
@@ -246,19 +255,19 @@ export function bffOptionsRoute() {
 /** Soccer BFF GET wrapper (reduced envelope). */
 export const bffGetRoute = createBffGetRoute('soccer');
 
-/** NFL BFF route factories (full api-sports envelope). */
-export function nflBffGetRoute(get: string) {
-  return createBffGetRoute('nfl', get);
+/** American Football BFF route factories (full api-sports envelope). */
+export function americanFootballBffGetRoute(get: string) {
+  return createBffGetRoute('american-football', get);
 }
 
-export function nflBffPostRoute(get: string) {
-  return createBffWriteRoute('nfl', get, 'POST', 201);
+export function americanFootballBffPostRoute(get: string) {
+  return createBffWriteRoute('american-football', get, 'POST', 201);
 }
 
-export function nflBffPatchRoute(get: string) {
-  return createBffWriteRoute('nfl', get, 'PATCH', 200);
+export function americanFootballBffPatchRoute(get: string) {
+  return createBffWriteRoute('american-football', get, 'PATCH', 200);
 }
 
-export function nflBffDeleteRoute(get: string) {
-  return createBffWriteRoute('nfl', get, 'DELETE', 204);
+export function americanFootballBffDeleteRoute(get: string) {
+  return createBffWriteRoute('american-football', get, 'DELETE', 204);
 }

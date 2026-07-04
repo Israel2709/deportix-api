@@ -28,7 +28,7 @@ describe('serializeTeam', () => {
   });
 
   it('reads top-level NFL team fields', () => {
-    const dto = serializeTeam('nfl', 'n1', {
+    const dto = serializeTeam('american-football', 'n1', {
       name: 'Dallas Cowboys',
       city: 'Dallas',
       conference: 'NFC',
@@ -80,7 +80,7 @@ describe('serializeMatch', () => {
 
   it('falls back to a team map when names are not denormalized (NFL-style)', () => {
     const teamMap = new Map([['h', { name: 'Home FC', logo: null }]]);
-    const dto = serializeMatch('nfl', 'm2', {
+    const dto = serializeMatch('american-football', 'm2', {
       game_date: '2026-09-01T00:00:00Z',
       status: 'NS',
       home_team_id: 'h',
@@ -137,7 +137,7 @@ describe('serializeStanding', () => {
   it('keeps draws for soccer, ties for nfl', () => {
     const soccer = serializeStanding('soccer', { team_id: 't', points: 10, played: 4, wins: 3, draws: 1, losses: 0 });
     expect(soccer).toMatchObject({ points: 10, draws: 1, ties: null });
-    const nfl = serializeStanding('nfl', { team_id: 't', wins: 2, losses: 1, ties: 1 });
+    const nfl = serializeStanding('american-football', { team_id: 't', wins: 2, losses: 1, ties: 1 });
     expect(nfl).toMatchObject({ wins: 2, ties: 1, draws: null });
   });
 });

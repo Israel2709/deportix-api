@@ -16,7 +16,7 @@ const { buildDataStatus } = await import('@/lib/firebase/repositories/data-statu
 const dataset: Dataset = {
   sports: [
     { id: 'sp_soccer', slug: 'soccer', name: 'Soccer' },
-    { id: 'sp_nfl', slug: 'nfl', name: 'NFL' },
+    { id: 'sp_nfl', slug: 'american-football', name: 'NFL' },
   ],
   countries: [{ id: 'c_mx', external_id: 'MX', name: 'Mexico' }],
   leagues: [
@@ -63,7 +63,7 @@ describe('leagues repository', () => {
 
   it('filters by sport slug', async () => {
     expect(await listLeagues({ sportSlug: 'soccer' })).toHaveLength(2);
-    expect(await listLeagues({ sportSlug: 'nfl' })).toHaveLength(0);
+    expect(await listLeagues({ sportSlug: 'american-football' })).toHaveLength(0);
   });
 
   it('resolves a league by id and by external id', async () => {
@@ -180,7 +180,7 @@ describe('data-status', () => {
   it('derives sport coverage (soccer populated, NFL empty) and featured leagues', async () => {
     const status = await buildDataStatus();
     expect(status.sports.find((s) => s.slug === 'soccer')?.coverage.teams).toBe(true);
-    expect(status.sports.find((s) => s.slug === 'nfl')?.coverage.teams).toBe(false);
+    expect(status.sports.find((s) => s.slug === 'american-football')?.coverage.teams).toBe(false);
 
     const mx = status.leagues.find((l) => l.externalId === '262');
     const ar = status.leagues.find((l) => l.externalId === '128');

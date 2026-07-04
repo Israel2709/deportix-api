@@ -34,9 +34,9 @@ describe('CORS', () => {
 });
 
 describe('sport registry', () => {
-  it('maps soccer/nfl to collections and excludes f1 from generic endpoints', () => {
+  it('maps soccer/american-football to collections and excludes f1 from generic endpoints', () => {
     expect(getSportConfig('soccer')?.collections.matches).toBe('soccer_matches');
-    expect(getSportConfig('nfl')?.collections.matches).toBe('nfl_games');
+    expect(getSportConfig('american-football')?.collections.matches).toBe('nfl_games');
     expect(getSportConfig('f1')?.genericEndpointsSupported).toBe(false);
     expect(getSportConfig('unknown')).toBeNull();
     expect(isSportSlug('soccer')).toBe(true);

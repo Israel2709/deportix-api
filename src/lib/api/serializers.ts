@@ -141,7 +141,7 @@ export function serializeTeam(sport: SportSlug | null, id: string, raw: Raw): Te
     };
   }
 
-  if (sport === 'nfl') {
+  if (sport === 'american-football') {
     return {
       ...base,
       name: asStr(raw.name),
@@ -248,8 +248,8 @@ export function serializeStanding(
     points: asNum(raw.points),
     played: asNum(raw.played),
     wins: asNum(raw.wins),
-    draws: sport === 'nfl' ? null : asNum(raw.draws),
+    draws: sport === 'american-football' ? null : asNum(raw.draws),
     losses: asNum(raw.losses),
-    ties: sport === 'nfl' ? asNum(raw.ties) : null,
+    ties: sport === 'american-football' ? asNum(raw.ties) : null,
   };
 }

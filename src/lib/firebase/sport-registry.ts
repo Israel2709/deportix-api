@@ -7,7 +7,7 @@
  * collections and field names from this table. Adding a new sport = one entry here.
  */
 
-export type SportSlug = 'soccer' | 'nfl' | 'f1';
+export type SportSlug = 'soccer' | 'american-football' | 'f1';
 
 export interface SportConfig {
   slug: SportSlug;
@@ -46,8 +46,8 @@ export const SPORTS: Record<SportSlug, SportConfig> = {
     awayTeamField: 'away_team_id',
     genericEndpointsSupported: true,
   },
-  nfl: {
-    slug: 'nfl',
+  'american-football': {
+    slug: 'american-football',
     collections: {
       teams: 'nfl_teams',
       matches: 'nfl_games',
