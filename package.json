@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "data:inspect": "tsx scripts/inspect-firestore.ts",
     "openapi:build": "tsx scripts/build-openapi.ts",
+    "docs:football-pdf": "tsx scripts/build-football-api-pdf.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -34,6 +35,7 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "9.39.4",
     "eslint-config-next": "^16.2.9",
+    "md-to-pdf": "5.2.4",
     "prettier": "^3.8.4",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
@@ -45,7 +47,8 @@
       "unrs-resolver",
       "sharp",
       "@firebase/util",
-      "protobufjs"
+      "protobufjs",
+      "puppeteer"
     ]
   }
 }
