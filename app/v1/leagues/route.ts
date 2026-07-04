@@ -25,7 +25,7 @@ export const GET = getRoute(
       data,
       pagination: { page, pageSize, total: leagues.length },
       updatedAt: pickLatestUpdatedAt(data),
-      cache: CACHE.standard,
+      cache: CACHE.none,
     };
   }),
 );

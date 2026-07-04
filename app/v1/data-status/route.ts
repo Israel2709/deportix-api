@@ -15,7 +15,7 @@ export const GET = getRoute(
     return {
       kind: 'resource',
       data: { leagues: status.leagues, sports: status.sports },
-      cache: CACHE.standard,
+      cache: CACHE.none,
     };
   }),
 );

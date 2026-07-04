@@ -130,6 +130,11 @@ async function parseJsonBody(request: NextRequest): Promise<unknown> {
   }
 }
 
+function defaultCacheForKind(kind: EnvelopeKind): CachePolicy {
+  // NFL BFF feeds the manual data-loader portal — avoid CDN stale reads after POST/PATCH.
+  return kind === 'nfl' ? CACHE.none : CACHE.standard;
+}
+
 function createRouteResponder(kind: EnvelopeKind, get?: string) {
   return function respond(
     out: BffRouteOutput,
@@ -142,7 +147,7 @@ function createRouteResponder(kind: EnvelopeKind, get?: string) {
     const payload = JSON.stringify(body);
     const etag = weakEtag(payload);
     const headers = baseHeaders(requestId, origin);
-    headers.set('Cache-Control', out.cache ?? CACHE.standard);
+    headers.set('Cache-Control', out.cache ?? defaultCacheForKind(kind));
     headers.set('ETag', etag);
 
     const status = out.status ?? 200;
