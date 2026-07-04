@@ -1,5 +1,6 @@
 import { asStr } from '@/lib/api/serializers';
-import { fetchAll, type RawDoc } from './helpers';
+import { notFound } from '@/lib/api/errors';
+import { createDoc, deleteDoc, fetchAll, resolveDoc, updateDocFields, type RawDoc } from './helpers';
 
 const COLLECTION = 'countries';
 
@@ -71,4 +72,48 @@ export async function buildCountryMap(): Promise<Map<string, CountryRecord>> {
     map.set(country.name.toLowerCase(), country);
   }
   return map;
+}
+
+export async function createCountry(input: {
+  name: string;
+  code?: string | null;
+  flag?: string | null;
+  externalId?: string | null;
+}): Promise<CountryRecord> {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const data = {
+    name: input.name,
+    code: input.code ?? null,
+    flag: input.flag ?? null,
+    external_id: input.externalId ?? input.code ?? null,
+    created_at: now,
+    updated_at: now,
+  };
+  await createDoc(COLLECTION, id, data);
+  return toRecord({ id, data });
+}
+
+export async function updateCountry(
+  key: string,
+  patch: { name?: string; code?: string | null; flag?: string | null },
+): Promise<CountryRecord> {
+  const existing = await resolveDoc(COLLECTION, key);
+  if (!existing) throw notFound('Country not found.');
+
+  const fields: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (patch.name !== undefined) fields.name = patch.name;
+  if (patch.code !== undefined) fields.code = patch.code;
+  if (patch.flag !== undefined) fields.flag = patch.flag;
+
+  await updateDocFields(COLLECTION, existing.id, fields);
+  const updated = await resolveDoc(COLLECTION, existing.id);
+  if (!updated) throw notFound('Country not found.');
+  return toRecord(updated);
+}
+
+export async function deleteCountry(key: string): Promise<void> {
+  const existing = await resolveDoc(COLLECTION, key);
+  if (!existing) throw notFound('Country not found.');
+  await deleteDoc(COLLECTION, existing.id);
 }

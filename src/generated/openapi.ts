@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes two complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports compatibility** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nsoccer endpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter app: change only the base URL.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF NFL** (`/nfl/*`) — API-Sports American Football v1 compatibility with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal. Request bodies\nmust match the objects returned in `response[]` (same shapes as api-sports NFL).\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **NFL coverage is partial and evolving** as data is loaded; some NFL sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -42,6 +42,10 @@ export const openapiDocument = {
     {
       "name": "BFF",
       "description": "API-Sports compatible layer for soccer (Flutter). Returns `{ response, results, errors }`.\nLeague/team/fixture ids in query params use provider `externalId` values (e.g. `262` for Liga MX).\n"
+    },
+    {
+      "name": "BFF NFL",
+      "description": "API-Sports American Football v1 compatibility under `/nfl/*`. Returns the full api-sports\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD\nfor portal data loading.\n"
     }
   ],
   "paths": {
@@ -1136,6 +1140,1138 @@ export const openapiDocument = {
         }
       }
     },
+    "/nfl/timezone": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List timezones",
+        "description": "IANA timezone strings for the `games` endpoint. Seeds common defaults when the catalog is empty.",
+        "operationId": "nflListTimezones",
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with timezone strings in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsTimezoneList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Add timezone",
+        "operationId": "nflCreateTimezone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflTimezoneCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Timezone created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsTimezoneList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Rename timezone",
+        "operationId": "nflUpdateTimezone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflTimezoneUpdateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Timezone updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsTimezoneList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete timezone",
+        "operationId": "nflDeleteTimezone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflTimezoneDeleteBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Timezone deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/seasons": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List NFL season years",
+        "description": "Distinct season years across NFL leagues in the platform.",
+        "operationId": "nflListSeasons",
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with integer years in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsIntegerList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Register season year",
+        "description": "Creates a season document on the first NFL league when leagues already exist.",
+        "operationId": "nflCreateSeasonYear",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflSeasonYearBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Season year registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsIntegerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete season year",
+        "description": "Removes all season documents matching the year across NFL leagues.",
+        "operationId": "nflDeleteSeasonYear",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflSeasonYearBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Season year deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/countries": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List countries",
+        "description": "Football v3 country shape (`{ name, code, flag }`). Filter by `name` substring.",
+        "operationId": "nflListCountries",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with country objects in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsCountryList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Create country",
+        "operationId": "nflCreateCountry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflCountryItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Country created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsCountryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Update country",
+        "operationId": "nflUpdateCountry",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Country name key to update.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflCountryItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Country updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsCountryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete country",
+        "operationId": "nflDeleteCountry",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Country deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/leagues": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List NFL leagues",
+        "description": "League entries with nested `seasons[]` and NFL-specific `coverage` objects.",
+        "operationId": "nflListLeagues",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Provider league id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "description": "Country name substring",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "description": "Filter leagues that include this season year",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with league entries in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsLeagueList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Create NFL league",
+        "description": "Creates the league and nested seasons from the api-sports league object.",
+        "operationId": "nflCreateLeague",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflLeagueItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "League created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsLeagueList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Update NFL league",
+        "operationId": "nflUpdateLeague",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Provider league id or internal id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflLeagueItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "League updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsLeagueList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete NFL league",
+        "operationId": "nflDeleteLeague",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "League deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/games": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List or lookup NFL games",
+        "description": "Three query modes:\n- `league` + `season` (+ optional `timezone`) — games in a season\n- `id` — single game by provider id\n- `league` + `season` + `team` — games for a team\n",
+        "operationId": "nflListGames",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Provider game id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "league",
+            "in": "query",
+            "description": "Provider league id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "team",
+            "in": "query",
+            "description": "Provider team id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Accepted for api-sports compatibility; dates stored UTC",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with game objects in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Create NFL game",
+        "description": "Body must be a complete api-sports game object (same shape as `response[]` items).",
+        "operationId": "nflCreateGame",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflGameItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Game created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/games/{gameId}": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Get NFL game by id",
+        "operationId": "nflGetGame",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "description": "Provider game id or internal document id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope; use `response[0]` as the game detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Update NFL game",
+        "description": "Default: merge partial fields into stored api-sports payload.\nPass `replace=true` to require a full `NflGameItem` body.\n",
+        "operationId": "nflPatchGame",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "replace",
+            "in": "query",
+            "description": "When `true`, body must be a complete game object.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflGameItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsGameList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete NFL game",
+        "operationId": "nflDeleteGame",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Game deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/teams": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List NFL teams",
+        "description": "Teams for a league and season. Both query params are required.",
+        "operationId": "nflListTeams",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": true,
+            "description": "Provider league id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with `{ id, name, logo }` team objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsTeamList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Create NFL team",
+        "operationId": "nflCreateTeam",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflTeamItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Team created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsTeamList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Update NFL team",
+        "operationId": "nflUpdateTeam",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Team document id or provider external id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflTeamItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Team updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsTeamList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete NFL team",
+        "operationId": "nflDeleteTeam",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Team deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/nfl/standings": {
+      "get": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "List NFL standings",
+        "description": "Standing rows for a league and season. Optional `conference` filter.",
+        "operationId": "nflListStandings",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "season",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "conference",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with standing rows in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsStandingList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Create standing row",
+        "description": "Body is one api-sports standing row. Team (`team.id`) must already exist in the league.",
+        "operationId": "nflCreateStanding",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflStandingItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Standing row created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsStandingList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Update standing row",
+        "operationId": "nflUpdateStanding",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Standing document id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NflStandingItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Standing row updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NflApiSportsStandingList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "BFF NFL"
+        ],
+        "summary": "Delete standing row",
+        "operationId": "nflDeleteStanding",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Standing row deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/NflInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/NflNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
     "/v1/openapi.json": {
       "get": {
         "tags": [
@@ -1341,7 +2477,7 @@ export const openapiDocument = {
         }
       },
       "BffInvalidParameter": {
-        "description": "Invalid query parameter (API-Sports error envelope).",
+        "description": "Invalid query parameter (API-Sports soccer error envelope).",
         "content": {
           "application/json": {
             "schema": {
@@ -1353,6 +2489,54 @@ export const openapiDocument = {
               "errors": {
                 "parameters": "The \"league\" parameter is required."
               }
+            }
+          }
+        }
+      },
+      "NflInvalidParameter": {
+        "description": "Invalid query or request body (full api-sports NFL envelope).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NflApiSportsErrorEnvelope"
+            },
+            "example": {
+              "get": "teams",
+              "parameters": {
+                "league": "1"
+              },
+              "errors": {
+                "parameters": "The \"season\" parameter is required."
+              },
+              "results": 0,
+              "paging": {
+                "current": 1,
+                "total": 1
+              },
+              "response": []
+            }
+          }
+        }
+      },
+      "NflNotFound": {
+        "description": "Resource not found (full api-sports NFL envelope).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NflApiSportsErrorEnvelope"
+            },
+            "example": {
+              "get": "games",
+              "parameters": {},
+              "errors": {
+                "resource": "Game not found."
+              },
+              "results": 0,
+              "paging": {
+                "current": 1,
+                "total": 1
+              },
+              "response": []
             }
           }
         }
@@ -1694,6 +2878,981 @@ export const openapiDocument = {
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsEnvelope": {
+        "type": "object",
+        "required": [
+          "get",
+          "parameters",
+          "errors",
+          "results",
+          "response"
+        ],
+        "properties": {
+          "get": {
+            "type": "string",
+            "description": "Endpoint name echoed by api-sports.",
+            "example": "games"
+          },
+          "parameters": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "array",
+                "items": {}
+              }
+            ]
+          },
+          "errors": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "results": {
+            "type": "integer",
+            "description": "Length of `response`."
+          },
+          "paging": {
+            "type": "object",
+            "properties": {
+              "current": {
+                "type": "integer",
+                "example": 1
+              },
+              "total": {
+                "type": "integer",
+                "example": 1
+              }
+            }
+          },
+          "response": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "NflApiSportsErrorEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          }
+        ],
+        "example": {
+          "get": "teams",
+          "parameters": {
+            "league": "1"
+          },
+          "errors": {
+            "parameters": "The \"season\" parameter is required."
+          },
+          "results": 0,
+          "paging": {
+            "current": 1,
+            "total": 1
+          },
+          "response": []
+        }
+      },
+      "NflCountryRef": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "USA"
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "US"
+          },
+          "flag": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflCountryItem": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "USA"
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "US"
+          },
+          "flag": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://media.api-sports.io/flags/us.svg"
+          }
+        }
+      },
+      "NflTeamRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 25
+          },
+          "name": {
+            "type": "string",
+            "example": "Miami Dolphins"
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflTeamItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 25
+          },
+          "name": {
+            "type": "string",
+            "example": "Miami Dolphins"
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "https://media.api-sports.io/american-football/teams/25.png"
+          }
+        }
+      },
+      "NflGameDate": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "UTC"
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "example": "2022-09-30"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "00:00"
+          },
+          "timestamp": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 1664496000
+          }
+        }
+      },
+      "NflGameVenue": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflGameStatus": {
+        "type": "object",
+        "properties": {
+          "short": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "FT"
+          },
+          "long": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Finished"
+          },
+          "timer": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflQuarterScores": {
+        "type": "object",
+        "properties": {
+          "quarter_1": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quarter_2": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quarter_3": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quarter_4": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "overtime": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "total": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflGameCore": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 4550
+          },
+          "stage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Regular Season"
+          },
+          "week": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "5"
+          },
+          "date": {
+            "$ref": "#/components/schemas/NflGameDate"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/NflGameVenue"
+          },
+          "status": {
+            "$ref": "#/components/schemas/NflGameStatus"
+          }
+        }
+      },
+      "NflGameLeagueRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "NFL"
+          },
+          "season": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": "2022"
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/NflCountryRef"
+          }
+        }
+      },
+      "NflGameTeams": {
+        "type": "object",
+        "required": [
+          "home",
+          "away"
+        ],
+        "properties": {
+          "home": {
+            "$ref": "#/components/schemas/NflTeamRef"
+          },
+          "away": {
+            "$ref": "#/components/schemas/NflTeamRef"
+          }
+        }
+      },
+      "NflGameScores": {
+        "type": "object",
+        "properties": {
+          "home": {
+            "$ref": "#/components/schemas/NflQuarterScores"
+          },
+          "away": {
+            "$ref": "#/components/schemas/NflQuarterScores"
+          }
+        }
+      },
+      "NflGameItem": {
+        "type": "object",
+        "required": [
+          "game",
+          "league",
+          "teams"
+        ],
+        "description": "api-sports NFL game object — same shape for GET responses and POST/PATCH bodies.",
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/NflGameCore"
+          },
+          "league": {
+            "$ref": "#/components/schemas/NflGameLeagueRef"
+          },
+          "teams": {
+            "$ref": "#/components/schemas/NflGameTeams"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/NflGameScores"
+          }
+        }
+      },
+      "NflLeagueCore": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "NFL"
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "league"
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflSeasonCoverage": {
+        "type": "object",
+        "description": "NFL-specific coverage flags (api-sports American Football v1).",
+        "properties": {
+          "games": {
+            "type": "object",
+            "properties": {
+              "events": {
+                "type": "boolean"
+              },
+              "statisitcs": {
+                "type": "object",
+                "description": "Typo preserved from api-sports documentation.",
+                "properties": {
+                  "teams": {
+                    "type": "boolean"
+                  },
+                  "players": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "statistics": {
+            "type": "object",
+            "properties": {
+              "season": {
+                "type": "object",
+                "properties": {
+                  "players": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "players": {
+            "type": "boolean"
+          },
+          "injuries": {
+            "type": "boolean"
+          },
+          "standings": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NflSeasonItem": {
+        "type": "object",
+        "required": [
+          "year",
+          "current"
+        ],
+        "properties": {
+          "year": {
+            "type": "integer",
+            "example": 2022
+          },
+          "start": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "end": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "current": {
+            "type": "boolean"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/NflSeasonCoverage"
+          }
+        }
+      },
+      "NflLeagueItem": {
+        "type": "object",
+        "required": [
+          "league",
+          "country",
+          "seasons"
+        ],
+        "properties": {
+          "league": {
+            "$ref": "#/components/schemas/NflLeagueCore"
+          },
+          "country": {
+            "$ref": "#/components/schemas/NflCountryRef"
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NflSeasonItem"
+            }
+          }
+        }
+      },
+      "NflStandingLeagueRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "NFL"
+          },
+          "season": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 2022
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/NflCountryRef"
+          }
+        }
+      },
+      "NflPointsBlock": {
+        "type": "object",
+        "properties": {
+          "for": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "against": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "difference": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflRecords": {
+        "type": "object",
+        "properties": {
+          "home": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2-0"
+          },
+          "road": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "1-1"
+          },
+          "conference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "division": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "NflNcaaConference": {
+        "type": "object",
+        "properties": {
+          "won": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "lost": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "points": {
+            "type": "object",
+            "properties": {
+              "for": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "against": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "NflStandingItem": {
+        "type": "object",
+        "required": [
+          "league",
+          "team"
+        ],
+        "description": "One standing row — same shape for GET responses and POST/PATCH bodies.",
+        "properties": {
+          "league": {
+            "$ref": "#/components/schemas/NflStandingLeagueRef"
+          },
+          "conference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "American Football Conference"
+          },
+          "division": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "East"
+          },
+          "position": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 1
+          },
+          "team": {
+            "$ref": "#/components/schemas/NflTeamRef"
+          },
+          "won": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "lost": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ties": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "points": {
+            "$ref": "#/components/schemas/NflPointsBlock"
+          },
+          "records": {
+            "$ref": "#/components/schemas/NflRecords"
+          },
+          "streak": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "L1"
+          },
+          "ncaa_conference": {
+            "$ref": "#/components/schemas/NflNcaaConference"
+          }
+        }
+      },
+      "NflTimezoneCreateBody": {
+        "type": "object",
+        "required": [
+          "timezone"
+        ],
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "example": "America/Chicago"
+          }
+        }
+      },
+      "NflTimezoneUpdateBody": {
+        "type": "object",
+        "required": [
+          "timezone",
+          "newTimezone"
+        ],
+        "properties": {
+          "timezone": {
+            "type": "string"
+          },
+          "newTimezone": {
+            "type": "string"
+          }
+        }
+      },
+      "NflTimezoneDeleteBody": {
+        "type": "object",
+        "required": [
+          "timezone"
+        ],
+        "properties": {
+          "timezone": {
+            "type": "string"
+          }
+        }
+      },
+      "NflSeasonYearBody": {
+        "type": "object",
+        "required": [
+          "year"
+        ],
+        "properties": {
+          "year": {
+            "type": "integer",
+            "example": 2024
+          }
+        }
+      },
+      "NflApiSportsTimezoneList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "timezone"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "America/New_York"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsIntegerList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "seasons"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "example": 2022
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsCountryList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "countries"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NflCountryItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsLeagueList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "leagues"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NflLeagueItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsGameList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "games"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NflGameItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsTeamList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "teams"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NflTeamItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NflApiSportsStandingList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NflApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "get": {
+                "type": "string",
+                "example": "standings"
+              },
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NflStandingItem"
                 }
               }
             }

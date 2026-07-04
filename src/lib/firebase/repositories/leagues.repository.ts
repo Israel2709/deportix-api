@@ -2,7 +2,16 @@ import { serializeLeague } from '@/lib/api/serializers';
 import type { LeagueDTO } from '@/lib/contracts/dto';
 import { isSportSlug, type SportSlug } from '../sport-registry';
 import { loadCatalogContext, type CatalogContext } from './catalog.repository';
-import { fetchAll, fetchWhereEq, resolveDoc, type RawDoc } from './helpers';
+import { notFound } from '@/lib/api/errors';
+import {
+  createDoc,
+  deleteDoc,
+  fetchAll,
+  fetchWhereEq,
+  resolveDoc,
+  updateDocFields,
+  type RawDoc,
+} from './helpers';
 
 const COLLECTION = 'leagues';
 
@@ -41,4 +50,58 @@ export async function getLeague(idOrExternalId: string): Promise<LeagueRecord | 
   const ctx = await loadCatalogContext();
   const dto = toDTO(doc, ctx);
   return { id: doc.id, dto, sportSlug: isSportSlug(dto.sport) ? dto.sport : null };
+}
+
+export async function createLeague(input: {
+  name: string;
+  sportSlug: SportSlug;
+  externalId?: string | null;
+  type?: string | null;
+  logo?: string | null;
+  countryId?: string | null;
+  apiSportsPayload?: unknown;
+}): Promise<LeagueRecord> {
+  const ctx = await loadCatalogContext();
+  const sportId = ctx.sportIdBySlug.get(input.sportSlug);
+  if (!sportId) throw notFound('Sport not found.');
+
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const data: Record<string, unknown> = {
+    name: input.name,
+    sport_id: sportId,
+    external_id: input.externalId ?? null,
+    type: input.type ?? 'league',
+    logo: input.logo ?? null,
+    country_id: input.countryId ?? null,
+    created_at: now,
+    updated_at: now,
+  };
+  if (input.apiSportsPayload !== undefined) data.api_sports_payload = input.apiSportsPayload;
+
+  await createDoc(COLLECTION, id, data);
+  const created = await getLeague(id);
+  if (!created) throw notFound('League not found.');
+  return created;
+}
+
+export async function updateLeague(
+  idOrExternalId: string,
+  patch: Record<string, unknown>,
+): Promise<LeagueRecord> {
+  const existing = await resolveDoc(COLLECTION, idOrExternalId);
+  if (!existing) throw notFound('League not found.');
+
+  const fields = { ...patch, updated_at: new Date().toISOString() };
+  await updateDocFields(COLLECTION, existing.id, fields);
+
+  const updated = await getLeague(existing.id);
+  if (!updated) throw notFound('League not found.');
+  return updated;
+}
+
+export async function deleteLeague(idOrExternalId: string): Promise<void> {
+  const existing = await resolveDoc(COLLECTION, idOrExternalId);
+  if (!existing) throw notFound('League not found.');
+  await deleteDoc(COLLECTION, existing.id);
 }

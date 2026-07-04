@@ -45,7 +45,8 @@ data endpoints return `503 DATA_SOURCE_NOT_CONFIGURED`. See [docs/firebase-setup
 | `pnpm lint` / `pnpm typecheck` | ESLint / `tsc --noEmit`. |
 | `pnpm test` | Vitest (unit + integration). |
 | `pnpm data:inspect` | Read-only Firestore audit → `docs/firebase-data-inventory.md`, `docs/data-availability.md`. |
-| `pnpm openapi:build` | Compile `openapi/openapi.yaml` → `src/generated/openapi.ts`. |
+    | `pnpm openapi:build` | Compile `openapi/openapi.yaml` → `src/generated/openapi.ts`. |
+    | `tsx scripts/capture-api-sports-nfl.ts` | Optional — refresh NFL contract fixtures from live api-sports (requires `APISPORTS_KEY`). |
 
 ## Environment
 
@@ -64,6 +65,8 @@ CORS_ALLOWED_ORIGINS=*
 `/v1/openapi.json` · `/docs` (Swagger UI).
 
 **BFF (API-Sports, soccer):** `/countries` · `/leagues` · `/leagues/seasons` · `/fixtures` · `/fixtures/rounds` · `/standings`.
+
+**BFF NFL (API-Sports American Football v1):** `/nfl/timezone` · `/nfl/seasons` · `/nfl/countries` · `/nfl/leagues` · `/nfl/games` · `/nfl/teams` · `/nfl/standings` — full api-sports envelope + CRUD for portal loading. See [docs/nfl-api-reference.md](./docs/nfl-api-reference.md).
 
 Full contract: [docs/api-contract.md](./docs/api-contract.md).
 

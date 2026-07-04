@@ -1,0 +1,19 @@
+{
+  "get": "teams",
+  "parameters": { "league": "1", "season": "2022" },
+  "errors": [],
+  "results": 2,
+  "paging": { "current": 1, "total": 1 },
+  "response": [
+    {
+      "id": 25,
+      "name": "Miami Dolphins",
+      "logo": "https://media.api-sports.io/american-football/teams/25.png"
+    },
+    {
+      "id": 7,
+      "name": "Detroit Lions",
+      "logo": "https://media.api-sports.io/american-football/teams/7.png"
+    }
+  ]
+}
