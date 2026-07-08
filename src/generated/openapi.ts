@@ -444,6 +444,45 @@ export const openapiDocument = {
         }
       }
     },
+    "/v1/league-types": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List league types (global catalog)",
+        "description": "Shared league type catalog for all sports. Backed by the Firestore `league_types` collection.\nValues match api-sports `league.type` (e.g. `league`, `cup`).\n",
+        "operationId": "listCatalogLeagueTypes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated league type catalog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeagueTypeCollection"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
     "/v1/leagues": {
       "get": {
         "tags": [
@@ -4998,6 +5037,38 @@ export const openapiDocument = {
           },
           "meta": {
             "$ref": "#/components/schemas/ResourceMeta"
+          }
+        }
+      },
+      "CatalogLeagueType": {
+        "type": "object",
+        "required": [
+          "code",
+          "label"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "league",
+            "description": "api-sports league.type value"
+          },
+          "label": {
+            "type": "string",
+            "example": "Liga"
+          }
+        }
+      },
+      "LeagueTypeCollection": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogLeagueType"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CollectionMeta"
           }
         }
       },

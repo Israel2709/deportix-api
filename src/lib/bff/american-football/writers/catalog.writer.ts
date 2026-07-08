@@ -26,6 +26,7 @@ import {
 } from '@/lib/firebase/repositories/timezones.repository';
 import { mapAmericanFootballCountryToApiSports } from '../mappers/country.mapper';
 import { mapAmericanFootballLeagueToApiSports } from '../mappers/league.mapper';
+import { resolveCatalogLeagueType } from '@/lib/catalog/league-types.service';
 import { resolveAmericanFootballLeague } from '../services/leagues.service';
 
 const seasonYearSchema = z.object({ year: z.number().int() }).strict();
@@ -51,11 +52,13 @@ export async function createAmericanFootballLeagueEntry(body: unknown) {
     countryId = country?.id ?? null;
   }
 
+  const leagueType = await resolveCatalogLeagueType(item.league.type);
+
   const league = await createLeague({
     name: item.league.name,
     sportSlug: 'american-football',
     externalId: item.league.id != null ? String(item.league.id) : null,
-    type: item.league.type ?? 'league',
+    type: leagueType,
     logo: item.league.logo ?? null,
     altLogo: item.league.altLogo ?? null,
     countryId,
@@ -83,10 +86,12 @@ export async function createAmericanFootballLeagueEntry(body: unknown) {
 
 export async function updateAmericanFootballLeagueEntry(id: string, body: unknown) {
   const item = americanFootballLeagueItemSchema.parse(body);
+  const leagueType = await resolveCatalogLeagueType(item.league.type);
+
   await updateLeague(id, {
     name: item.league.name,
     external_id: item.league.id != null ? String(item.league.id) : null,
-    type: item.league.type ?? 'league',
+    type: leagueType,
     logo: item.league.logo ?? null,
     alt_logo: item.league.altLogo ?? null,
     api_sports_payload: item,
