@@ -25,7 +25,7 @@ export const GET = getRoute(
       kind: 'collection',
       data,
       pagination: { page, pageSize, total: all.length },
-      cache: CACHE.long,
+      cache: CACHE.reference,
     };
   }),
 );
