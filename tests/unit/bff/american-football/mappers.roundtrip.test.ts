@@ -23,7 +23,7 @@ describe('NFL mappers round-trip', () => {
     const item = fixture.response[0];
     const mapped = mapRawAmericanFootballStandingToApiSports(
       { id: 's1', data: { api_sports_payload: item } },
-      { id: 'lg1', externalId: '1', name: 'NFL', type: 'league', sport: 'american-football', country: 'USA', logo: null, updatedAt: null },
+      { id: 'lg1', externalId: '1', name: 'NFL', type: 'league', sport: 'american-football', country: 'USA', logo: null, altLogo: null, updatedAt: null },
       null,
       2022,
       new Map(),

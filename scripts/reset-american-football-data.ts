@@ -77,7 +77,7 @@ async function listCollection(db: Firestore, name: string): Promise<QueryDocumen
 }
 
 function describeRef(doc: QueryDocumentSnapshot | DocumentReference, label: string) {
-  const id = 'id' in doc && typeof doc.id === 'string' ? doc.id : doc.path;
+  const id = doc.id;
   const data = 'data' in doc ? doc.data() : undefined;
   const hint = data?.name ?? data?.external_id ?? data?.year ?? id;
   console.log(`  - ${label}: ${id} (${hint})`);

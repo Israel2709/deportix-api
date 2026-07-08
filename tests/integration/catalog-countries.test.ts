@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeFakeDb, type Dataset } from '../helpers/fake-firestore';
 
 const state: { db: ReturnType<typeof makeFakeDb> | null } = { db: null };
