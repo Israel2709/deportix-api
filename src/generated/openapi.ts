@@ -483,6 +483,45 @@ export const openapiDocument = {
         }
       }
     },
+    "/v1/game-stages": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List game stages (American Football catalog)",
+        "description": "Shared game stage catalog for American Football BFF. Backed by the Firestore `game_stages` collection.\nValues match api-sports American Football v1 `game.stage` (e.g. `Regular Season`, `Wild Card`).\n",
+        "operationId": "listCatalogGameStages",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated game stage catalog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStageCollection"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
     "/v1/leagues": {
       "get": {
         "tags": [
@@ -5284,6 +5323,38 @@ export const openapiDocument = {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CatalogLeagueType"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CollectionMeta"
+          }
+        }
+      },
+      "CatalogGameStage": {
+        "type": "object",
+        "required": [
+          "value",
+          "label"
+        ],
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "Regular Season",
+            "description": "api-sports American Football game.stage value"
+          },
+          "label": {
+            "type": "string",
+            "example": "Temporada regular"
+          }
+        }
+      },
+      "GameStageCollection": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogGameStage"
             }
           },
           "meta": {
