@@ -6,7 +6,7 @@ import {
   updateCatalogCountry,
 } from '@/lib/catalog/countries.service';
 import { buildCountryMap, getCountryByKey } from '@/lib/firebase/repositories/countries.repository';
-import { americanFootballLeagueItemSchema } from '../schemas/league.schema';
+import { americanFootballLeagueCreateSchema } from '../schemas/league.schema';
 import {
   createLeague,
   deleteLeague,
@@ -45,7 +45,7 @@ export async function deleteAmericanFootballCountryEntry(key: string) {
 }
 
 export async function createAmericanFootballLeagueEntry(body: unknown) {
-  const item = americanFootballLeagueItemSchema.parse(body);
+  const item = americanFootballLeagueCreateSchema.parse(body);
   let countryId: string | null = null;
   if (item.country.name) {
     const country = await getCountryByKey(item.country.name);
@@ -57,12 +57,12 @@ export async function createAmericanFootballLeagueEntry(body: unknown) {
   const league = await createLeague({
     name: item.league.name,
     sportSlug: 'american-football',
-    externalId: item.league.id != null ? String(item.league.id) : null,
+    externalId: null,
     type: leagueType,
     logo: item.league.logo ?? null,
     altLogo: item.league.altLogo ?? null,
     countryId,
-    apiSportsPayload: item,
+    apiSportsPayload: null,
   });
 
   for (const season of item.seasons) {
@@ -85,16 +85,14 @@ export async function createAmericanFootballLeagueEntry(body: unknown) {
 }
 
 export async function updateAmericanFootballLeagueEntry(id: string, body: unknown) {
-  const item = americanFootballLeagueItemSchema.parse(body);
+  const item = americanFootballLeagueCreateSchema.parse(body);
   const leagueType = await resolveCatalogLeagueType(item.league.type);
 
   await updateLeague(id, {
     name: item.league.name,
-    external_id: item.league.id != null ? String(item.league.id) : null,
     type: leagueType,
     logo: item.league.logo ?? null,
     alt_logo: item.league.altLogo ?? null,
-    api_sports_payload: item,
   });
 
   const league = await getLeague(id);

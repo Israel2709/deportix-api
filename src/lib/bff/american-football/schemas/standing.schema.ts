@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { leagueRefSchema, nullableNumber, nullableString, teamRefSchema } from './primitives';
+import { leagueRefSchema, nullableNumber, nullableString, teamRefSchema, canonicalIdSchema } from './primitives';
 
 const pointsBlockSchema = z
   .object({
@@ -32,7 +32,7 @@ const ncaaConferenceSchema = z
   })
   .strict();
 
-export const americanFootballStandingItemSchema = z
+export const americanFootballStandingCreateSchema = z
   .object({
     league: leagueRefSchema,
     conference: nullableString.optional(),
@@ -49,4 +49,9 @@ export const americanFootballStandingItemSchema = z
   })
   .strict();
 
+export const americanFootballStandingItemSchema = americanFootballStandingCreateSchema.extend({
+  id: canonicalIdSchema,
+});
+
+export type AmericanFootballStandingCreate = z.infer<typeof americanFootballStandingCreateSchema>;
 export type AmericanFootballStandingItem = z.infer<typeof americanFootballStandingItemSchema>;

@@ -108,7 +108,7 @@ export async function buildAmericanFootballLeagueContext(
     : null;
 
   return {
-    id: league.dto.externalId ? Number(league.dto.externalId) || league.dto.externalId : null,
+    id: league.dto.id,
     name: league.dto.name,
     season: seasonYear ?? null,
     logo: league.dto.logo,

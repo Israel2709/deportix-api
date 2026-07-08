@@ -5,39 +5,21 @@ import type { TeamMap } from '@/lib/api/serializers';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
 import type { AmericanFootballStandingItem } from '../schemas/standing.schema';
 
-function leagueExternalId(externalId: string | null): number | string | null {
-  if (!externalId) return null;
-  const numeric = Number(externalId);
-  return Number.isNaN(numeric) ? externalId : numeric;
-}
-
-function teamExternalNumeric(externalId: string | null): number | string | null {
-  if (!externalId) return null;
-  const numeric = Number(externalId);
-  return Number.isNaN(numeric) ? externalId : numeric;
-}
-
 export function mapRawAmericanFootballStandingToApiSports(
   doc: RawDoc,
   league: LeagueDTO,
   country: CountryRecord | null,
   seasonYear: number,
   teamMap: TeamMap,
-  teamExternalIds: Map<string, string | null>,
 ): AmericanFootballStandingItem {
   const raw = doc.data;
-  const stored = raw.api_sports_payload;
-  if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
-    return stored as AmericanFootballStandingItem;
-  }
-
   const teamId = asStr(raw.team_id);
   const teamInfo = teamId ? teamMap.get(teamId) : undefined;
-  const teamExternalId = teamId ? teamExternalIds.get(teamId) : null;
 
   return {
+    id: doc.id,
     league: {
-      id: leagueExternalId(league.externalId) ?? 0,
+      id: league.id,
       name: league.name ?? '',
       season: seasonYear,
       logo: league.logo,
@@ -51,7 +33,7 @@ export function mapRawAmericanFootballStandingToApiSports(
     division: asStr(raw.division),
     position: asNum(raw.position),
     team: {
-      id: teamExternalNumeric(teamExternalId ?? null) ?? teamId ?? 0,
+      id: teamId ?? '',
       name: teamInfo?.name ?? asStr(raw.team_name) ?? '',
       logo: teamInfo?.logo ?? asStr(raw.team_logo),
     },

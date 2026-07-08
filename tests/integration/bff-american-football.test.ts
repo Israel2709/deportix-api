@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeFakeDb, type Dataset } from '../helpers/fake-firestore';
 
+const LEAGUE_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const SEASON_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const TEAM_MIA_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+const TEAM_DET_ID = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+const GAME_ID = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+const STANDING_ID = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+
 const state: { db: ReturnType<typeof makeFakeDb> | null } = { db: null };
 vi.mock('@/lib/firebase/admin', () => ({
   getDb: () => state.db,
@@ -15,53 +22,7 @@ const { fetchAmericanFootballGames } = await import('@/lib/bff/american-football
 const { fetchAmericanFootballTeams } = await import('@/lib/bff/american-football/services/teams.service');
 const { fetchAmericanFootballStandings } = await import('@/lib/bff/american-football/services/standings.service');
 const { fetchAmericanFootballTimezones } = await import('@/lib/bff/american-football/services/timezone.service');
-
-const gamePayload = {
-  game: {
-    id: 4550,
-    stage: 'Regular Season',
-    week: '5',
-    date: { timezone: 'UTC', date: '2022-09-30', time: '00:00', timestamp: 1664496000 },
-    venue: { name: 'Hard Rock Stadium', city: 'Miami Gardens' },
-    status: { short: 'FT', long: 'Finished', timer: null },
-  },
-  league: {
-    id: 1,
-    name: 'NFL',
-    season: '2022',
-    logo: 'https://media.api-sports.io/american-football/leagues/1.png',
-    country: { name: 'USA', code: 'US', flag: 'https://media.api-sports.io/flags/us.svg' },
-  },
-  teams: {
-    home: { id: 25, name: 'Miami Dolphins', logo: 'https://example.com/mia.png' },
-    away: { id: 7, name: 'Detroit Lions', logo: 'https://example.com/det.png' },
-  },
-  scores: {
-    home: { total: 38 },
-    away: { total: 26 },
-  },
-};
-
-const standingPayload = {
-  league: {
-    id: 1,
-    name: 'NFL',
-    season: 2022,
-    logo: 'https://media.api-sports.io/american-football/leagues/1.png',
-    country: { name: 'USA', code: 'US', flag: 'https://media.api-sports.io/flags/us.svg' },
-  },
-  conference: 'American Football Conference',
-  division: 'East',
-  position: 1,
-  team: { id: 25, name: 'Miami Dolphins', logo: 'https://example.com/mia.png' },
-  won: 3,
-  lost: 1,
-  ties: 0,
-  points: { for: 98, against: 91, difference: 7 },
-  records: { home: '2-0', road: '1-1', conference: '3-1', division: '2-0' },
-  streak: 'L1',
-  ncaa_conference: { won: null, lost: null, points: { for: null, against: null } },
-};
+const { createAmericanFootballTeamEntry } = await import('@/lib/bff/american-football/writers/teams.writer');
 
 const dataset: Dataset = {
   sports: [{ id: 'sp_nfl', slug: 'american-football', name: 'NFL' }],
@@ -76,7 +37,7 @@ const dataset: Dataset = {
   ],
   leagues: [
     {
-      id: 'lg_nfl',
+      id: LEAGUE_ID,
       external_id: '1',
       name: 'NFL',
       type: 'league',
@@ -87,8 +48,8 @@ const dataset: Dataset = {
   ],
   seasons: [
     {
-      id: 'se_nfl22',
-      league_id: 'lg_nfl',
+      id: SEASON_ID,
+      league_id: LEAGUE_ID,
       year: 2022,
       current: true,
       start_date: '2022-08-05',
@@ -97,16 +58,16 @@ const dataset: Dataset = {
   ],
   nfl_teams: [
     {
-      id: 'tm_mia',
-      league_id: 'lg_nfl',
+      id: TEAM_MIA_ID,
+      league_id: LEAGUE_ID,
       external_id: '25',
       name: 'Miami Dolphins',
       logo: 'https://example.com/mia.png',
       api_sports_payload: { id: 25, name: 'Miami Dolphins', logo: 'https://example.com/mia.png' },
     },
     {
-      id: 'tm_det',
-      league_id: 'lg_nfl',
+      id: TEAM_DET_ID,
+      league_id: LEAGUE_ID,
       external_id: '7',
       name: 'Detroit Lions',
       logo: 'https://example.com/det.png',
@@ -115,27 +76,31 @@ const dataset: Dataset = {
   ],
   nfl_games: [
     {
-      id: 'g1',
+      id: GAME_ID,
       external_id: '4550',
-      league_id: 'lg_nfl',
-      season_id: 'se_nfl22',
-      home_team_id: 'tm_mia',
-      away_team_id: 'tm_det',
+      league_id: LEAGUE_ID,
+      season_id: SEASON_ID,
+      home_team_id: TEAM_MIA_ID,
+      away_team_id: TEAM_DET_ID,
       game_date: '2022-09-30T00:00:00.000Z',
       status: 'FT',
       home_score: 38,
       away_score: 26,
-      api_sports_payload: gamePayload,
+      teams: {
+        home: { name: 'Miami Dolphins' },
+        away: { name: 'Detroit Lions' },
+      },
     },
   ],
   nfl_standings: [
     {
-      id: 'st1',
-      league_id: 'lg_nfl',
-      season_id: 'se_nfl22',
-      team_id: 'tm_mia',
+      id: STANDING_ID,
+      league_id: LEAGUE_ID,
+      season_id: SEASON_ID,
+      team_id: TEAM_MIA_ID,
       conference: 'American Football Conference',
-      api_sports_payload: standingPayload,
+      wins: 3,
+      losses: 1,
     },
   ],
   reference_timezones: [{ id: 'UTC', name: 'UTC' }],
@@ -153,48 +118,80 @@ describe('BFF NFL services', () => {
     ]);
   });
 
-  it('returns NFL league with nested seasons', async () => {
-    const leagues = await fetchAmericanFootballLeagues({ id: '1' });
+  it('returns NFL league with canonical id and nested seasons', async () => {
+    const leagues = await fetchAmericanFootballLeagues({ id: LEAGUE_ID });
     expect(leagues).toHaveLength(1);
     expect(leagues[0]).toMatchObject({
-      league: { id: 1, name: 'NFL' },
+      league: { id: LEAGUE_ID, name: 'NFL' },
       country: { name: 'USA', code: 'US' },
       seasons: [{ year: 2022, current: true }],
     });
+  });
+
+  it('resolves league by legacy external id but returns canonical id', async () => {
+    const leagues = await fetchAmericanFootballLeagues({ id: '1' });
+    expect(leagues[0]?.league.id).toBe(LEAGUE_ID);
   });
 
   it('returns NFL season years', async () => {
     expect(await fetchAmericanFootballGlobalSeasons()).toEqual([2022]);
   });
 
-  it('returns games by league and season', async () => {
-    const games = await fetchAmericanFootballGames({ league: '1', season: 2022 });
+  it('returns games by league and season with canonical ids', async () => {
+    const games = await fetchAmericanFootballGames({ league: LEAGUE_ID, season: 2022 });
     expect(games).toHaveLength(1);
-    expect(games[0]).toMatchObject({ game: { id: 4550 } });
+    expect(games[0]).toMatchObject({
+      game: { id: GAME_ID },
+      league: { id: LEAGUE_ID, name: 'NFL', season: 2022 },
+      teams: {
+        home: { id: TEAM_MIA_ID, name: 'Miami Dolphins' },
+        away: { id: TEAM_DET_ID, name: 'Detroit Lions' },
+      },
+    });
   });
 
-  it('returns game by id from stored payload', async () => {
-    const games = await fetchAmericanFootballGames({ id: '4550' });
-    expect(games[0]).toEqual(gamePayload);
+  it('returns game by canonical id', async () => {
+    const games = await fetchAmericanFootballGames({ id: GAME_ID });
+    expect(games[0]?.game.id).toBe(GAME_ID);
   });
 
-  it('returns teams by league and season', async () => {
-    const teams = await fetchAmericanFootballTeams({ league: '1', season: 2022 });
+  it('returns teams by league and season with canonical ids', async () => {
+    const teams = await fetchAmericanFootballTeams({ league: LEAGUE_ID, season: 2022 });
     expect(teams).toHaveLength(2);
-    expect(teams[0]).toMatchObject({ id: 25, name: 'Miami Dolphins' });
+    expect(teams).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: TEAM_MIA_ID, name: 'Miami Dolphins' }),
+        expect.objectContaining({ id: TEAM_DET_ID, name: 'Detroit Lions' }),
+      ]),
+    );
   });
 
-  it('returns standings by league and season', async () => {
+  it('returns standings by league and season with canonical ids', async () => {
     const standings = await fetchAmericanFootballStandings({
-      league: '1',
+      league: LEAGUE_ID,
       season: 2022,
       conference: 'American Football Conference',
     });
     expect(standings).toHaveLength(1);
-    expect(standings[0]).toEqual(standingPayload);
+    expect(standings[0]).toMatchObject({
+      id: STANDING_ID,
+      league: { id: LEAGUE_ID, name: 'NFL', season: 2022 },
+      team: { id: TEAM_MIA_ID, name: 'Miami Dolphins' },
+    });
   });
 
   it('lists timezones', async () => {
     expect(await fetchAmericanFootballTimezones()).toEqual(['UTC']);
+  });
+
+  it('creates a team without client-assigned id and returns canonical id', async () => {
+    const created = await createAmericanFootballTeamEntry(LEAGUE_ID, {
+      name: 'Buffalo Bills',
+      logo: null,
+    });
+    expect(created.name).toBe('Buffalo Bills');
+    expect(created.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
   });
 });

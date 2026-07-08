@@ -72,7 +72,7 @@ CORS_ALLOWED_ORIGINS=*
 
 **BFF (API-Sports, soccer):** `/countries` · `/leagues` · `/leagues/seasons` · `/fixtures` · `/fixtures/rounds` · `/standings`.
 
-**BFF American Football (API-Sports American Football v1):** `/american-football/timezone` · `/american-football/seasons` · `/american-football/countries` · `/american-football/leagues` · `/american-football/games` · `/american-football/teams` · `/american-football/standings` — full api-sports envelope + CRUD for portal loading. See [docs/american-football-api-reference.md](./docs/american-football-api-reference.md).
+**BFF American Football (API-Sports American Football v1):** `/american-football/timezone` · `/american-football/seasons` · `/american-football/countries` · `/american-football/leagues` · `/american-football/games` · `/american-football/teams` · `/american-football/standings` — full api-sports envelope + CRUD for portal loading. Resources use **server-assigned UUIDs** as canonical `id`; POST bodies must not include resource ids. See [docs/american-football-api-reference.md](./docs/american-football-api-reference.md).
 
 Full contract: [docs/api-contract.md](./docs/api-contract.md).
 

@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — API-Sports American Football v1 compatibility with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal. Request bodies\nmust match the objects returned in `response[]` (same shapes as api-sports NFL).\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — American Football BFF with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal.\n**Canonical IDs:** server-generated UUIDs (Firestore document ids) are returned in `response[]`.\nPOST bodies must **not** include resource ids; reference existing entities by UUID in nested\n`league.id`, `team.id`, etc. Legacy api-sports numeric ids are accepted only as a read lookup\nfallback on PATCH/DELETE query params until old data is gone.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -1791,9 +1791,10 @@ export const openapiDocument = {
           {
             "name": "id",
             "in": "query",
-            "description": "Provider league id",
+            "description": "Canonical league UUID (or legacy external id)",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -1862,14 +1863,14 @@ export const openapiDocument = {
           "BFF American Football"
         ],
         "summary": "Create NFL league",
-        "description": "Creates the league and nested seasons from the api-sports league object.",
+        "description": "Creates the league and nested seasons. Body must not include `league.id` — the server assigns a UUID.",
         "operationId": "americanFootballCreateLeague",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballLeagueItem"
+                "$ref": "#/components/schemas/AmericanFootballLeagueCreateBody"
               }
             }
           }
@@ -1904,9 +1905,10 @@ export const openapiDocument = {
             "name": "id",
             "in": "query",
             "required": true,
-            "description": "Provider league id or internal id.",
+            "description": "Canonical league UUID or legacy external id (deprecated).",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -1915,7 +1917,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballLeagueItem"
+                "$ref": "#/components/schemas/AmericanFootballLeagueCreateBody"
               }
             }
           }
@@ -1980,23 +1982,25 @@ export const openapiDocument = {
           "BFF American Football"
         ],
         "summary": "List or lookup NFL games",
-        "description": "Three query modes:\n- `league` + `season` (+ optional `timezone`) — games in a season\n- `id` — single game by provider id\n- `league` + `season` + `team` — games for a team\n",
+        "description": "Three query modes:\n- `league` + `season` (+ optional `timezone`) — games in a season\n- `id` — single game by canonical UUID (legacy external id accepted as fallback)\n- `league` + `season` + `team` — games for a team (UUIDs)\n",
         "operationId": "americanFootballListGames",
         "parameters": [
           {
             "name": "id",
             "in": "query",
-            "description": "Provider game id",
+            "description": "Game UUID",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
             "name": "league",
             "in": "query",
-            "description": "Provider league id",
+            "description": "League UUID",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -2009,9 +2013,10 @@ export const openapiDocument = {
           {
             "name": "team",
             "in": "query",
-            "description": "Provider team id",
+            "description": "Team UUID",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -2047,14 +2052,14 @@ export const openapiDocument = {
           "BFF American Football"
         ],
         "summary": "Create NFL game",
-        "description": "Body must be a complete api-sports game object (same shape as `response[]` items).",
+        "description": "Body must not include `game.id`. `teams.*.id` and `league.id` must reference existing UUIDs.",
         "operationId": "americanFootballCreateGame",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballGameItem"
+                "$ref": "#/components/schemas/AmericanFootballGameCreateBody"
               }
             }
           }
@@ -2094,9 +2099,10 @@ export const openapiDocument = {
             "name": "gameId",
             "in": "path",
             "required": true,
-            "description": "Provider game id or internal document id.",
+            "description": "Game UUID or legacy external id (deprecated).",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -2124,7 +2130,7 @@ export const openapiDocument = {
           "BFF American Football"
         ],
         "summary": "Update NFL game",
-        "description": "Default: merge partial fields into stored api-sports payload.\nPass `replace=true` to require a full `AmericanFootballGameItem` body.\n",
+        "description": "Default: merge partial fields into stored api-sports payload.\nPass `replace=true` to require a full `AmericanFootballGameCreateBody`.\n",
         "operationId": "americanFootballPatchGame",
         "parameters": [
           {
@@ -2132,13 +2138,14 @@ export const openapiDocument = {
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
             "name": "replace",
             "in": "query",
-            "description": "When `true`, body must be a complete game object.",
+            "description": "When `true`, body must be a complete game object (without `game.id`).",
             "schema": {
               "type": "boolean"
             }
@@ -2149,7 +2156,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballGameItem"
+                "$ref": "#/components/schemas/AmericanFootballGameCreateBody"
               }
             }
           }
@@ -2218,9 +2225,10 @@ export const openapiDocument = {
             "name": "league",
             "in": "query",
             "required": true,
-            "description": "Provider league id",
+            "description": "League UUID",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -2256,6 +2264,7 @@ export const openapiDocument = {
           "BFF American Football"
         ],
         "summary": "Create NFL team",
+        "description": "Body must not include `id` — server assigns UUID. Query `league` is the league UUID.",
         "operationId": "americanFootballCreateTeam",
         "parameters": [
           {
@@ -2263,7 +2272,8 @@ export const openapiDocument = {
             "in": "query",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -2272,7 +2282,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballTeamItem"
+                "$ref": "#/components/schemas/AmericanFootballTeamCreateBody"
               }
             }
           }
@@ -2307,9 +2317,10 @@ export const openapiDocument = {
             "name": "id",
             "in": "query",
             "required": true,
-            "description": "Team document id or provider external id.",
+            "description": "Team UUID or legacy external id (deprecated).",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -2318,7 +2329,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballTeamItem"
+                "$ref": "#/components/schemas/AmericanFootballTeamCreateBody"
               }
             }
           }
@@ -2434,14 +2445,14 @@ export const openapiDocument = {
           "BFF American Football"
         ],
         "summary": "Create standing row",
-        "description": "Body is one api-sports standing row. Team (`team.id`) must already exist in the league.",
+        "description": "Body must not include row `id`. `team.id` and `league.id` must be existing UUIDs.",
         "operationId": "americanFootballCreateStanding",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballStandingItem"
+                "$ref": "#/components/schemas/AmericanFootballStandingCreateBody"
               }
             }
           }
@@ -2479,9 +2490,10 @@ export const openapiDocument = {
             "name": "id",
             "in": "query",
             "required": true,
-            "description": "Standing document id.",
+            "description": "Standing row UUID.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -2490,7 +2502,7 @@ export const openapiDocument = {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AmericanFootballStandingItem"
+                "$ref": "#/components/schemas/AmericanFootballStandingCreateBody"
               }
             }
           }
@@ -3247,6 +3259,12 @@ export const openapiDocument = {
           "response": []
         }
       },
+      "AmericanFootballCanonicalId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Server-assigned Firestore document id exposed in BFF responses.",
+        "example": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+      },
       "AmericanFootballCountryRef": {
         "type": "object",
         "required": [
@@ -3306,17 +3324,39 @@ export const openapiDocument = {
         ],
         "properties": {
           "id": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "example": 25
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
           },
           "name": {
             "type": "string",
             "example": "Miami Dolphins"
           },
           "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AmericanFootballTeamCreateBody": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "description": "POST/PATCH body — id is assigned by the server on create.",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Miami Dolphins"
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "altLogo": {
             "type": [
               "string",
               "null"
@@ -3332,11 +3372,7 @@ export const openapiDocument = {
         ],
         "properties": {
           "id": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "example": 25
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
           },
           "name": {
             "type": "string",
@@ -3348,6 +3384,12 @@ export const openapiDocument = {
               "null"
             ],
             "example": "https://media.api-sports.io/american-football/teams/25.png"
+          },
+          "altLogo": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
@@ -3475,12 +3517,38 @@ export const openapiDocument = {
         ],
         "properties": {
           "id": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "example": 4550
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
           },
+          "stage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "Regular Season"
+          },
+          "week": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "5"
+          },
+          "date": {
+            "$ref": "#/components/schemas/AmericanFootballGameDate"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/AmericanFootballGameVenue"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AmericanFootballGameStatus"
+          }
+        }
+      },
+      "AmericanFootballGameCoreCreate": {
+        "type": "object",
+        "description": "Game fields for POST/PATCH — no `id`; assigned on create.",
+        "additionalProperties": false,
+        "properties": {
           "stage": {
             "type": [
               "string",
@@ -3514,11 +3582,7 @@ export const openapiDocument = {
         ],
         "properties": {
           "id": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "example": 1
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
           },
           "name": {
             "type": "string",
@@ -3579,10 +3643,34 @@ export const openapiDocument = {
           "league",
           "teams"
         ],
-        "description": "api-sports NFL game object — same shape for GET responses and POST/PATCH bodies.",
+        "description": "Game object returned in `response[]` after GET/POST/PATCH.",
         "properties": {
           "game": {
             "$ref": "#/components/schemas/AmericanFootballGameCore"
+          },
+          "league": {
+            "$ref": "#/components/schemas/AmericanFootballGameLeagueRef"
+          },
+          "teams": {
+            "$ref": "#/components/schemas/AmericanFootballGameTeams"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/AmericanFootballGameScores"
+          }
+        }
+      },
+      "AmericanFootballGameCreateBody": {
+        "type": "object",
+        "required": [
+          "game",
+          "league",
+          "teams"
+        ],
+        "description": "POST/PATCH body — `game` has no `id`; teams and league must reference existing UUIDs.",
+        "additionalProperties": false,
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/AmericanFootballGameCoreCreate"
           },
           "league": {
             "$ref": "#/components/schemas/AmericanFootballGameLeagueRef"
@@ -3603,11 +3691,7 @@ export const openapiDocument = {
         ],
         "properties": {
           "id": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "example": 1
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
           },
           "name": {
             "type": "string",
@@ -3621,6 +3705,45 @@ export const openapiDocument = {
             "example": "league"
           },
           "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "altLogo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AmericanFootballLeagueCoreCreate": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "description": "League fields for POST/PATCH — no `id` on create.",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "NFL"
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "league"
+          },
+          "logo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "altLogo": {
             "type": [
               "string",
               "null"
@@ -3731,6 +3854,30 @@ export const openapiDocument = {
           }
         }
       },
+      "AmericanFootballLeagueCreateBody": {
+        "type": "object",
+        "required": [
+          "league",
+          "country",
+          "seasons"
+        ],
+        "description": "POST/PATCH body — league id is assigned on create.",
+        "additionalProperties": false,
+        "properties": {
+          "league": {
+            "$ref": "#/components/schemas/AmericanFootballLeagueCoreCreate"
+          },
+          "country": {
+            "$ref": "#/components/schemas/AmericanFootballCountryRef"
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AmericanFootballSeasonItem"
+            }
+          }
+        }
+      },
       "AmericanFootballStandingLeagueRef": {
         "type": "object",
         "required": [
@@ -3739,11 +3886,7 @@ export const openapiDocument = {
         ],
         "properties": {
           "id": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "example": 1
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
           },
           "name": {
             "type": "string",
@@ -3862,10 +4005,86 @@ export const openapiDocument = {
       "AmericanFootballStandingItem": {
         "type": "object",
         "required": [
+          "id",
           "league",
           "team"
         ],
-        "description": "One standing row — same shape for GET responses and POST/PATCH bodies.",
+        "description": "Standing row returned in `response[]`.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/AmericanFootballCanonicalId"
+          },
+          "league": {
+            "$ref": "#/components/schemas/AmericanFootballStandingLeagueRef"
+          },
+          "conference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "American Football Conference"
+          },
+          "division": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "East"
+          },
+          "position": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 1
+          },
+          "team": {
+            "$ref": "#/components/schemas/AmericanFootballTeamRef"
+          },
+          "won": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "lost": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ties": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "points": {
+            "$ref": "#/components/schemas/AmericanFootballPointsBlock"
+          },
+          "records": {
+            "$ref": "#/components/schemas/AmericanFootballRecords"
+          },
+          "streak": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "L1"
+          },
+          "ncaa_conference": {
+            "$ref": "#/components/schemas/AmericanFootballNcaaConference"
+          }
+        }
+      },
+      "AmericanFootballStandingCreateBody": {
+        "type": "object",
+        "required": [
+          "league",
+          "team"
+        ],
+        "description": "POST/PATCH body — row `id` assigned on create; `league.id` and `team.id` must be existing UUIDs.",
+        "additionalProperties": false,
         "properties": {
           "league": {
             "$ref": "#/components/schemas/AmericanFootballStandingLeagueRef"

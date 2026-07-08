@@ -14,8 +14,11 @@
    the API never fails on a missing index. Trade-off: bounded in-memory work; mitigated by current-
    season defaults and fetch caps. See [caching.md](./caching.md).
 
-4. **Public ids = document id, with `external_id` accepted as a fallback.** Lets consumers use the
-   clean provider id (e.g. `262` for Liga MX) without us leaking only-internal UUIDs as the sole key.
+4. **Public ids = Firestore document UUID, with `external_id` as a read fallback on `/v1`.** Generic
+   REST consumers see `id` (UUID) plus optional `externalId` (provider key). The BFF
+   `/american-football/*` layer uses the same UUID as the visible `id` in responses; POST bodies
+   must not supply resource ids — the server assigns them. Legacy provider ids are accepted only as
+   a deprecated lookup fallback on GET/PATCH/DELETE query params.
 
 5. **`data-status` derives coverage from real `count()`s** for every sport plus a *curated featured
    set* of leagues (`featured-leagues.ts`). Deriving per-league coverage for all 1,200+ leagues on

@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { countryRefSchema, idSchema, nullableNumber, nullableString, teamRefSchema } from './primitives';
+import {
+  canonicalIdSchema,
+  countryRefSchema,
+  leagueRefSchema,
+  nullableNumber,
+  nullableString,
+  teamRefSchema,
+} from './primitives';
 
 const gameDateSchema = z
   .object({
@@ -36,27 +43,20 @@ const quarterScoresSchema = z
   })
   .strict();
 
-export const americanFootballGameItemSchema = z
+const gameFieldsSchema = z
   .object({
-    game: z
-      .object({
-        id: idSchema,
-        stage: nullableString.optional(),
-        week: nullableString.optional(),
-        date: gameDateSchema.optional(),
-        venue: gameVenueSchema.optional(),
-        status: gameStatusSchema.optional(),
-      })
-      .strict(),
-    league: z
-      .object({
-        id: idSchema,
-        name: z.string(),
-        season: z.union([z.number(), z.string()]).optional(),
-        logo: nullableString.optional(),
-        country: countryRefSchema.optional(),
-      })
-      .strict(),
+    stage: nullableString.optional(),
+    week: nullableString.optional(),
+    date: gameDateSchema.optional(),
+    venue: gameVenueSchema.optional(),
+    status: gameStatusSchema.optional(),
+  })
+  .strict();
+
+export const americanFootballGameCreateSchema = z
+  .object({
+    game: gameFieldsSchema,
+    league: leagueRefSchema,
     teams: z
       .object({
         home: teamRefSchema,
@@ -73,4 +73,34 @@ export const americanFootballGameItemSchema = z
   })
   .strict();
 
+export const americanFootballGameItemSchema = z
+  .object({
+    game: z
+      .object({
+        id: canonicalIdSchema,
+        stage: nullableString.optional(),
+        week: nullableString.optional(),
+        date: gameDateSchema.optional(),
+        venue: gameVenueSchema.optional(),
+        status: gameStatusSchema.optional(),
+      })
+      .strict(),
+    league: leagueRefSchema,
+    teams: z
+      .object({
+        home: teamRefSchema,
+        away: teamRefSchema,
+      })
+      .strict(),
+    scores: z
+      .object({
+        home: quarterScoresSchema.optional(),
+        away: quarterScoresSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+export type AmericanFootballGameCreate = z.infer<typeof americanFootballGameCreateSchema>;
 export type AmericanFootballGameItem = z.infer<typeof americanFootballGameItemSchema>;

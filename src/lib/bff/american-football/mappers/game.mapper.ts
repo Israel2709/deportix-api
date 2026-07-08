@@ -10,18 +10,12 @@ function asObj(value: unknown): Raw | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Raw) : null;
 }
 
-function externalNumericId(value: string | null): number | string | null {
-  if (!value) return null;
-  const numeric = Number(value);
-  return Number.isNaN(numeric) ? value : numeric;
-}
-
 export function mapRawAmericanFootballGameToApiSports(
   doc: RawDoc,
   teamMap?: TeamMap,
-  teamExternalIds?: { home?: string | null; away?: string | null },
+  _teamExternalIds?: { home?: string | null; away?: string | null },
   leagueContext?: {
-    id: number | string | null;
+    id: string;
     name: string | null;
     season: number | string | null;
     logo: string | null;
@@ -29,11 +23,6 @@ export function mapRawAmericanFootballGameToApiSports(
   } | null,
 ): AmericanFootballGameItem {
   const raw = doc.data;
-  const stored = raw.api_sports_payload;
-  if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
-    return stored as AmericanFootballGameItem;
-  }
-
   const teamsRaw = asObj(raw.teams) ?? {};
   const homeTeamId = asStr(raw.home_team_id);
   const awayTeamId = asStr(raw.away_team_id);
@@ -45,7 +34,7 @@ export function mapRawAmericanFootballGameToApiSports(
 
   return {
     game: {
-      id: externalNumericId(asStr(raw.external_id)) ?? doc.id,
+      id: doc.id,
       stage: asStr(raw.stage),
       week: asStr(raw.week) ?? asStr(raw.round),
       date: {
@@ -65,7 +54,7 @@ export function mapRawAmericanFootballGameToApiSports(
       },
     },
     league: {
-      id: leagueContext?.id ?? 0,
+      id: leagueContext?.id ?? asStr(raw.league_id) ?? '',
       name: leagueContext?.name ?? '',
       season: leagueContext?.season ?? undefined,
       logo: leagueContext?.logo,
@@ -82,13 +71,11 @@ export function mapRawAmericanFootballGameToApiSports(
         asObj(teamsRaw.home) ?? {},
         homeTeamId,
         teamMap,
-        teamExternalIds?.home ?? null,
       ) as AmericanFootballGameItem['teams']['home'],
       away: enrichTeamSide(
         asObj(teamsRaw.away) ?? {},
         awayTeamId,
         teamMap,
-        teamExternalIds?.away ?? null,
       ) as AmericanFootballGameItem['teams']['away'],
     },
     scores: {
@@ -107,7 +94,5 @@ export function americanFootballGameDate(raw: Raw): string | null {
 }
 
 export function americanFootballGameExternalId(raw: Raw): string | null {
-  const game = asObj(raw.game);
-  const fromGame = game ? asStr(game.id) : null;
-  return fromGame ?? asStr(raw.external_id);
+  return asStr(raw.external_id);
 }

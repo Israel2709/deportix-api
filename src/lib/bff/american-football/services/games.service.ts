@@ -6,7 +6,6 @@ import {
 } from '@/lib/firebase/repositories/matches.repository';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
 import {
-  buildTeamExternalIdMap,
   buildTeamMapForLeague,
   getTeamById,
 } from '@/lib/firebase/repositories/teams.repository';
@@ -19,22 +18,13 @@ async function mapDocsForLeague(
   seasonYear: number | string | null | undefined,
   docs: RawDoc[],
 ) {
-  const [teamMap, externalIds, leagueContext] = await Promise.all([
+  const [teamMap, leagueContext] = await Promise.all([
     buildTeamMapForLeague(leagueId, 'american-football'),
-    buildTeamExternalIdMap(leagueId, 'american-football'),
     buildAmericanFootballLeagueContext(leagueId, seasonYear),
   ]);
 
   return docs.map((doc) =>
-    mapRawAmericanFootballGameToApiSports(
-      doc,
-      teamMap,
-      {
-        home: externalIds.get(asStr(doc.data.home_team_id) ?? '') ?? null,
-        away: externalIds.get(asStr(doc.data.away_team_id) ?? '') ?? null,
-      },
-      leagueContext,
-    ),
+    mapRawAmericanFootballGameToApiSports(doc, teamMap, undefined, leagueContext),
   );
 }
 

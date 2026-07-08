@@ -2,7 +2,12 @@ import { z } from 'zod';
 
 export const nullableString = z.string().nullable();
 export const nullableNumber = z.number().nullable();
-export const idSchema = z.union([z.number(), z.string()]);
+
+/** Server-assigned document id exposed in BFF responses. */
+export const canonicalIdSchema = z.string().uuid();
+
+/** Legacy api-sports id shape (numeric or string) — import/fixture validation only. */
+export const legacyIdSchema = z.union([z.number(), z.string()]);
 
 export const countryRefSchema = z
   .object({
@@ -14,7 +19,7 @@ export const countryRefSchema = z
 
 export const teamRefSchema = z
   .object({
-    id: idSchema,
+    id: canonicalIdSchema,
     name: z.string(),
     logo: nullableString.optional(),
   })
@@ -22,7 +27,7 @@ export const teamRefSchema = z
 
 export const leagueRefSchema = z
   .object({
-    id: idSchema,
+    id: canonicalIdSchema,
     name: z.string(),
     season: z.union([z.number(), z.string()]).optional(),
     logo: nullableString.optional(),

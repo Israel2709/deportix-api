@@ -4,6 +4,7 @@ export * from './team.schema';
 export * from './league.schema';
 export * from './game.schema';
 export * from './standing.schema';
+export * from './api-sports-import.schema';
 
 import { americanFootballEnvelopeSchema } from './envelope.schema';
 import { americanFootballCountryItemSchema } from './country.schema';

@@ -1,6 +1,9 @@
-import { asStr } from '@/lib/api/serializers';
+import { asNum, asStr } from '@/lib/api/serializers';
 import { notFound } from '@/lib/api/errors';
-import type { AmericanFootballStandingItem } from '@/lib/bff/american-football/schemas/standing.schema';
+import type { AmericanFootballStandingCreate } from '@/lib/bff/american-football/schemas/standing.schema';
+import type { LeagueDTO } from '@/lib/contracts/dto';
+import type { CountryRecord } from '@/lib/firebase/repositories/countries.repository';
+import type { TeamMap } from '@/lib/api/serializers';
 import {
   createDoc,
   deleteDoc,
@@ -31,7 +34,7 @@ function standingToFirestore(
   leagueId: string,
   seasonId: string,
   teamId: string,
-  item: AmericanFootballStandingItem,
+  item: AmericanFootballStandingCreate,
 ): Record<string, unknown> {
   const now = new Date().toISOString();
   return {
@@ -54,7 +57,6 @@ function standingToFirestore(
     record_division: item.records?.division ?? null,
     streak: item.streak ?? null,
     ncaa_conference: item.ncaa_conference ?? null,
-    api_sports_payload: item,
     created_at: now,
     updated_at: now,
   };
@@ -64,7 +66,7 @@ export async function createAmericanFootballStanding(
   leagueId: string,
   seasonId: string,
   teamId: string,
-  item: AmericanFootballStandingItem,
+  item: AmericanFootballStandingCreate,
 ): Promise<RawDoc> {
   const id = crypto.randomUUID();
   await createDoc(COLLECTION, id, standingToFirestore(leagueId, seasonId, teamId, item));
@@ -75,19 +77,13 @@ export async function createAmericanFootballStanding(
 
 export async function updateAmericanFootballStanding(
   idOrExternalId: string,
-  patch: Partial<AmericanFootballStandingItem>,
+  patch: AmericanFootballStandingCreate,
 ): Promise<RawDoc> {
   const existing = await resolveDoc(COLLECTION, idOrExternalId);
   if (!existing) throw notFound('Standing not found.');
 
-  const payload = {
-    ...(existing.data.api_sports_payload as AmericanFootballStandingItem | undefined),
-    ...patch,
-  };
-
   const fields: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
-    api_sports_payload: payload,
   };
   if (patch.conference !== undefined) fields.conference = patch.conference;
   if (patch.division !== undefined) fields.division = patch.division;

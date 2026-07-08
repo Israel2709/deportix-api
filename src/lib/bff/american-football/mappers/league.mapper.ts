@@ -2,12 +2,6 @@ import type { LeagueDTO, SeasonDTO } from '@/lib/contracts/dto';
 import type { CountryRecord } from '@/lib/firebase/repositories/countries.repository';
 import type { AmericanFootballLeagueItem } from '../schemas/league.schema';
 
-function leagueExternalId(externalId: string | null): number | string | null {
-  if (!externalId) return null;
-  const numeric = Number(externalId);
-  return Number.isNaN(numeric) ? externalId : numeric;
-}
-
 function coverageFromRaw(raw: unknown): AmericanFootballLeagueItem['seasons'][number]['coverage'] {
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
     return raw as AmericanFootballLeagueItem['seasons'][number]['coverage'];
@@ -28,7 +22,7 @@ export function mapAmericanFootballLeagueToApiSports(
 ): AmericanFootballLeagueItem {
   return {
     league: {
-      id: leagueExternalId(league.externalId) ?? 0,
+      id: league.id,
       name: league.name ?? '',
       type: league.type,
       logo: league.logo,

@@ -3,13 +3,15 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   americanFootballCountriesEnvelopeSchema,
-  americanFootballGamesEnvelopeSchema,
-  americanFootballLeaguesEnvelopeSchema,
   americanFootballSeasonsEnvelopeSchema,
-  americanFootballStandingsEnvelopeSchema,
-  americanFootballTeamsEnvelopeSchema,
   americanFootballTimezoneEnvelopeSchema,
 } from '@/lib/bff/american-football/schemas';
+import {
+  americanFootballGamesApiSportsImportEnvelopeSchema,
+  americanFootballLeaguesApiSportsImportEnvelopeSchema,
+  americanFootballStandingsApiSportsImportEnvelopeSchema,
+  americanFootballTeamsApiSportsImportEnvelopeSchema,
+} from '@/lib/bff/american-football/schemas/api-sports-import.schema';
 
 const FIXTURES_DIR = join(process.cwd(), 'tests/fixtures/api-sports-nfl');
 
@@ -38,32 +40,32 @@ describe('NFL api-sports contract fixtures', () => {
   });
 
   it('parses leagues envelope', () => {
-    expect(americanFootballLeaguesEnvelopeSchema.parse(loadFixture('leagues.json'))).toMatchObject({
+    expect(americanFootballLeaguesApiSportsImportEnvelopeSchema.parse(loadFixture('leagues.json'))).toMatchObject({
       get: 'leagues',
     });
   });
 
   it('parses games list envelope', () => {
-    expect(americanFootballGamesEnvelopeSchema.parse(loadFixture('games-list.json'))).toMatchObject({
+    expect(americanFootballGamesApiSportsImportEnvelopeSchema.parse(loadFixture('games-list.json'))).toMatchObject({
       get: 'games',
     });
   });
 
   it('parses games by id envelope', () => {
-    expect(americanFootballGamesEnvelopeSchema.parse(loadFixture('games-by-id.json'))).toMatchObject({
+    expect(americanFootballGamesApiSportsImportEnvelopeSchema.parse(loadFixture('games-by-id.json'))).toMatchObject({
       get: 'games',
       results: 1,
     });
   });
 
   it('parses teams envelope', () => {
-    expect(americanFootballTeamsEnvelopeSchema.parse(loadFixture('teams.json'))).toMatchObject({
+    expect(americanFootballTeamsApiSportsImportEnvelopeSchema.parse(loadFixture('teams.json'))).toMatchObject({
       get: 'teams',
     });
   });
 
   it('parses standings envelope', () => {
-    expect(americanFootballStandingsEnvelopeSchema.parse(loadFixture('standings.json'))).toMatchObject({
+    expect(americanFootballStandingsApiSportsImportEnvelopeSchema.parse(loadFixture('standings.json'))).toMatchObject({
       get: 'standings',
     });
   });

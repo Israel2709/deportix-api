@@ -1,7 +1,6 @@
 import { buildCountryMap } from '@/lib/firebase/repositories/countries.repository';
 import { listRawAmericanFootballStandingsByLeague } from '@/lib/firebase/repositories/american-football-standings.repository';
 import {
-  buildTeamExternalIdMap,
   buildTeamMapForLeague,
 } from '@/lib/firebase/repositories/teams.repository';
 import { mapRawAmericanFootballStandingToApiSports } from '../mappers/standing.mapper';
@@ -19,10 +18,9 @@ export async function fetchAmericanFootballStandings(query: AmericanFootballStan
   const season = await resolveAmericanFootballSeason(league.id, seasonYear);
   if (!season) return [];
 
-  const [countryMap, teamMap, teamExternalIds, docs] = await Promise.all([
+  const [countryMap, teamMap, docs] = await Promise.all([
     buildCountryMap(),
     buildTeamMapForLeague(league.id, 'american-football'),
-    buildTeamExternalIdMap(league.id, 'american-football'),
     listRawAmericanFootballStandingsByLeague(league.id, {
       seasonId: season.id,
       conference: query.conference,
@@ -40,7 +38,6 @@ export async function fetchAmericanFootballStandings(query: AmericanFootballStan
       country,
       seasonYear,
       teamMap,
-      teamExternalIds,
     ),
   );
 }
