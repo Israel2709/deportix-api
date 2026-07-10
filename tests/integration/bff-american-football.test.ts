@@ -23,6 +23,10 @@ const { fetchAmericanFootballTeams } = await import('@/lib/bff/american-football
 const { fetchAmericanFootballStandings } = await import('@/lib/bff/american-football/services/standings.service');
 const { fetchAmericanFootballTimezones } = await import('@/lib/bff/american-football/services/timezone.service');
 const { createAmericanFootballTeamEntry } = await import('@/lib/bff/american-football/writers/teams.writer');
+const {
+  updateAmericanFootballLeagueEntry,
+  updateAmericanFootballSeasonYear,
+} = await import('@/lib/bff/american-football/writers/catalog.writer');
 
 const dataset: Dataset = {
   sports: [{ id: 'sp_nfl', slug: 'american-football', name: 'NFL' }],
@@ -193,5 +197,50 @@ describe('BFF NFL services', () => {
     expect(created.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
+  });
+
+  it('updates league seasons when patching a league', async () => {
+    const updated = await updateAmericanFootballLeagueEntry(LEAGUE_ID, {
+      league: { name: 'NFL', type: 'league', logo: 'https://media.api-sports.io/american-football/leagues/1.png' },
+      country: { name: 'USA', code: 'US', flag: 'https://media.api-sports.io/flags/us.svg' },
+      seasons: [
+        {
+          year: 2022,
+          start: '2022-09-01',
+          end: '2023-02-15',
+          current: true,
+        },
+      ],
+    });
+
+    expect(updated.seasons).toEqual([
+      expect.objectContaining({
+        year: 2022,
+        start: '2022-09-01',
+        end: '2023-02-15',
+        current: true,
+      }),
+    ]);
+  });
+
+  it('patches a season year directly', async () => {
+    const year = await updateAmericanFootballSeasonYear(
+      {
+        year: 2022,
+        start: '2022-08-01',
+        end: '2023-01-31',
+        current: true,
+      },
+      LEAGUE_ID,
+    );
+
+    expect(year).toBe(2022);
+    const leagues = await fetchAmericanFootballLeagues({ id: LEAGUE_ID });
+    expect(leagues[0]?.seasons[0]).toMatchObject({
+      year: 2022,
+      start: '2022-08-01',
+      end: '2023-01-31',
+      current: true,
+    });
   });
 });

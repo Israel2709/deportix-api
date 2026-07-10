@@ -64,6 +64,13 @@ export async function fetchFootballGlobalSeasons(): Promise<number[]> {
   return mapGlobalSeasonYears(years);
 }
 
+export async function fetchFootballSeasonYearsForLeague(leagueExternalId: string): Promise<number[]> {
+  const league = await resolveSoccerLeague(leagueExternalId);
+  if (!league) return [];
+  const seasons = await listSeasonsByLeague(league.id);
+  return mapGlobalSeasonYears(seasons.map((season) => season.year).filter((year): year is number => year != null));
+}
+
 export async function resolveSoccerLeague(externalOrInternalId: string) {
   const league = await getLeague(externalOrInternalId);
   if (!league || league.sportSlug !== 'soccer') return null;

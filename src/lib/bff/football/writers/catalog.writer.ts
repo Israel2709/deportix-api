@@ -7,9 +7,9 @@ import {
 } from '@/lib/catalog/countries.service';
 import { buildCountryMap, getCountryByKey } from '@/lib/firebase/repositories/countries.repository';
 import {
-  americanFootballLeagueCreateSchema,
-  americanFootballSeasonItemSchema,
-  type AmericanFootballSeasonItem,
+  soccerLeagueCreateSchema,
+  soccerSeasonItemSchema,
+  type SoccerSeasonItem,
 } from '../schemas/league.schema';
 import {
   createLeague,
@@ -24,22 +24,15 @@ import {
   listSeasonsByLeague,
   updateSeason,
 } from '@/lib/firebase/repositories/seasons.repository';
-import {
-  createTimezone,
-  deleteTimezone,
-  updateTimezone,
-} from '@/lib/firebase/repositories/timezones.repository';
-import { mapAmericanFootballCountryToApiSports } from '../mappers/country.mapper';
-import { mapAmericanFootballLeagueToApiSports } from '../mappers/league.mapper';
+import { mapLeagueToApiSports } from '../mappers/league.mapper';
+import { resolveSoccerLeague } from '../services/leagues.service';
 import { resolveCatalogLeagueType } from '@/lib/catalog/league-types.service';
-import { resolveAmericanFootballLeague } from '../services/leagues.service';
 
 const seasonYearSchema = z.object({ year: z.number().int() }).strict();
-const timezoneSchema = z.object({ timezone: z.string().min(1) }).strict();
 
-async function syncAmericanFootballLeagueSeasons(
+async function syncSoccerLeagueSeasons(
   leagueId: string,
-  seasons: AmericanFootballSeasonItem[],
+  seasons: SoccerSeasonItem[],
 ): Promise<void> {
   const currentYear = seasons.find((season) => season.current)?.year ?? null;
 
@@ -77,10 +70,7 @@ async function syncAmericanFootballLeagueSeasons(
   }
 }
 
-async function applyAmericanFootballSeasonPatch(
-  leagueId: string,
-  season: AmericanFootballSeasonItem,
-): Promise<number> {
+async function applySoccerSeasonPatch(leagueId: string, season: SoccerSeasonItem): Promise<number> {
   const existing = await findSeasonByYear(leagueId, season.year);
   if (!existing) throw notFound('Season not found.');
 
@@ -103,20 +93,20 @@ async function applyAmericanFootballSeasonPatch(
   return season.year;
 }
 
-export async function createAmericanFootballCountryEntry(body: unknown) {
+export async function createSoccerCountryEntry(body: unknown) {
   return createCatalogCountry(body);
 }
 
-export async function updateAmericanFootballCountryEntry(key: string, body: unknown) {
+export async function updateSoccerCountryEntry(key: string, body: unknown) {
   return updateCatalogCountry(key, body);
 }
 
-export async function deleteAmericanFootballCountryEntry(key: string) {
+export async function deleteSoccerCountryEntry(key: string) {
   await deleteCatalogCountry(key);
 }
 
-export async function createAmericanFootballLeagueEntry(body: unknown) {
-  const item = americanFootballLeagueCreateSchema.parse(body);
+export async function createSoccerLeagueEntry(body: unknown) {
+  const item = soccerLeagueCreateSchema.parse(body);
   let countryId: string | null = null;
   if (item.country.name) {
     const country = await getCountryByKey(item.country.name);
@@ -127,11 +117,11 @@ export async function createAmericanFootballLeagueEntry(body: unknown) {
 
   const league = await createLeague({
     name: item.league.name,
-    sportSlug: 'american-football',
+    sportSlug: 'soccer',
     externalId: null,
     type: leagueType,
     logo: item.league.logo ?? null,
-    altLogo: item.league.altLogo ?? null,
+    altLogo: null,
     countryId,
     apiSportsPayload: null,
   });
@@ -152,89 +142,66 @@ export async function createAmericanFootballLeagueEntry(body: unknown) {
     ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
     : null;
   const seasons = await listSeasonsByLeague(league.id);
-  return mapAmericanFootballLeagueToApiSports(league.dto, country, seasons);
+  return mapLeagueToApiSports(league.dto, country, seasons);
 }
 
-export async function updateAmericanFootballLeagueEntry(id: string, body: unknown) {
-  const item = americanFootballLeagueCreateSchema.parse(body);
+export async function updateSoccerLeagueEntry(id: string, body: unknown) {
+  const item = soccerLeagueCreateSchema.parse(body);
   const leagueType = await resolveCatalogLeagueType(item.league.type);
 
   await updateLeague(id, {
     name: item.league.name,
     type: leagueType,
     logo: item.league.logo ?? null,
-    alt_logo: item.league.altLogo ?? null,
+    alt_logo: null,
   });
 
-  await syncAmericanFootballLeagueSeasons(id, item.seasons);
+  await syncSoccerLeagueSeasons(id, item.seasons);
 
   const league = await getLeague(id);
-  if (!league) throw notFound('League not found.');
+  if (!league || league.sportSlug !== 'soccer') throw notFound('League not found.');
 
   const countryMap = await buildCountryMap();
   const country = league.dto.country
     ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
     : null;
   const seasons = await listSeasonsByLeague(league.id);
-  return mapAmericanFootballLeagueToApiSports(league.dto, country, seasons);
+  return mapLeagueToApiSports(league.dto, country, seasons);
 }
 
-export async function deleteAmericanFootballLeagueEntry(id: string) {
+export async function deleteSoccerLeagueEntry(id: string) {
   await deleteLeague(id);
 }
 
-export async function createAmericanFootballSeasonYear(body: unknown, leagueExternalId: string) {
+export async function createSoccerSeasonYear(body: unknown, leagueExternalId: string) {
   const parsed = seasonYearSchema.safeParse(body);
   if (!parsed.success) throw invalidRequestBody('Body must include { year: number }.');
-  const league = await resolveAmericanFootballLeague(leagueExternalId);
+  const league = await resolveSoccerLeague(leagueExternalId);
   if (!league) throw invalidRequestBody('League not found.');
 
   await createSeason({ leagueId: league.id, year: parsed.data.year, current: false });
   return parsed.data.year;
 }
 
-export async function deleteAmericanFootballSeasonYear(body: unknown, leagueExternalId: string) {
-  const parsed = seasonYearSchema.safeParse(body);
-  if (!parsed.success) throw invalidRequestBody('Body must include { year: number }.');
-  const league = await resolveAmericanFootballLeague(leagueExternalId);
-  if (!league) throw invalidRequestBody('League not found.');
-
-  const season = await findSeasonByYear(league.id, parsed.data.year);
-  if (season) await deleteSeason(season.id);
-}
-
-export async function updateAmericanFootballSeasonYear(body: unknown, leagueExternalId: string) {
-  const parsed = americanFootballSeasonItemSchema.safeParse(body);
+export async function updateSoccerSeasonYear(body: unknown, leagueExternalId: string) {
+  const parsed = soccerSeasonItemSchema.safeParse(body);
   if (!parsed.success) {
     throw invalidRequestBody(
       'Body must include { year, current } and optional start, end, coverage.',
     );
   }
-  const league = await resolveAmericanFootballLeague(leagueExternalId);
+  const league = await resolveSoccerLeague(leagueExternalId);
   if (!league) throw invalidRequestBody('League not found.');
 
-  return applyAmericanFootballSeasonPatch(league.id, parsed.data);
+  return applySoccerSeasonPatch(league.id, parsed.data);
 }
 
-export async function createAmericanFootballTimezoneEntry(body: unknown) {
-  const parsed = timezoneSchema.safeParse(body);
-  if (!parsed.success) throw invalidRequestBody('Body must include { timezone: string }.');
-  return createTimezone(parsed.data.timezone);
-}
+export async function deleteSoccerSeasonYear(body: unknown, leagueExternalId: string) {
+  const parsed = seasonYearSchema.safeParse(body);
+  if (!parsed.success) throw invalidRequestBody('Body must include { year: number }.');
+  const league = await resolveSoccerLeague(leagueExternalId);
+  if (!league) throw invalidRequestBody('League not found.');
 
-export async function updateAmericanFootballTimezoneEntry(body: unknown) {
-  const schema = z
-    .object({ timezone: z.string().min(1), newTimezone: z.string().min(1) })
-    .strict();
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) {
-    throw invalidRequestBody('Body must include { timezone, newTimezone }.');
-  }
-  return updateTimezone(parsed.data.timezone, parsed.data.newTimezone);
-}
-
-export async function deleteAmericanFootballTimezoneEntry(body: unknown) {
-  const parsed = timezoneSchema.safeParse(body);
-  if (!parsed.success) throw invalidRequestBody('Body must include { timezone: string }.');
-  await deleteTimezone(parsed.data.timezone);
+  const season = await findSeasonByYear(league.id, parsed.data.year);
+  if (season) await deleteSeason(season.id);
 }

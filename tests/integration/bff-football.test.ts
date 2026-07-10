@@ -14,6 +14,12 @@ const { fetchFootballLeagues, fetchFootballGlobalSeasons } = await import(
 const { fetchFootballFixtures } = await import('@/lib/bff/football/services/fixtures.service');
 const { fetchFootballRounds } = await import('@/lib/bff/football/services/rounds.service');
 const { fetchFootballStandings } = await import('@/lib/bff/football/services/standings.service');
+const {
+  updateSoccerLeagueEntry,
+  updateSoccerSeasonYear,
+} = await import('@/lib/bff/football/writers/catalog.writer');
+const { createSoccerTeamEntry } = await import('@/lib/bff/football/writers/teams.writer');
+const { createSoccerStandingEntry } = await import('@/lib/bff/football/writers/standings.writer');
 
 const dataset: Dataset = {
   sports: [{ id: 'sp_soccer', slug: 'soccer', name: 'Soccer' }],
@@ -141,6 +147,56 @@ describe('BFF football services', () => {
         season: 2026,
         standings: [[{ rank: 1, team: { id: 1, name: 'Club A' }, points: 10 }]],
       },
+    });
+  });
+
+  it('updates league seasons when patching a league', async () => {
+    const updated = await updateSoccerLeagueEntry('lg_mx', {
+      league: { name: 'Liga MX', type: 'League', logo: 'https://example.com/liga.png' },
+      country: { name: 'Mexico', code: 'MX', flag: 'https://example.com/mx.svg' },
+      seasons: [
+        { year: 2026, start: '2026-07-15', end: '2026-12-15', current: true },
+        { year: 2025, current: false },
+      ],
+    });
+
+    expect(updated.seasons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          year: 2026,
+          start: '2026-07-15',
+          end: '2026-12-15',
+          current: true,
+        }),
+      ]),
+    );
+  });
+
+  it('patches a season year directly', async () => {
+    const year = await updateSoccerSeasonYear(
+      { year: 2026, start: '2026-08-01', end: '2026-12-31', current: true },
+      'lg_mx',
+    );
+    expect(year).toBe(2026);
+  });
+
+  it('creates a soccer team and standing', async () => {
+    const team = await createSoccerTeamEntry('lg_mx', {
+      name: 'Club C',
+      logo: 'https://example.com/c.png',
+    });
+    expect(team).toMatchObject({
+      team: { name: 'Club C', logo: 'https://example.com/c.png' },
+    });
+
+    const standing = await createSoccerStandingEntry({
+      league: { id: 'lg_mx', season: 2026 },
+      team: { id: (team.team as { id: string }).id },
+      points: 12,
+      all: { played: 5, win: 4, draw: 0, lose: 1 },
+    });
+    expect(standing).toMatchObject({
+      league: { name: 'Liga MX', season: 2026 },
     });
   });
 });

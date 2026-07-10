@@ -76,3 +76,4 @@ export const americanFootballLeagueItemSchema = z
 
 export type AmericanFootballLeagueCreate = z.infer<typeof americanFootballLeagueCreateSchema>;
 export type AmericanFootballLeagueItem = z.infer<typeof americanFootballLeagueItemSchema>;
+export type AmericanFootballSeasonItem = z.infer<typeof americanFootballSeasonItemSchema>;

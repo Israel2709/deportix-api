@@ -1639,6 +1639,57 @@ export const openapiDocument = {
           }
         }
       },
+      "patch": {
+        "tags": [
+          "BFF American Football"
+        ],
+        "summary": "Update season metadata",
+        "description": "Updates start/end dates, current flag, and coverage for an existing season year on the league.",
+        "operationId": "americanFootballUpdateSeasonYear",
+        "parameters": [
+          {
+            "name": "league",
+            "in": "query",
+            "required": true,
+            "description": "Canonical league UUID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmericanFootballSeasonItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Season year updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AmericanFootballApiSportsIntegerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "BFF American Football"

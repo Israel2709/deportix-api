@@ -4,13 +4,14 @@ import {
   bffOptionsRoute,
   americanFootballBffDeleteRoute,
   americanFootballBffGetRoute,
+  americanFootballBffPatchRoute,
   americanFootballBffPostRoute,
 } from '@/lib/bff/shared/handler';
 import {
   fetchAmericanFootballGlobalSeasons,
   fetchAmericanFootballSeasonYearsForLeague,
 } from '@/lib/bff/american-football/services/leagues.service';
-import { createAmericanFootballSeasonYear, deleteAmericanFootballSeasonYear } from '@/lib/bff/american-football/writers/catalog.writer';
+import { createAmericanFootballSeasonYear, deleteAmericanFootballSeasonYear, updateAmericanFootballSeasonYear } from '@/lib/bff/american-football/writers/catalog.writer';
 
 export const runtime = 'nodejs';
 
@@ -34,6 +35,12 @@ export const POST = americanFootballBffPostRoute('seasons')(async ({ searchParam
   const league = requireLeagueParam(searchParams);
   const year = await createAmericanFootballSeasonYear(body, league);
   return { response: [year], status: 201 };
+});
+
+export const PATCH = americanFootballBffPatchRoute('seasons')(async ({ searchParams, body }) => {
+  const league = requireLeagueParam(searchParams);
+  const year = await updateAmericanFootballSeasonYear(body, league);
+  return { response: [year] };
 });
 
 export const DELETE = americanFootballBffDeleteRoute('seasons')(async ({ searchParams, body }) => {

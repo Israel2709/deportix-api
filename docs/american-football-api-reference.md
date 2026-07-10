@@ -36,7 +36,7 @@ Contract fixtures live in [`tests/fixtures/api-sports-nfl/`](../tests/fixtures/a
 | Method | Path | Query / body |
 |--------|------|--------------|
 | GET/POST/PATCH/DELETE | `/american-football/timezone` | write: `{ timezone }` or `{ timezone, newTimezone }` |
-| GET/POST/DELETE | `/american-football/seasons` | write: `{ year }`; scope with `?league=` (UUID) |
+| GET/POST/PATCH/DELETE | `/american-football/seasons` | write: `{ year }` or full season patch `{ year, current, start?, end?, coverage? }`; scope with `?league=` (UUID) |
 | GET/POST/PATCH/DELETE | `/american-football/countries` | `name`; body: `{ name, code, flag }` (Football v3 shape) |
 | GET/POST/PATCH/DELETE | `/american-football/leagues` | `id`, `name`, `country_id`, `country`, `type`, `season`, `search` |
 | GET/POST | `/american-football/games` | `league+season+timezone`, `id`, `league+season+team` |

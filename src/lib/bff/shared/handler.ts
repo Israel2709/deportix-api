@@ -201,7 +201,7 @@ export function createBffGetRoute(kind: EnvelopeKind, get?: string) {
 export function createBffWriteRoute(
   kind: EnvelopeKind,
   get: string,
-  method: 'POST' | 'PATCH' | 'DELETE',
+  method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   defaultStatus: number,
 ) {
   const respond = createRouteResponder(kind, get);
@@ -254,6 +254,23 @@ export function bffOptionsRoute() {
 
 /** Soccer BFF GET wrapper (reduced envelope). */
 export const bffGetRoute = createBffGetRoute('soccer');
+
+/** Soccer BFF write route factories (reduced api-sports envelope). */
+export function soccerBffPostRoute(get: string) {
+  return createBffWriteRoute('soccer', get, 'POST', 201);
+}
+
+export function soccerBffPatchRoute(get: string) {
+  return createBffWriteRoute('soccer', get, 'PATCH', 200);
+}
+
+export function soccerBffPutRoute(get: string) {
+  return createBffWriteRoute('soccer', get, 'PUT', 200);
+}
+
+export function soccerBffDeleteRoute(get: string) {
+  return createBffWriteRoute('soccer', get, 'DELETE', 204);
+}
 
 /** American Football BFF route factories (full api-sports envelope). */
 export function americanFootballBffGetRoute(get: string) {

@@ -42,6 +42,11 @@ export interface CountryQuery {
   code?: string;
 }
 
+export interface TeamQuery {
+  league: string;
+  season?: string | number;
+}
+
 function parseBooleanParam(value: string | null): boolean | undefined {
   if (value == null || value === '') return undefined;
   const normalized = value.trim().toLowerCase();
@@ -144,4 +149,10 @@ export function requireSeasonYear(value: number | undefined): number {
     throw new ApiError('INVALID_QUERY_PARAMETER', 'The "season" parameter is required.');
   }
   return value;
+}
+
+export function parseTeamQuery(searchParams: URLSearchParams): TeamQuery {
+  const league = requireLeagueExternalId(parseStringParam(searchParams.get('league')));
+  const season = parseSeasonParam(searchParams.get('season'));
+  return { league, season };
 }
