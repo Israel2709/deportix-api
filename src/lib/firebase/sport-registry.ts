@@ -66,13 +66,25 @@ export const SPORTS: Record<SportSlug, SportConfig> = {
       matches: 'f1_races',
       standings: 'f1_rankings',
     },
-    matchDateField: 'date',
+    matchDateField: 'race_date',
     statusField: 'status',
     homeTeamField: '',
     awayTeamField: '',
     genericEndpointsSupported: false,
   },
 };
+
+/** Flat F1 Firestore collections (Formula 1 BFF — not served by generic /v1 league routes). */
+export const F1_COLLECTIONS = {
+  competitions: 'f1_competitions',
+  circuits: 'f1_circuits',
+  drivers: 'f1_drivers',
+  teams: 'f1_teams',
+  races: 'f1_races',
+  driverRankings: 'f1_rankings',
+  teamRankings: 'f1_team_rankings',
+  raceRankings: 'f1_race_rankings',
+} as const;
 
 export const SPORT_SLUGS = Object.keys(SPORTS) as SportSlug[];
 

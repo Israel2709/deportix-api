@@ -282,9 +282,24 @@ async function main(): Promise<void> {
   // Per-sport collection coverage (from inventory counts).
   const sportCoverageRows = sportDocsAll.map((s) => {
     const slug = String(s.slug ?? '');
-    const teams = coverageOf(`${slug}_teams`);
-    const matches = coverageOf(slug === 'soccer' ? 'soccer_matches' : `${slug}_games`);
-    const standings = coverageOf(`${slug}_standings`);
+    const teams =
+      slug === 'american-football'
+        ? coverageOf('nfl_teams')
+        : coverageOf(`${slug}_teams`);
+    const matches =
+      slug === 'soccer'
+        ? coverageOf('soccer_matches')
+        : slug === 'american-football'
+          ? coverageOf('nfl_games')
+          : slug === 'f1'
+            ? coverageOf('f1_races')
+            : coverageOf(`${slug}_games`);
+    const standings =
+      slug === 'american-football'
+        ? coverageOf('nfl_standings')
+        : slug === 'f1'
+          ? coverageOf('f1_rankings')
+          : coverageOf(`${slug}_standings`);
     return `| \`${slug}\` | ${s.name} | ${leagueCountBySportId.get(s.id) ?? 0} | ${teams} | ${matches} | ${standings} |`;
   });
 
@@ -324,9 +339,7 @@ async function main(): Promise<void> {
     '',
     `- **Sports present:** ${sportDocsAll.map((s) => `\`${s.slug}\``).join(', ')} (${sportDocsAll.length}).`,
     `- **Leagues:** ${coverageOf('leagues')}. **Seasons:** ${coverageOf('seasons')}.`,
-    '- **NFL & F1** exist as `sports` entries but have **no leagues and no team/game collections** loaded — their endpoints return empty collections (honest "no data yet").',
-    '- **Liga MX (ext 262)** has season metadata only (no teams/matches/standings loaded yet).',
-    '- Other soccer leagues (e.g. Liga Profesional Argentina ext 128, Ligue 1 ext 61) are data-rich and exercise the full endpoint set.',
+    `- **F1** uses dedicated collections (\`f1_*\`) — competitions ${coverageOf('f1_competitions')}, circuits ${coverageOf('f1_circuits')}, drivers ${coverageOf('f1_drivers')}, teams ${coverageOf('f1_teams')}, races ${coverageOf('f1_races')}, rankings ${coverageOf('f1_rankings')} / team ${coverageOf('f1_team_rankings')} / race ${coverageOf('f1_race_rankings')}. Served by BFF \`/formula-1/*\`, not generic \`/v1\` league routes.`,
     '- Coverage is **partial and uneven** by design of the manual loading process.',
     '',
     '## Sport-level coverage',
@@ -349,13 +362,12 @@ async function main(): Promise<void> {
     '- `GET /v1/leagues/{id}/seasons` — seasons exist for most leagues (incl. Liga MX).',
     '- `GET /v1/leagues/{id}/teams|matches|standings` — populated for data-rich soccer leagues; empty (but valid) for Liga MX until loaded.',
     '- `GET /v1/teams/{id}`, `GET /v1/teams/{id}/matches` — for teams that exist.',
+    '- `GET /formula-1/*` — seasons, competitions, circuits, drivers, teams, races, rankings (when F1 collections are loaded).',
     '',
     '## Pending / not available',
     '',
-    '- **NFL**: no leagues or `nfl_*` collections in this project. NFL endpoints return empty until data is loaded. (Would require `nfl_teams`/`nfl_games`/`nfl_standings` + an NFL league document.)',
-    '- **Liga MX teams/matches/standings**: pending until those docs are loaded for league ext 262.',
     '- **statistics**: not modeled in Firestore — coverage flag is always `false`.',
-    '- **F1**: intentionally excluded from the generic league/team endpoints (different model).',
+    '- **F1**: intentionally excluded from the generic `/v1` league/team endpoints (different model); use `/formula-1/*`.',
     '',
     '## Suggested future normalizations / snapshots',
     '',

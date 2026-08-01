@@ -74,6 +74,8 @@ CORS_ALLOWED_ORIGINS=*
 
 **BFF American Football (API-Sports American Football v1):** `/american-football/timezone` · `/american-football/seasons` · `/american-football/countries` · `/american-football/leagues` · `/american-football/games` · `/american-football/teams` · `/american-football/standings` — full api-sports envelope + CRUD for portal loading. Resources use **server-assigned UUIDs** as canonical `id`; POST bodies must not include resource ids. See [docs/american-football-api-reference.md](./docs/american-football-api-reference.md).
 
+**BFF Formula 1:** `/formula-1/seasons` · `/formula-1/competitions` · `/formula-1/circuits` · `/formula-1/drivers` · `/formula-1/teams` · `/formula-1/races` · `/formula-1/rankings/{drivers,teams,races}` — full api-sports envelope + CRUD. Maps to F1 Firestore collections; not served by generic `/v1` league routes. See [docs/formula-1-api-reference.md](./docs/formula-1-api-reference.md).
+
 Full contract: [docs/api-contract.md](./docs/api-contract.md).
 
 ## Deploy to Vercel

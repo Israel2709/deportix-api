@@ -38,7 +38,8 @@ queries filtered by `league_id` / `season_id` / `team_id`.
 
 - Adding a sport = one entry in `sport-registry.ts`.
 - F1 is intentionally excluded from the generic team/match/standings endpoints (it has a
-  fundamentally different model); it still appears in `/v1/sports` and `/v1/data-status`.
+  fundamentally different model); it still appears in `/v1/sports` and `/v1/data-status`, and is
+  served by the dedicated BFF under `/formula-1/*` (`src/lib/bff/formula-1/`).
 
 ## Query strategy & why it's resilient
 
