@@ -68,7 +68,7 @@ POST bodies use `*CreateBody` schemas (OpenAPI). Responses add server-assigned U
 - Reset NFL layer: `pnpm data:reset-american-football -- --confirm`
 - Optional live fixture capture: `APISPORTS_KEY=... tsx scripts/capture-api-sports-nfl.ts`
 
-OpenAPI / Swagger: all `/american-football/*` operations and schemas are documented under tag **BFF American Football** at [`/docs`](http://localhost:3000/docs) (source: [`openapi/openapi.yaml`](../openapi/openapi.yaml)).
+OpenAPI / Swagger: all `/american-football/*` operations and schemas are documented under tag **`bff-american-football`** at [`/docs?tag=bff-american-football`](https://deportix-api.vercel.app/docs?tag=bff-american-football) (source: [`openapi/openapi.yaml`](../openapi/openapi.yaml)).
 
 ## Example POST (league)
 

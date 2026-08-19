@@ -71,16 +71,17 @@ tags:
     description: |
       API-Sports compatible layer for soccer (Flutter). Returns `{ response, results, errors }`.
       League/team/fixture ids in query params use provider `externalId` values (e.g. `262` for Liga MX).
-  - name: BFF American Football
+  - name: bff-american-football
     description: |
-      API-Sports American Football v1 compatibility under `/american-football/*`. Returns the full api-sports
-      envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD
-      for portal data loading.
-  - name: BFF Formula 1
+      **BFF American Football** — API-Sports American Football v1 compatibility under `/american-football/*`.
+      Returns the full api-sports envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`).
+      Supports CRUD for portal data loading. Swagger deep link — `/docs?tag=bff-american-football`.
+  - name: bff-formula-1
     description: |
-      Formula 1 BFF under `/formula-1/*` (api-sports Formula-1 shape). Full envelope
+      **BFF Formula 1** — Formula 1 BFF under `/formula-1/*` (api-sports Formula-1 shape). Full envelope
       (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Sport slug `f1`.
       Competitions ≈ Grand Prix events; races ≈ calendar sessions; rankings ≈ results / standings.
+      Swagger deep link — `/docs?tag=bff-formula-1`.
 paths:
   /v1/health:
     get:
@@ -870,7 +871,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/timezone:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List timezones
       description: IANA timezone strings for the `games` endpoint. Seeds common defaults when the catalog is empty.
       operationId: americanFootballListTimezones
@@ -884,7 +885,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Add timezone
       operationId: americanFootballCreateTimezone
       requestBody:
@@ -905,7 +906,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Rename timezone
       operationId: americanFootballUpdateTimezone
       requestBody:
@@ -926,7 +927,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete timezone
       operationId: americanFootballDeleteTimezone
       requestBody:
@@ -944,7 +945,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/seasons:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List NFL season years
       description: Distinct season years across NFL leagues in the platform.
       operationId: americanFootballListSeasons
@@ -958,7 +959,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Register season year
       description: Creates a season document on the first NFL league when leagues already exist.
       operationId: americanFootballCreateSeasonYear
@@ -980,7 +981,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Update season metadata
       description: Updates start/end dates, current flag, and coverage for an existing season year on the league.
       operationId: americanFootballUpdateSeasonYear
@@ -1010,7 +1011,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete season year
       description: Removes all season documents matching the year across NFL leagues.
       operationId: americanFootballDeleteSeasonYear
@@ -1029,7 +1030,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/countries:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List countries
       description: Football v3 country shape (`{ name, code, flag }`). Filter by `name` substring.
       operationId: americanFootballListCountries
@@ -1047,7 +1048,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Create country
       operationId: americanFootballCreateCountry
       requestBody:
@@ -1068,7 +1069,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Update country
       operationId: americanFootballUpdateCountry
       parameters:
@@ -1097,7 +1098,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete country
       operationId: americanFootballDeleteCountry
       parameters:
@@ -1116,7 +1117,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/leagues:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List NFL leagues
       description: League entries with nested `seasons[]` and NFL-specific `coverage` objects.
       operationId: americanFootballListLeagues
@@ -1138,7 +1139,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Create NFL league
       description: Creates the league and nested seasons. Body must not include `league.id` — the server assigns a UUID.
       operationId: americanFootballCreateLeague
@@ -1160,7 +1161,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Update NFL league
       operationId: americanFootballUpdateLeague
       parameters:
@@ -1189,7 +1190,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete NFL league
       operationId: americanFootballDeleteLeague
       parameters:
@@ -1208,7 +1209,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/games:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List or lookup NFL games
       description: |
         Three query modes:
@@ -1234,7 +1235,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Create NFL game
       description: Body must not include `game.id`. `teams.*.id` and `league.id` must reference existing UUIDs.
       operationId: americanFootballCreateGame
@@ -1259,7 +1260,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/games/{gameId}:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Get NFL game by id
       operationId: americanFootballGetGame
       parameters:
@@ -1280,7 +1281,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Update NFL game
       description: |
         Default: merge partial fields into stored api-sports payload.
@@ -1315,7 +1316,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete NFL game
       operationId: americanFootballDeleteGame
       parameters:
@@ -1332,7 +1333,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/teams:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List NFL teams
       description: Teams for a league and season. Both query params are required.
       operationId: americanFootballListTeams
@@ -1351,7 +1352,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Create NFL team
       description: Body must not include `id` — server assigns UUID. Query `league` is the league UUID.
       operationId: americanFootballCreateTeam
@@ -1378,7 +1379,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Update NFL team
       operationId: americanFootballUpdateTeam
       parameters:
@@ -1407,7 +1408,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete NFL team
       operationId: americanFootballDeleteTeam
       parameters:
@@ -1426,7 +1427,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /american-football/standings:
     get:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: List NFL standings
       description: Standing rows for a league and season. Optional `conference` filter.
       operationId: americanFootballListStandings
@@ -1446,7 +1447,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Create standing row
       description: Body must not include row `id`. `team.id` and `league.id` must be existing UUIDs.
       operationId: americanFootballCreateStanding
@@ -1470,7 +1471,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Update standing row
       operationId: americanFootballUpdateStanding
       parameters:
@@ -1499,7 +1500,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF American Football]
+      tags: [bff-american-football]
       summary: Delete standing row
       operationId: americanFootballDeleteStanding
       parameters:
@@ -1518,7 +1519,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/seasons:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: List F1 season years
       description: Distinct season years present on `f1_races` (calendar source of truth).
       operationId: formula1ListSeasons
@@ -1533,7 +1534,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/competitions:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: List Grand Prix competitions
       operationId: formula1ListCompetitions
       parameters:
@@ -1550,7 +1551,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create competition
       operationId: formula1CreateCompetition
       requestBody:
@@ -1571,7 +1572,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update competition
       operationId: formula1UpdateCompetition
       parameters:
@@ -1596,7 +1597,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete competition
       operationId: formula1DeleteCompetition
       parameters:
@@ -1612,7 +1613,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/circuits:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: List circuits
       operationId: formula1ListCircuits
       parameters:
@@ -1630,7 +1631,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create circuit
       operationId: formula1CreateCircuit
       requestBody:
@@ -1651,7 +1652,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update circuit
       operationId: formula1UpdateCircuit
       parameters:
@@ -1676,7 +1677,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete circuit
       operationId: formula1DeleteCircuit
       parameters:
@@ -1692,7 +1693,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/teams:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: List constructor teams
       operationId: formula1ListTeams
       parameters:
@@ -1709,7 +1710,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create team
       operationId: formula1CreateTeam
       requestBody:
@@ -1730,7 +1731,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update team
       operationId: formula1UpdateTeam
       parameters:
@@ -1755,7 +1756,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete team
       operationId: formula1DeleteTeam
       parameters:
@@ -1771,7 +1772,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/drivers:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: List drivers (participants)
       operationId: formula1ListDrivers
       parameters:
@@ -1789,7 +1790,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create driver
       operationId: formula1CreateDriver
       requestBody:
@@ -1810,7 +1811,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update driver
       operationId: formula1UpdateDriver
       parameters:
@@ -1835,7 +1836,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete driver
       operationId: formula1DeleteDriver
       parameters:
@@ -1851,7 +1852,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/races:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: List races (calendar / events)
       description: |
         Session calendar for a season (Race, Practice, Qualifying, Sprint, …).
@@ -1875,7 +1876,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create race session
       operationId: formula1CreateRace
       requestBody:
@@ -1896,7 +1897,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update race session
       operationId: formula1UpdateRace
       parameters:
@@ -1921,7 +1922,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete race session
       operationId: formula1DeleteRace
       parameters:
@@ -1937,7 +1938,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/races/{raceId}:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Get race by id
       operationId: formula1GetRace
       parameters:
@@ -1952,7 +1953,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update race by path id
       operationId: formula1PatchRaceById
       parameters:
@@ -1977,7 +1978,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete race by path id
       operationId: formula1DeleteRaceById
       parameters:
@@ -1991,7 +1992,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/rankings/drivers:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Drivers championship standings
       operationId: formula1ListDriverRankings
       parameters:
@@ -2010,7 +2011,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create driver ranking row
       operationId: formula1CreateDriverRanking
       requestBody:
@@ -2031,7 +2032,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update driver ranking row
       operationId: formula1UpdateDriverRanking
       parameters:
@@ -2056,7 +2057,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete driver ranking row
       operationId: formula1DeleteDriverRanking
       parameters:
@@ -2072,7 +2073,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/rankings/teams:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Constructors championship standings
       operationId: formula1ListTeamRankings
       parameters:
@@ -2090,7 +2091,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create team ranking row
       operationId: formula1CreateTeamRanking
       requestBody:
@@ -2111,7 +2112,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update team ranking row
       operationId: formula1UpdateTeamRanking
       parameters:
@@ -2136,7 +2137,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete team ranking row
       operationId: formula1DeleteTeamRanking
       parameters:
@@ -2152,7 +2153,7 @@ paths:
           $ref: '#/components/responses/DataSourceNotConfigured'
   /formula-1/rankings/races:
     get:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Race results (positions)
       description: Finishing classification for a race session. `race` (UUID) is required.
       operationId: formula1ListRaceRankings
@@ -2170,7 +2171,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     post:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Create race result row
       operationId: formula1CreateRaceRanking
       requestBody:
@@ -2191,7 +2192,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     patch:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Update race result row
       operationId: formula1UpdateRaceRanking
       parameters:
@@ -2216,7 +2217,7 @@ paths:
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
     delete:
-      tags: [BFF Formula 1]
+      tags: [bff-formula-1]
       summary: Delete race result row
       operationId: formula1DeleteRaceRanking
       parameters:

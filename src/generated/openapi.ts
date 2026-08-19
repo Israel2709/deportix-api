@@ -44,12 +44,12 @@ export const openapiDocument = {
       "description": "API-Sports compatible layer for soccer (Flutter). Returns `{ response, results, errors }`.\nLeague/team/fixture ids in query params use provider `externalId` values (e.g. `262` for Liga MX).\n"
     },
     {
-      "name": "BFF American Football",
-      "description": "API-Sports American Football v1 compatibility under `/american-football/*`. Returns the full api-sports\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD\nfor portal data loading.\n"
+      "name": "bff-american-football",
+      "description": "**BFF American Football** — API-Sports American Football v1 compatibility under `/american-football/*`.\nReturns the full api-sports envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`).\nSupports CRUD for portal data loading. Swagger deep link — `/docs?tag=bff-american-football`.\n"
     },
     {
-      "name": "BFF Formula 1",
-      "description": "Formula 1 BFF under `/formula-1/*` (api-sports Formula-1 shape). Full envelope\n(`get`, `parameters`, `errors`, `results`, `paging`, `response`). Sport slug `f1`.\nCompetitions ≈ Grand Prix events; races ≈ calendar sessions; rankings ≈ results / standings.\n"
+      "name": "bff-formula-1",
+      "description": "**BFF Formula 1** — Formula 1 BFF under `/formula-1/*` (api-sports Formula-1 shape). Full envelope\n(`get`, `parameters`, `errors`, `results`, `paging`, `response`). Sport slug `f1`.\nCompetitions ≈ Grand Prix events; races ≈ calendar sessions; rankings ≈ results / standings.\nSwagger deep link — `/docs?tag=bff-formula-1`.\n"
     }
   ],
   "paths": {
@@ -1463,7 +1463,7 @@ export const openapiDocument = {
     "/american-football/timezone": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List timezones",
         "description": "IANA timezone strings for the `games` endpoint. Seeds common defaults when the catalog is empty.",
@@ -1486,7 +1486,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Add timezone",
         "operationId": "americanFootballCreateTimezone",
@@ -1521,7 +1521,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Rename timezone",
         "operationId": "americanFootballUpdateTimezone",
@@ -1556,7 +1556,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete timezone",
         "operationId": "americanFootballDeleteTimezone",
@@ -1586,7 +1586,7 @@ export const openapiDocument = {
     "/american-football/seasons": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List NFL season years",
         "description": "Distinct season years across NFL leagues in the platform.",
@@ -1609,7 +1609,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Register season year",
         "description": "Creates a season document on the first NFL league when leagues already exist.",
@@ -1645,7 +1645,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Update season metadata",
         "description": "Updates start/end dates, current flag, and coverage for an existing season year on the league.",
@@ -1696,7 +1696,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete season year",
         "description": "Removes all season documents matching the year across NFL leagues.",
@@ -1727,7 +1727,7 @@ export const openapiDocument = {
     "/american-football/countries": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List countries",
         "description": "Football v3 country shape (`{ name, code, flag }`). Filter by `name` substring.",
@@ -1759,7 +1759,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Create country",
         "operationId": "americanFootballCreateCountry",
@@ -1794,7 +1794,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Update country",
         "operationId": "americanFootballUpdateCountry",
@@ -1843,7 +1843,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete country",
         "operationId": "americanFootballDeleteCountry",
@@ -1876,7 +1876,7 @@ export const openapiDocument = {
     "/american-football/leagues": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List NFL leagues",
         "description": "League entries with nested `seasons[]` and NFL-specific `coverage` objects.",
@@ -1954,7 +1954,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Create NFL league",
         "description": "Creates the league and nested seasons. Body must not include `league.id` — the server assigns a UUID.",
@@ -1990,7 +1990,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Update NFL league",
         "operationId": "americanFootballUpdateLeague",
@@ -2040,7 +2040,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete NFL league",
         "operationId": "americanFootballDeleteLeague",
@@ -2073,7 +2073,7 @@ export const openapiDocument = {
     "/american-football/games": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List or lookup NFL games",
         "description": "Three query modes:\n- `league` + `season` (+ optional `timezone`) — games in a season\n- `id` — single game by canonical UUID (legacy external id accepted as fallback)\n- `league` + `season` + `team` — games for a team (UUIDs)\n",
@@ -2143,7 +2143,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Create NFL game",
         "description": "Body must not include `game.id`. `teams.*.id` and `league.id` must reference existing UUIDs.",
@@ -2184,7 +2184,7 @@ export const openapiDocument = {
     "/american-football/games/{gameId}": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Get NFL game by id",
         "operationId": "americanFootballGetGame",
@@ -2221,7 +2221,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Update NFL game",
         "description": "Default: merge partial fields into stored api-sports payload.\nPass `replace=true` to require a full `AmericanFootballGameCreateBody`.\n",
@@ -2279,7 +2279,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete NFL game",
         "operationId": "americanFootballDeleteGame",
@@ -2309,7 +2309,7 @@ export const openapiDocument = {
     "/american-football/teams": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List NFL teams",
         "description": "Teams for a league and season. Both query params are required.",
@@ -2355,7 +2355,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Create NFL team",
         "description": "Body must not include `id` — server assigns UUID. Query `league` is the league UUID.",
@@ -2402,7 +2402,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Update NFL team",
         "operationId": "americanFootballUpdateTeam",
@@ -2452,7 +2452,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete NFL team",
         "operationId": "americanFootballDeleteTeam",
@@ -2485,7 +2485,7 @@ export const openapiDocument = {
     "/american-football/standings": {
       "get": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "List NFL standings",
         "description": "Standing rows for a league and season. Optional `conference` filter.",
@@ -2536,7 +2536,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Create standing row",
         "description": "Body must not include row `id`. `team.id` and `league.id` must be existing UUIDs.",
@@ -2575,7 +2575,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Update standing row",
         "operationId": "americanFootballUpdateStanding",
@@ -2625,7 +2625,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF American Football"
+          "bff-american-football"
         ],
         "summary": "Delete standing row",
         "operationId": "americanFootballDeleteStanding",
@@ -2658,7 +2658,7 @@ export const openapiDocument = {
     "/formula-1/seasons": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "List F1 season years",
         "description": "Distinct season years present on `f1_races` (calendar source of truth).",
@@ -2683,7 +2683,7 @@ export const openapiDocument = {
     "/formula-1/competitions": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "List Grand Prix competitions",
         "operationId": "formula1ListCompetitions",
@@ -2728,7 +2728,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create competition",
         "operationId": "formula1CreateCompetition",
@@ -2763,7 +2763,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update competition",
         "operationId": "formula1UpdateCompetition",
@@ -2811,7 +2811,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete competition",
         "operationId": "formula1DeleteCompetition",
@@ -2844,7 +2844,7 @@ export const openapiDocument = {
     "/formula-1/circuits": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "List circuits",
         "operationId": "formula1ListCircuits",
@@ -2896,7 +2896,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create circuit",
         "operationId": "formula1CreateCircuit",
@@ -2931,7 +2931,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update circuit",
         "operationId": "formula1UpdateCircuit",
@@ -2979,7 +2979,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete circuit",
         "operationId": "formula1DeleteCircuit",
@@ -3012,7 +3012,7 @@ export const openapiDocument = {
     "/formula-1/teams": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "List constructor teams",
         "operationId": "formula1ListTeams",
@@ -3057,7 +3057,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create team",
         "operationId": "formula1CreateTeam",
@@ -3092,7 +3092,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update team",
         "operationId": "formula1UpdateTeam",
@@ -3140,7 +3140,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete team",
         "operationId": "formula1DeleteTeam",
@@ -3173,7 +3173,7 @@ export const openapiDocument = {
     "/formula-1/drivers": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "List drivers (participants)",
         "operationId": "formula1ListDrivers",
@@ -3226,7 +3226,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create driver",
         "operationId": "formula1CreateDriver",
@@ -3261,7 +3261,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update driver",
         "operationId": "formula1UpdateDriver",
@@ -3309,7 +3309,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete driver",
         "operationId": "formula1DeleteDriver",
@@ -3342,7 +3342,7 @@ export const openapiDocument = {
     "/formula-1/races": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "List races (calendar / events)",
         "description": "Session calendar for a season (Race, Practice, Qualifying, Sprint, …).\n`season` is required unless `id` is provided.\n",
@@ -3408,7 +3408,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create race session",
         "operationId": "formula1CreateRace",
@@ -3443,7 +3443,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update race session",
         "operationId": "formula1UpdateRace",
@@ -3491,7 +3491,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete race session",
         "operationId": "formula1DeleteRace",
@@ -3524,7 +3524,7 @@ export const openapiDocument = {
     "/formula-1/races/{raceId}": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Get race by id",
         "operationId": "formula1GetRace",
@@ -3556,7 +3556,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update race by path id",
         "operationId": "formula1PatchRaceById",
@@ -3604,7 +3604,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete race by path id",
         "operationId": "formula1DeleteRaceById",
@@ -3634,7 +3634,7 @@ export const openapiDocument = {
     "/formula-1/rankings/drivers": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Drivers championship standings",
         "operationId": "formula1ListDriverRankings",
@@ -3683,7 +3683,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create driver ranking row",
         "operationId": "formula1CreateDriverRanking",
@@ -3718,7 +3718,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update driver ranking row",
         "operationId": "formula1UpdateDriverRanking",
@@ -3766,7 +3766,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete driver ranking row",
         "operationId": "formula1DeleteDriverRanking",
@@ -3799,7 +3799,7 @@ export const openapiDocument = {
     "/formula-1/rankings/teams": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Constructors championship standings",
         "operationId": "formula1ListTeamRankings",
@@ -3841,7 +3841,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create team ranking row",
         "operationId": "formula1CreateTeamRanking",
@@ -3876,7 +3876,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update team ranking row",
         "operationId": "formula1UpdateTeamRanking",
@@ -3924,7 +3924,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete team ranking row",
         "operationId": "formula1DeleteTeamRanking",
@@ -3957,7 +3957,7 @@ export const openapiDocument = {
     "/formula-1/rankings/races": {
       "get": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Race results (positions)",
         "description": "Finishing classification for a race session. `race` (UUID) is required.",
@@ -3993,7 +3993,7 @@ export const openapiDocument = {
       },
       "post": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Create race result row",
         "operationId": "formula1CreateRaceRanking",
@@ -4028,7 +4028,7 @@ export const openapiDocument = {
       },
       "patch": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Update race result row",
         "operationId": "formula1UpdateRaceRanking",
@@ -4076,7 +4076,7 @@ export const openapiDocument = {
       },
       "delete": {
         "tags": [
-          "BFF Formula 1"
+          "bff-formula-1"
         ],
         "summary": "Delete race result row",
         "operationId": "formula1DeleteRaceRanking",

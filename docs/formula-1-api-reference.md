@@ -81,4 +81,4 @@ F1 stays **out of** generic `/v1/leagues/.../teams|matches|standings` (`genericE
 3. Races (`competitionId`, `circuitId`)  
 4. Rankings (drivers / teams / race results)
 
-OpenAPI / Swagger: tag **BFF Formula 1** at [`/docs`](http://localhost:3000/docs).
+OpenAPI / Swagger: tag **`bff-formula-1`** at [`/docs?tag=bff-formula-1`](https://deportix-api.vercel.app/docs?tag=bff-formula-1).
