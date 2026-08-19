@@ -3,12 +3,14 @@
 The OpenAPI 3.1 document is the **single source of truth**: [`openapi/openapi.yaml`](../openapi/openapi.yaml),
 served at `GET /v1/openapi.json` and rendered with **Swagger UI** at `GET /docs`.
 
-The spec documents **two surfaces**:
+The spec documents **three surfaces** (plus BFF layers):
 
 | Surface | Base paths | Response envelope | Consumers |
 | --- | --- | --- | --- |
 | **Deportix API** | `/v1/*` | `{ data, meta }` | Portal, internal tools |
+| **AppQD F1** | `/api/f1/*` | `{ data, meta }` | AppQD portal (functional spec §4.2) |
 | **BFF (API-Sports)** | `/countries`, `/leagues`, `/fixtures`, … | `{ response, results, errors }` | Flutter app (soccer) |
+| **BFF Formula 1** | `/formula-1/*` | Full api-sports envelope (`get`, `parameters`, …) | Apps / dashboards F1 |
 
 ---
 
@@ -41,6 +43,29 @@ The spec documents **two surfaces**:
 
 ---
 
+## AppQD F1 `/api/f1` (read-only)
+
+Internal Formula 1 API aligned with the functional spec (§4.2). Same `{ data, meta }` envelope as `/v1/*`.
+Data lives in Firestore `f1_*` collections on `deportix-api-dac8e`. F1 is **not** served by generic
+`/v1/leagues/{id}/teams|matches|standings`.
+
+| Method | Path | Query params | Notes |
+| --- | --- | --- | --- |
+| GET | `/api/f1/drivers` | `page`, `pageSize` | All loaded drivers, sorted by name. |
+| GET | `/api/f1/drivers/{id}` | — | Driver UUID or legacy `external_id`. |
+| GET | `/api/f1/teams` | `page`, `pageSize` | Constructors, sorted by name. |
+| GET | `/api/f1/races` | `season`, `page`, `pageSize` | Calendar rows, newest `race_date` first. |
+| GET | `/api/f1/races/live` | `page`, `pageSize` | Races with in-progress `status`. |
+| GET | `/api/f1/rankings/drivers` | `season`, `page`, `pageSize` | Driver championship (`f1_rankings`). |
+| GET | `/api/f1/rankings/teams` | `season`, `page`, `pageSize` | Constructor championship (`f1_team_rankings`). |
+| GET | `/api/f1/rankings/races` | `race_id` (or `race`), `page`, `pageSize` | Per-race results (`f1_race_rankings`). Extension. |
+| GET | `/api/f1/competitions` | `page`, `pageSize` | Grand Prix names. Extension. |
+| GET | `/api/f1/circuits` | `page`, `pageSize` | Circuits catalog. Extension. |
+
+For API-Sports–compatible F1 (Flutter / legacy clients), use **`/formula-1/*`** below.
+
+---
+
 ## BFF — API-Sports compatibility (soccer)
 
 Read-only endpoints that mirror API-Sports Football v3. Change only the **base URL** in Flutter;
@@ -61,6 +86,27 @@ paths and query params stay the same.
 ```
 
 **Errors** use the same envelope with `errors: { "parameters": "…" }` (HTTP 400) instead of the Deportix `{ error }` shape.
+
+---
+
+## BFF — Formula 1 (read-only)
+
+Compatibilidad con **API-Sports Formula-1 v1** bajo `/formula-1/*`. Mismo envelope completo que American Football. Los datos viven en colecciones `f1_*` en Firestore; **no** se sirven por `/v1/leagues/{id}/teams|matches|standings`.
+
+| Method | Path | Required params | Notes |
+| --- | --- | --- | --- |
+| GET | `/formula-1/timezone` | — | Zonas horarias de referencia. |
+| GET | `/formula-1/seasons` | — | Temporadas presentes en carreras cargadas. |
+| GET | `/formula-1/teams` | — | `?id`, `?search` opcionales. |
+| GET | `/formula-1/drivers` | — | `?team=` filtra por constructor. |
+| GET | `/formula-1/circuits` | — | |
+| GET | `/formula-1/competitions` | — | Grandes premios (nombre). |
+| GET | `/formula-1/races` | — | `?season=`, `?type=`, `?circuit=`, `?competition=`, `?id=`. |
+| GET | `/formula-1/rankings` | `race` | Resultado de carrera (`f1_race_rankings`). |
+| GET | `/formula-1/rankings/drivers` | `season` | Campeonato de pilotos. |
+| GET | `/formula-1/rankings/teams` | `season` | Campeonato de constructores. |
+
+Guía detallada con ejemplos: [formula-1-api-reference.md](./formula-1-api-reference.md).
 
 ---
 
@@ -219,5 +265,6 @@ limiting and plans will be layered in via `with-auth` without changing `/v1` res
 
 Derived live by `/v1/data-status`. Snapshot: **soccer** is data-rich across many leagues
 (e.g. Liga Profesional Argentina, Ligue 1); **Liga MX** has season metadata only (no teams/matches/
-standings loaded yet); **NFL** and **F1** exist as sports but NFL has no leagues/collections loaded.
-NFL coverage is partial and evolving — the portal and `data-status` reflect new data automatically.
+standings loaded yet); **Formula 1** is served via **`/formula-1/*`** (constructores, calendario,
+rankings); **american-football** uses `/american-football/*` and partial `/v1` where leagues exist.
+Coverage is partial and evolving — the portal and `data-status` reflect new data automatically.

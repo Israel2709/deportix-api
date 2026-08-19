@@ -80,6 +80,16 @@ describe('OpenAPI document', () => {
       '/fixtures/rounds',
       '/standings',
       '/v1/openapi.json',
+      '/api/f1/drivers',
+      '/api/f1/drivers/{id}',
+      '/api/f1/teams',
+      '/api/f1/races',
+      '/api/f1/races/live',
+      '/api/f1/rankings/drivers',
+      '/api/f1/rankings/teams',
+      '/api/f1/rankings/races',
+      '/api/f1/competitions',
+      '/api/f1/circuits',
     ]) {
       expect(paths).toContain(p);
     }

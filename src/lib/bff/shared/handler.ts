@@ -40,7 +40,7 @@ export interface BffWriteOutput extends BffRouteOutput {
 
 export type BffWriteHandler = (ctx: BffWriteContext) => Promise<BffWriteOutput>;
 
-type EnvelopeKind = 'soccer' | 'american-football';
+type EnvelopeKind = 'soccer' | 'american-football' | 'formula-1';
 
 function weakEtag(payload: string): string {
   const hash = createHash('sha1').update(payload).digest('base64');
@@ -71,7 +71,7 @@ function buildEnvelope(
   errors?: unknown[] | Record<string, string>,
   paging?: { current: number; total: number },
 ) {
-  if (kind === 'american-football' && get) {
+  if ((kind === 'american-football' || kind === 'formula-1') && get) {
     return buildAmericanFootballApiSportsBody(get, parameters, response, errors ?? [], paging);
   }
   return buildApiSportsBody(response, (errors as Record<string, string>) ?? {});
@@ -84,7 +84,7 @@ function buildEnvelopeError(
   message: string,
   field: string,
 ) {
-  if (kind === 'american-football' && get) {
+  if ((kind === 'american-football' || kind === 'formula-1') && get) {
     return buildAmericanFootballApiSportsError(get, parameters, message, field);
   }
   return buildApiSportsError(message, field);
@@ -287,4 +287,9 @@ export function americanFootballBffPatchRoute(get: string) {
 
 export function americanFootballBffDeleteRoute(get: string) {
   return createBffWriteRoute('american-football', get, 'DELETE', 204);
+}
+
+/** Formula 1 BFF read routes (full api-sports envelope, read-only). */
+export function formulaOneBffGetRoute(get: string) {
+  return createBffGetRoute('formula-1', get);
 }

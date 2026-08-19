@@ -1,6 +1,6 @@
 import { asStr, serializeSeason, updatedAtOf } from '@/lib/api/serializers';
 import type { LeagueCoverageDTO } from '@/lib/contracts/dto';
-import { getSportConfig, isSportSlug } from '../sport-registry';
+import { getSportConfig, isSportSlug, F1_EXTENDED_COLLECTIONS } from '../sport-registry';
 import { FEATURED_LEAGUE_EXTERNAL_IDS } from '../featured-leagues';
 import { loadCatalogContext } from './catalog.repository';
 import { countCollection, countWhereEq, fetchAll, fetchWhereEq, findByExternalId } from './helpers';
@@ -55,12 +55,24 @@ export async function buildDataStatus(): Promise<DataStatus> {
           countCollection(config.collections.matches).catch(() => 0),
           countCollection(config.collections.standings).catch(() => 0),
         ]);
-        coverage = {
-          teams: teams > 0,
-          matches: matches > 0,
-          standings: standings > 0,
-          statistics: false,
-        };
+        if (slug === 'f1') {
+          const [raceRankings] = await Promise.all([
+            countCollection(F1_EXTENDED_COLLECTIONS.raceRankings).catch(() => 0),
+          ]);
+          coverage = {
+            teams: teams > 0,
+            matches: matches > 0,
+            standings: standings > 0,
+            statistics: raceRankings > 0,
+          };
+        } else {
+          coverage = {
+            teams: teams > 0,
+            matches: matches > 0,
+            standings: standings > 0,
+            statistics: false,
+          };
+        }
       }
       return {
         id: doc.id,

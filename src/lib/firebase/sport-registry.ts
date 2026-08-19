@@ -66,13 +66,22 @@ export const SPORTS: Record<SportSlug, SportConfig> = {
       matches: 'f1_races',
       standings: 'f1_rankings',
     },
-    matchDateField: 'date',
+    matchDateField: 'race_date',
     statusField: 'status',
     homeTeamField: '',
     awayTeamField: '',
     genericEndpointsSupported: false,
   },
 };
+
+/** Extra F1 collections surfaced in data-status beyond the generic teams/matches/standings map. */
+export const F1_EXTENDED_COLLECTIONS = {
+  drivers: 'f1_drivers',
+  circuits: 'f1_circuits',
+  competitions: 'f1_competitions',
+  teamRankings: 'f1_team_rankings',
+  raceRankings: 'f1_race_rankings',
+} as const;
 
 export const SPORT_SLUGS = Object.keys(SPORTS) as SportSlug[];
 

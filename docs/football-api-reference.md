@@ -8,7 +8,7 @@ date: June 2026
 
 **Versión:** v1 · **Deporte:** `soccer` · **Base URL:** `https://deportix-api.vercel.app`
 
-Documento de referencia para todos los endpoints y recursos disponibles para **fútbol** (soccer) en Deportix API. Fórmula 1 (`f1`) y NFL (`nfl`) quedan fuera de este documento.
+Documento de referencia para todos los endpoints y recursos disponibles para **fútbol** (soccer) en Deportix API. **Formula 1** usa el BFF [`/formula-1/*`](./formula-1-api-reference.md); **NFL** usa [`/american-football/*`](./american-football-api-reference.md).
 
 ---
 

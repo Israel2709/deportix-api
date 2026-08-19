@@ -4,10 +4,13 @@ info:
   description: |
     **Deportix API** is a public sports-data API powered by Cloud Firestore.
 
-    It exposes three complementary surfaces:
+    It exposes five complementary surfaces:
 
     **Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the
     Deportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).
+
+    **AppQD F1** (`/api/f1/*`) — internal Formula 1 REST with the same `{ data, meta }` envelope
+    as `/v1/*`. Specified in the functional spec (§4.2). Backed by Firestore `f1_*` collections.
 
     **BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only
     endpoints that mirror API-Sports Football v3 paths and response shape
@@ -16,7 +19,12 @@ info:
     **BFF American Football** (`/american-football/*`) — American Football BFF with the **full**
     envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and
     CRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal.
-    **Canonical IDs:** server-generated UUIDs (Firestore document ids) are returned in `response[]`.
+
+    **BFF Formula 1** (`/formula-1/*`) — read-only compatibility layer for API-Sports Formula-1 v1.
+    Same full envelope as American Football. Data is loaded in Firestore (`f1_*` collections).
+    F1 is **not** served by generic `/v1/leagues/{id}/teams|matches|standings` (different model).
+
+    **Canonical IDs (American Football BFF):** server-generated UUIDs (Firestore document ids) are returned in `response[]`.
     POST bodies must **not** include resource ids; reference existing entities by UUID in nested
     `league.id`, `team.id`, etc. Legacy api-sports numeric ids are accepted only as a read lookup
     fallback on PATCH/DELETE query params until old data is gone.
@@ -70,6 +78,16 @@ tags:
       API-Sports American Football v1 compatibility under `/american-football/*`. Returns the full api-sports
       envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports CRUD
       for portal data loading.
+  - name: BFF Formula 1
+    description: |
+      API-Sports Formula-1 v1 compatibility under `/formula-1/*`. Read-only GET endpoints backed by
+      Firestore `f1_*` collections. Canonical resource `id` values are server-assigned UUIDs; legacy
+      provider ids are accepted as lookup fallbacks on query filters.
+  - name: AppQD F1
+    description: |
+      Internal AppQD Formula 1 API under `/api/f1/*`. Read-only GET endpoints with the Deportix
+      `{ data, meta }` envelope. Canonical resource `id` values are Firestore document UUIDs; legacy
+      provider ids are accepted as lookup fallbacks on path/query filters.
 paths:
   /v1/health:
     get:
@@ -1505,6 +1523,371 @@ paths:
           $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/drivers:
+    get:
+      tags: [AppQD F1]
+      summary: List F1 drivers
+      operationId: appQdListF1Drivers
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: A page of F1 drivers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1DriverCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/drivers/{id}:
+    get:
+      tags: [AppQD F1]
+      summary: Get an F1 driver
+      operationId: appQdGetF1Driver
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Driver UUID or legacy external id.
+          schema: { type: string }
+      responses:
+        '200':
+          description: The driver.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1DriverResource'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/teams:
+    get:
+      tags: [AppQD F1]
+      summary: List F1 teams (constructors)
+      operationId: appQdListF1Teams
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: A page of F1 teams.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1TeamCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/races:
+    get:
+      tags: [AppQD F1]
+      summary: List F1 races
+      operationId: appQdListF1Races
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/season'
+      responses:
+        '200':
+          description: A page of races, newest first by `race_date`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1RaceCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/races/live:
+    get:
+      tags: [AppQD F1]
+      summary: List live F1 races
+      description: Races whose `status` indicates an in-progress session.
+      operationId: appQdListF1LiveRaces
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: A page of live races.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1RaceCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/rankings/drivers:
+    get:
+      tags: [AppQD F1]
+      summary: List driver championship standings
+      operationId: appQdListF1DriverRankings
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/season'
+      responses:
+        '200':
+          description: Driver standings ordered by `position`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1DriverRankingCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/rankings/teams:
+    get:
+      tags: [AppQD F1]
+      summary: List constructor championship standings
+      operationId: appQdListF1TeamRankings
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/season'
+      responses:
+        '200':
+          description: Constructor standings ordered by `position`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1TeamRankingCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/rankings/races:
+    get:
+      tags: [AppQD F1]
+      summary: List race result rows
+      description: |
+        Per-driver race results from `f1_race_rankings`. Filter with `race_id` (UUID or legacy
+        external id). Without a filter, returns all loaded race result rows (paginated).
+      operationId: appQdListF1RaceRankings
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+        - name: race_id
+          in: query
+          description: Race UUID or legacy external id (`race` alias accepted).
+          schema: { type: string }
+      responses:
+        '200':
+          description: Race result rows ordered by `position`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1RaceRankingCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/competitions:
+    get:
+      tags: [AppQD F1]
+      summary: List F1 competitions (Grand Prix names)
+      description: Extension beyond §4.2 — catalog helper for race metadata.
+      operationId: appQdListF1Competitions
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: A page of competitions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1CompetitionCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /api/f1/circuits:
+    get:
+      tags: [AppQD F1]
+      summary: List F1 circuits
+      description: Extension beyond §4.2 — catalog helper for race metadata.
+      operationId: appQdListF1Circuits
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: A page of circuits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/F1CircuitCollection'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/timezone:
+    get:
+      tags: [BFF Formula 1]
+      summary: List timezones
+      operationId: formulaOneListTimezones
+      responses:
+        '200':
+          description: Full api-sports envelope with timezone strings in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmericanFootballApiSportsTimezoneList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/seasons:
+    get:
+      tags: [BFF Formula 1]
+      summary: List seasons
+      description: Distinct season years present in loaded race data.
+      operationId: formulaOneListSeasons
+      responses:
+        '200':
+          description: Full api-sports envelope with season years in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmericanFootballApiSportsIntegerList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/teams:
+    get:
+      tags: [BFF Formula 1]
+      summary: List F1 teams (constructors)
+      operationId: formulaOneListTeams
+      parameters:
+        - { name: id, in: query, description: Team UUID or legacy external id, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Teams in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/drivers:
+    get:
+      tags: [BFF Formula 1]
+      summary: List F1 drivers
+      operationId: formulaOneListDrivers
+      parameters:
+        - { name: id, in: query, schema: { type: string } }
+        - { name: team, in: query, description: Team UUID or external id, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Drivers in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/circuits:
+    get:
+      tags: [BFF Formula 1]
+      summary: List circuits
+      operationId: formulaOneListCircuits
+      parameters:
+        - { name: id, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/competitions:
+    get:
+      tags: [BFF Formula 1]
+      summary: List competitions (Grand Prix names)
+      operationId: formulaOneListCompetitions
+      parameters:
+        - { name: id, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/races:
+    get:
+      tags: [BFF Formula 1]
+      summary: List or lookup races
+      operationId: formulaOneListRaces
+      parameters:
+        - { name: id, in: query, description: Race UUID or legacy external id, schema: { type: string } }
+        - { name: season, in: query, schema: { type: integer } }
+        - { name: type, in: query, description: e.g. Race, Qualifying, schema: { type: string } }
+        - { name: circuit, in: query, schema: { type: string } }
+        - { name: competition, in: query, schema: { type: string } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/rankings:
+    get:
+      tags: [BFF Formula 1]
+      summary: Race result rankings
+      description: Finishing order for a single race (`race` query param required).
+      operationId: formulaOneListRaceRankings
+      parameters:
+        - { name: race, in: query, required: true, schema: { type: string } }
+        - { name: driver, in: query, schema: { type: string } }
+        - { name: team, in: query, schema: { type: string } }
+        - { name: id, in: query, schema: { type: string } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/rankings/drivers:
+    get:
+      tags: [BFF Formula 1]
+      summary: Driver championship standings
+      operationId: formulaOneListDriverRankings
+      parameters:
+        - { name: season, in: query, required: true, schema: { type: integer } }
+        - { name: driver, in: query, schema: { type: string } }
+        - { name: team, in: query, schema: { type: string } }
+        - { name: id, in: query, schema: { type: string } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/rankings/teams:
+    get:
+      tags: [BFF Formula 1]
+      summary: Constructor championship standings
+      operationId: formulaOneListTeamRankings
+      parameters:
+        - { name: season, in: query, required: true, schema: { type: integer } }
+        - { name: team, in: query, schema: { type: string } }
+        - { name: id, in: query, schema: { type: string } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaOneApiSportsGenericList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
   /v1/openapi.json:
     get:
       tags: [Meta]
@@ -2151,6 +2534,14 @@ components:
       required: [year]
       properties:
         year: { type: integer, example: 2024 }
+    FormulaOneApiSportsGenericList:
+      allOf:
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
+        - type: object
+          properties:
+            response:
+              type: array
+              items: { type: object, additionalProperties: true }
     AmericanFootballApiSportsTimezoneList:
       allOf:
         - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
@@ -2563,4 +2954,135 @@ components:
         data:
           type: array
           items: { $ref: '#/components/schemas/Standing' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1Driver:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        name: { type: [string, 'null'] }
+        nationality: { type: [string, 'null'] }
+        number: { type: [integer, 'null'] }
+        team_id: { type: [string, 'null'] }
+    F1Team:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        name: { type: [string, 'null'] }
+        logo: { type: [string, 'null'] }
+    F1Race:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        competition_id: { type: [string, 'null'] }
+        circuit_id: { type: [string, 'null'] }
+        season: { type: [integer, 'null'] }
+        race_date: { type: [string, 'null'], format: date-time }
+        status: { type: [string, 'null'] }
+    F1DriverRanking:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        driver_id: { type: [string, 'null'] }
+        season: { type: [integer, 'null'] }
+        points: { type: [number, 'null'] }
+        position: { type: [integer, 'null'] }
+    F1TeamRanking:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        team_id: { type: [string, 'null'] }
+        season: { type: [integer, 'null'] }
+        points: { type: [number, 'null'] }
+        position: { type: [integer, 'null'] }
+    F1RaceRanking:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        race_id: { type: [string, 'null'] }
+        driver_id: { type: [string, 'null'] }
+        position: { type: [integer, 'null'] }
+        time: { type: [string, 'null'] }
+        laps: { type: [integer, 'null'] }
+        grid: { type: [string, 'null'] }
+        pits: { type: [integer, 'null'] }
+        gap: { type: [string, 'null'] }
+    F1Competition:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        name: { type: [string, 'null'] }
+    F1Circuit:
+      type: object
+      properties:
+        id: { type: string }
+        external_id: { type: [string, 'null'] }
+        name: { type: [string, 'null'] }
+        country: { type: [string, 'null'] }
+    F1DriverCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1Driver' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1DriverResource:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/F1Driver' }
+        meta: { $ref: '#/components/schemas/ResourceMeta' }
+    F1TeamCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1Team' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1RaceCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1Race' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1DriverRankingCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1DriverRanking' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1TeamRankingCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1TeamRanking' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1RaceRankingCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1RaceRanking' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1CompetitionCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1Competition' }
+        meta: { $ref: '#/components/schemas/CollectionMeta' }
+    F1CircuitCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/F1Circuit' }
         meta: { $ref: '#/components/schemas/CollectionMeta' }
