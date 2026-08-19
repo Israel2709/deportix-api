@@ -74,11 +74,14 @@ export const SPORTS: Record<SportSlug, SportConfig> = {
   },
 };
 
-/** Extra F1 collections surfaced in data-status beyond the generic teams/matches/standings map. */
-export const F1_EXTENDED_COLLECTIONS = {
-  drivers: 'f1_drivers',
-  circuits: 'f1_circuits',
+/** Flat F1 Firestore collections (Formula 1 BFF — not served by generic /v1 league routes). */
+export const F1_COLLECTIONS = {
   competitions: 'f1_competitions',
+  circuits: 'f1_circuits',
+  drivers: 'f1_drivers',
+  teams: 'f1_teams',
+  races: 'f1_races',
+  driverRankings: 'f1_rankings',
   teamRankings: 'f1_team_rankings',
   raceRankings: 'f1_race_rankings',
 } as const;

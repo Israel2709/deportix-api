@@ -42,6 +42,10 @@ export type BffWriteHandler = (ctx: BffWriteContext) => Promise<BffWriteOutput>;
 
 type EnvelopeKind = 'soccer' | 'american-football' | 'formula-1';
 
+function usesFullApiSportsEnvelope(kind: EnvelopeKind): boolean {
+  return kind === 'american-football' || kind === 'formula-1';
+}
+
 function weakEtag(payload: string): string {
   const hash = createHash('sha1').update(payload).digest('base64');
   return `W/"${hash}"`;
@@ -71,7 +75,7 @@ function buildEnvelope(
   errors?: unknown[] | Record<string, string>,
   paging?: { current: number; total: number },
 ) {
-  if ((kind === 'american-football' || kind === 'formula-1') && get) {
+  if (usesFullApiSportsEnvelope(kind) && get) {
     return buildAmericanFootballApiSportsBody(get, parameters, response, errors ?? [], paging);
   }
   return buildApiSportsBody(response, (errors as Record<string, string>) ?? {});
@@ -84,7 +88,7 @@ function buildEnvelopeError(
   message: string,
   field: string,
 ) {
-  if ((kind === 'american-football' || kind === 'formula-1') && get) {
+  if (usesFullApiSportsEnvelope(kind) && get) {
     return buildAmericanFootballApiSportsError(get, parameters, message, field);
   }
   return buildApiSportsError(message, field);
@@ -137,8 +141,8 @@ async function parseOptionalJsonBody(request: NextRequest): Promise<unknown | un
 }
 
 function defaultCacheForKind(kind: EnvelopeKind): CachePolicy {
-  // NFL BFF feeds the manual data-loader portal — avoid CDN stale reads after POST/PATCH.
-  return kind === 'american-football' ? CACHE.none : CACHE.standard;
+  // AF / F1 BFFs feed the manual data-loader portal — avoid CDN stale reads after POST/PATCH.
+  return usesFullApiSportsEnvelope(kind) ? CACHE.none : CACHE.standard;
 }
 
 function createRouteResponder(kind: EnvelopeKind, get?: string) {
@@ -289,7 +293,19 @@ export function americanFootballBffDeleteRoute(get: string) {
   return createBffWriteRoute('american-football', get, 'DELETE', 204);
 }
 
-/** Formula 1 BFF read routes (full api-sports envelope, read-only). */
-export function formulaOneBffGetRoute(get: string) {
+/** Formula 1 BFF route factories (full api-sports envelope). */
+export function formula1BffGetRoute(get: string) {
   return createBffGetRoute('formula-1', get);
+}
+
+export function formula1BffPostRoute(get: string) {
+  return createBffWriteRoute('formula-1', get, 'POST', 201);
+}
+
+export function formula1BffPatchRoute(get: string) {
+  return createBffWriteRoute('formula-1', get, 'PATCH', 200);
+}
+
+export function formula1BffDeleteRoute(get: string) {
+  return createBffWriteRoute('formula-1', get, 'DELETE', 204);
 }

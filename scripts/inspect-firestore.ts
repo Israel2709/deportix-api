@@ -280,23 +280,26 @@ async function main(): Promise<void> {
   }
 
   // Per-sport collection coverage (from inventory counts).
-  function matchCollectionForSlug(slug: string): string {
-    if (slug === 'soccer') return 'soccer_matches';
-    if (slug === 'f1') return 'f1_races';
-    if (slug === 'american-football') return 'nfl_games';
-    return `${slug}_games`;
-  }
-
-  function standingsCollectionForSlug(slug: string): string {
-    if (slug === 'f1') return 'f1_rankings';
-    return `${slug}_standings`;
-  }
-
   const sportCoverageRows = sportDocsAll.map((s) => {
     const slug = String(s.slug ?? '');
-    const teams = coverageOf(`${slug}_teams`);
-    const matches = coverageOf(matchCollectionForSlug(slug));
-    const standings = coverageOf(standingsCollectionForSlug(slug));
+    const teams =
+      slug === 'american-football'
+        ? coverageOf('nfl_teams')
+        : coverageOf(`${slug}_teams`);
+    const matches =
+      slug === 'soccer'
+        ? coverageOf('soccer_matches')
+        : slug === 'american-football'
+          ? coverageOf('nfl_games')
+          : slug === 'f1'
+            ? coverageOf('f1_races')
+            : coverageOf(`${slug}_games`);
+    const standings =
+      slug === 'american-football'
+        ? coverageOf('nfl_standings')
+        : slug === 'f1'
+          ? coverageOf('f1_rankings')
+          : coverageOf(`${slug}_standings`);
     return `| \`${slug}\` | ${s.name} | ${leagueCountBySportId.get(s.id) ?? 0} | ${teams} | ${matches} | ${standings} |`;
   });
 
@@ -336,10 +339,7 @@ async function main(): Promise<void> {
     '',
     `- **Sports present:** ${sportDocsAll.map((s) => `\`${s.slug}\``).join(', ')} (${sportDocsAll.length}).`,
     `- **Leagues:** ${coverageOf('leagues')}. **Seasons:** ${coverageOf('seasons')}.`,
-    '- **Formula 1** is loaded in dedicated `f1_*` collections and exposed via **`/formula-1/*`** (not generic `/v1/leagues/...`).',
-    '- **American football** uses `/american-football/*` and `nfl_*` collections (partial league linkage in `/v1`).',
-    '- **Liga MX (ext 262)** has season metadata only (no teams/matches/standings loaded yet).',
-    '- Other soccer leagues (e.g. Liga Profesional Argentina ext 128, Ligue 1 ext 61) are data-rich and exercise the full `/v1` endpoint set.',
+    `- **F1** uses dedicated collections (\`f1_*\`) — competitions ${coverageOf('f1_competitions')}, circuits ${coverageOf('f1_circuits')}, drivers ${coverageOf('f1_drivers')}, teams ${coverageOf('f1_teams')}, races ${coverageOf('f1_races')}, rankings ${coverageOf('f1_rankings')} / team ${coverageOf('f1_team_rankings')} / race ${coverageOf('f1_race_rankings')}. Served by BFF \`/formula-1/*\`, not generic \`/v1\` league routes.`,
     '- Coverage is **partial and uneven** by design of the manual loading process.',
     '',
     '## Sport-level coverage',
@@ -362,14 +362,12 @@ async function main(): Promise<void> {
     '- `GET /v1/leagues/{id}/seasons` — seasons exist for most leagues (incl. Liga MX).',
     '- `GET /v1/leagues/{id}/teams|matches|standings` — populated for data-rich soccer leagues; empty (but valid) for Liga MX until loaded.',
     '- `GET /v1/teams/{id}`, `GET /v1/teams/{id}/matches` — for teams that exist.',
-    '- **`GET /formula-1/*`** — F1 catalog, calendar, and standings (see [formula-1-api-reference.md](./formula-1-api-reference.md)).',
+    '- `GET /formula-1/*` — seasons, competitions, circuits, drivers, teams, races, rankings (when F1 collections are loaded).',
     '',
     '## Pending / not available',
     '',
-    '- **Generic `/v1` for F1**: league/team/match endpoints return `404 DATA_NOT_AVAILABLE` for F1 leagues — use `/formula-1/*` instead.',
-    '- **Liga MX teams/matches/standings**: pending until those docs are loaded for league ext 262.',
     '- **statistics**: not modeled in Firestore — coverage flag is always `false`.',
-    '- **F1 write APIs**: not exposed; data is loaded operationally into Firestore.',
+    '- **F1**: intentionally excluded from the generic `/v1` league/team endpoints (different model); use `/formula-1/*`.',
     '',
     '## Suggested future normalizations / snapshots',
     '',

@@ -1,80 +1,106 @@
-import { asStr } from '@/lib/api/serializers';
-import { fetchAll, fetchWhereEq, resolveDoc, type RawDoc } from '@/lib/firebase/repositories/helpers';
-import { listTimezones } from '@/lib/firebase/repositories/timezones.repository';
 import {
-  mapFormulaOneCircuit,
-  mapFormulaOneCompetition,
-  mapFormulaOneDriver,
-  mapFormulaOneTeam,
-} from '../mappers';
-import { loadFormulaOneLookupMaps, teamForDriver } from '../lookup-maps';
+  buildTeamMap,
+  listF1Circuits,
+  listF1Competitions,
+  listF1Drivers,
+  listF1SeasonYears,
+  listF1Teams,
+  resolveF1Circuit,
+  resolveF1Competition,
+  resolveF1Driver,
+  resolveF1Team,
+} from '@/lib/firebase/repositories/formula-1.repository';
+import {
+  mapF1Circuit,
+  mapF1Competition,
+  mapF1Driver,
+  mapF1Team,
+  nameMatches,
+} from '../mappers/catalog.mapper';
+import type {
+  Formula1CircuitQuery,
+  Formula1DriverQuery,
+  Formula1IdNameQuery,
+} from '../query-params';
 
-function matchesSearch(name: string | null | undefined, search: string): boolean {
-  if (!name) return false;
-  return name.toLowerCase().includes(search.toLowerCase());
+export async function fetchFormula1Seasons(): Promise<number[]> {
+  return listF1SeasonYears();
 }
 
-function filterById(docs: RawDoc[], id: string | undefined): RawDoc[] {
-  if (!id) return docs;
-  return docs.filter((doc) => doc.id === id || asStr(doc.data.external_id) === id);
-}
-
-function filterBySearch(docs: RawDoc[], search: string | undefined): RawDoc[] {
-  if (!search) return docs;
-  return docs.filter((doc) => matchesSearch(asStr(doc.data.name), search));
-}
-
-export async function fetchFormulaOneTimezones(): Promise<string[]> {
-  return listTimezones();
-}
-
-export async function fetchFormulaOneSeasons(): Promise<number[]> {
-  const races = await fetchAll('f1_races');
-  const seasons = new Set<number>();
-  for (const race of races) {
-    if (typeof race.data.season === 'number') seasons.add(race.data.season);
+export async function fetchFormula1Competitions(query: Formula1IdNameQuery) {
+  if (query.id) {
+    const doc = await resolveF1Competition(query.id);
+    return doc ? [mapF1Competition(doc)] : [];
   }
-  return [...seasons].sort((a, b) => b - a);
+
+  let docs = await listF1Competitions();
+  if (query.name) docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.name!));
+  if (query.search) {
+    docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.search!));
+  }
+  return docs
+    .map(mapF1Competition)
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function fetchFormulaOneTeams(query: { id?: string; search?: string }) {
-  let docs = await fetchAll('f1_teams');
-  docs = filterById(docs, query.id);
-  docs = filterBySearch(docs, query.search);
-  return docs.map(mapFormulaOneTeam);
+export async function fetchFormula1Circuits(query: Formula1CircuitQuery) {
+  if (query.id) {
+    const doc = await resolveF1Circuit(query.id);
+    return doc ? [mapF1Circuit(doc)] : [];
+  }
+
+  let docs = await listF1Circuits();
+  if (query.name) docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.name!));
+  if (query.country) {
+    docs = docs.filter((doc) => nameMatches(String(doc.data.country ?? ''), query.country!));
+  }
+  if (query.search) {
+    docs = docs.filter((doc) => {
+      const haystack = `${doc.data.name ?? ''} ${doc.data.country ?? ''}`;
+      return nameMatches(haystack, query.search!);
+    });
+  }
+  return docs.map(mapF1Circuit).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function fetchFormulaOneCircuits(query: { id?: string; search?: string }) {
-  let docs = await fetchAll('f1_circuits');
-  docs = filterById(docs, query.id);
-  docs = filterBySearch(docs, query.search);
-  return docs.map(mapFormulaOneCircuit);
+export async function fetchFormula1Teams(query: Formula1IdNameQuery) {
+  if (query.id) {
+    const doc = await resolveF1Team(query.id);
+    return doc ? [mapF1Team(doc)] : [];
+  }
+
+  let docs = await listF1Teams();
+  if (query.name) docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.name!));
+  if (query.search) {
+    docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.search!));
+  }
+  return docs.map(mapF1Team).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export async function fetchFormulaOneCompetitions(query: { id?: string; search?: string }) {
-  let docs = await fetchAll('f1_competitions');
-  docs = filterById(docs, query.id);
-  docs = filterBySearch(docs, query.search);
-  return docs.map(mapFormulaOneCompetition);
-}
+export async function fetchFormula1Drivers(query: Formula1DriverQuery) {
+  if (query.id) {
+    const [doc, teams] = await Promise.all([resolveF1Driver(query.id), listF1Teams()]);
+    if (!doc) return [];
+    return [mapF1Driver(doc, buildTeamMap(teams))];
+  }
 
-export async function fetchFormulaOneDrivers(query: {
-  id?: string;
-  team?: string;
-  search?: string;
-}) {
-  const maps = await loadFormulaOneLookupMaps();
-  let docs = [...maps.drivers.values()];
-  docs = [...new Map(docs.map((doc) => [doc.id, doc])).values()];
+  const [docs, teams] = await Promise.all([listF1Drivers(), listF1Teams()]);
+  const teamMap = buildTeamMap(teams);
+  let filtered = docs;
 
+  if (query.name) {
+    filtered = filtered.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.name!));
+  }
+  if (query.search) {
+    filtered = filtered.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.search!));
+  }
   if (query.team) {
-    const teamDoc = maps.teams.get(query.team) ?? (await resolveDoc('f1_teams', query.team));
-    const teamId = teamDoc?.id;
-    docs = teamId ? docs.filter((doc) => asStr(doc.data.team_id) === teamId) : [];
+    const team = await resolveF1Team(query.team);
+    if (!team) return [];
+    filtered = filtered.filter((doc) => doc.data.team_id === team.id);
   }
 
-  docs = filterById(docs, query.id);
-  docs = filterBySearch(docs, query.search);
-
-  return docs.map((doc) => mapFormulaOneDriver(doc, teamForDriver(doc, maps.teams)));
+  return filtered
+    .map((doc) => mapF1Driver(doc, teamMap))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }

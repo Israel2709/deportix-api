@@ -1,73 +1,53 @@
-import { asStr } from '@/lib/api/serializers';
-import { fetchAll, fetchWhereEq, resolveDoc, type RawDoc } from '@/lib/firebase/repositories/helpers';
-import { mapFormulaOneRace } from '../mappers';
-import { loadFormulaOneLookupMaps } from '../lookup-maps';
-export interface FormulaOneRacesQuery {
-  id?: string;
-  season?: number;
-  type?: string;
-  circuit?: string;
-  competition?: string;
+import {
+  buildCircuitMap,
+  buildCompetitionMap,
+  listF1Circuits,
+  listF1Competitions,
+  listF1RacesBySeason,
+  resolveF1Competition,
+  resolveF1Race,
+} from '@/lib/firebase/repositories/formula-1.repository';
+import { f1RaceDate, mapF1Race } from '../mappers/race.mapper';
+import type { Formula1RacesQuery } from '../query-params';
+import { requireFormula1Season } from '../query-params';
+
+async function loadRaceContextMaps() {
+  const [competitions, circuits] = await Promise.all([listF1Competitions(), listF1Circuits()]);
+  return {
+    competitionMap: buildCompetitionMap(competitions),
+    circuitMap: buildCircuitMap(circuits),
+  };
 }
 
-function resolveRelated(
-  maps: Awaited<ReturnType<typeof loadFormulaOneLookupMaps>>,
-  id: string | null | undefined,
-  collection: 'circuits' | 'competitions',
-): RawDoc | null {
-  if (!id) return null;
-  const fromMap = collection === 'circuits' ? maps.circuits.get(id) : maps.competitions.get(id);
-  return fromMap ?? null;
-}
-
-export async function fetchFormulaOneRaces(query: FormulaOneRacesQuery) {
-  const maps = await loadFormulaOneLookupMaps();
-
+export async function fetchFormula1Races(query: Formula1RacesQuery) {
   if (query.id) {
-    const doc = await resolveDoc('f1_races', query.id);
+    const [doc, maps] = await Promise.all([resolveF1Race(query.id), loadRaceContextMaps()]);
     if (!doc) return [];
-    return [mapRaceDoc(doc, maps)];
+    return [mapF1Race(doc, maps.competitionMap, maps.circuitMap)];
   }
 
-  let docs =
-    query.season != null
-      ? await fetchWhereEq('f1_races', 'season', query.season)
-      : await fetchAll('f1_races');
+  const season = requireFormula1Season(query.season);
+  const [docs, maps] = await Promise.all([listF1RacesBySeason(season), loadRaceContextMaps()]);
 
-  if (query.type) {
-    const type = query.type.toLowerCase();
-    docs = docs.filter((doc) => asStr(doc.data.type)?.toLowerCase() === type);
-  }
-
-  if (query.circuit) {
-    const circuit = maps.circuits.get(query.circuit) ?? (await resolveDoc('f1_circuits', query.circuit));
-    const circuitId = circuit?.id;
-    docs = circuitId ? docs.filter((doc) => asStr(doc.data.circuit_id) === circuitId) : [];
-  }
+  let filtered = docs;
 
   if (query.competition) {
-    const competition =
-      maps.competitions.get(query.competition) ??
-      (await resolveDoc('f1_competitions', query.competition));
-    const competitionId = competition?.id;
-    docs = competitionId
-      ? docs.filter((doc) => asStr(doc.data.competition_id) === competitionId)
-      : [];
+    const competition = await resolveF1Competition(query.competition);
+    if (!competition) return [];
+    filtered = filtered.filter((doc) => doc.data.competition_id === competition.id);
   }
 
-  docs.sort((a, b) => {
-    const da = asStr(a.data.race_date) ?? '';
-    const db = asStr(b.data.race_date) ?? '';
-    return da.localeCompare(db);
-  });
+  if (query.type) {
+    filtered = filtered.filter(
+      (doc) => String(doc.data.type ?? '').toLowerCase() === query.type!.toLowerCase(),
+    );
+  }
 
-  return docs.map((doc) => mapRaceDoc(doc, maps));
-}
+  if (query.date) {
+    filtered = filtered.filter((doc) => (f1RaceDate(doc.data) ?? '').startsWith(query.date!));
+  }
 
-function mapRaceDoc(doc: RawDoc, maps: Awaited<ReturnType<typeof loadFormulaOneLookupMaps>>) {
-  const circuitId = asStr(doc.data.circuit_id);
-  const competitionId = asStr(doc.data.competition_id);
-  const circuitDoc = resolveRelated(maps, circuitId, 'circuits');
-  const competitionDoc = resolveRelated(maps, competitionId, 'competitions');
-  return mapFormulaOneRace(doc, circuitDoc, competitionDoc);
+  return filtered
+    .sort((a, b) => (f1RaceDate(a.data) ?? '').localeCompare(f1RaceDate(b.data) ?? ''))
+    .map((doc) => mapF1Race(doc, maps.competitionMap, maps.circuitMap));
 }

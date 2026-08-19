@@ -1,6 +1,6 @@
 # Firebase Data Inventory
 
-_Generated 2026-08-19T19:22:32.340Z from project `deportix-api-dac8e` — read-only sample of up to 15 docs/collection._
+_Generated 2026-08-01T04:35:38.484Z from project `deportix-api-dac8e` — read-only sample of up to 15 docs/collection._
 
 > Sanitized: field names + inferred types + truncated examples only. No full documents, no secrets.
 
@@ -8,14 +8,31 @@ _Generated 2026-08-19T19:22:32.340Z from project `deportix-api-dac8e` — read-o
 
 | Collection | Documents | Fields | Internal |
 | --- | ---: | ---: | :---: |
+| `countries` | 169 | 8 |  |
 | `f1_circuits` | 37 | 7 |  |
-| `f1_competitions` | 39 | 5 |  |
 | `f1_drivers` | 75 | 6 |  |
-| `f1_race_rankings` | 6136 | 11 |  |
 | `f1_races` | 2404 | 13 |  |
 | `f1_rankings` | 335 | 9 |  |
-| `f1_team_rankings` | 156 | 7 |  |
 | `f1_teams` | 20 | 6 |  |
+| `leagues` | 1231 | 10 |  |
+| `seasons` | 8215 | 9 |  |
+| `sports` | 3 | 6 |  |
+
+### `countries`
+
+- Documents: **169** (sampled 15)
+- Sample ids: `02d9323a-bc77-4f5e-9074-4339d81aa8a3`, `0325db00-063d-49ca-a9a3-e0390b7eda42`, `037cedac-604f-474f-adb6-eceb7fd88fc4`, `05a42909-25cd-4939-9536-a519d448e358`, `09b3d74b-7266-4078-8691-d574cb7e82ac`
+
+| Field | Type(s) | Flags | Example |
+| --- | --- | --- | --- |
+| `_sources` | object | — | { flag } |
+| `code` | string | — | CO |
+| `created_at` | date-string | — | 2026-06-04T23:03:05.954Z |
+| `external_id` | string | relation | CO |
+| `flag` | string | — | https://firebasestorage.googleapis.com/v0/b/deportix-api-… |
+| `id` | string | relation | 02d9323a-bc77-4f5e-9074-4339d81aa8a3 |
+| `name` | string | — | Colombia |
+| `updated_at` | date-string | — | 2026-06-05T20:57:38.287Z |
 
 ### `f1_circuits`
 
@@ -32,19 +49,6 @@ _Generated 2026-08-19T19:22:32.340Z from project `deportix-api-dac8e` — read-o
 | `name` | string | — | Intercity Istanbul Park |
 | `updated_at` | date-string | — | 2026-06-19T05:07:03.703Z |
 
-### `f1_competitions`
-
-- Documents: **39** (sampled 15)
-- Sample ids: `03f5ac88-18ed-47c3-9f2b-81b9649ee88b`, `07e018c5-4792-4c5c-9bf0-649953f55d1e`, `0d76683b-9997-480b-818b-a3d1880ff480`, `145c9480-2876-422b-a150-f4b9d4450fc3`, `1a68a421-a477-4a0e-99ba-483b64214e87`
-
-| Field | Type(s) | Flags | Example |
-| --- | --- | --- | --- |
-| `created_at` | date-string | — | 2026-06-19T04:51:46.554Z |
-| `external_id` | string | relation | 94 |
-| `id` | string | relation | 03f5ac88-18ed-47c3-9f2b-81b9649ee88b |
-| `name` | string | — | GP of Malaysia |
-| `updated_at` | date-string | — | 2026-06-19T05:01:27.428Z |
-
 ### `f1_drivers`
 
 - Documents: **75** (sampled 15)
@@ -58,25 +62,6 @@ _Generated 2026-08-19T19:22:32.340Z from project `deportix-api-dac8e` — read-o
 | `name` | string | — | Oscar Piastri |
 | `number` | number | — | 81 |
 | `team_id` | string | relation | 805a8d71-8816-4cf2-8b66-e5fadac5660f |
-
-### `f1_race_rankings`
-
-- Documents: **6136** (sampled 15)
-- Sample ids: `00065aa1-3013-4ef1-89e4-b392af85ea5f`, `0012ccbd-d363-4320-a013-4ad543714464`, `00249282-9fef-49de-9e99-c59550437958`, `002da42e-f721-4ba2-a543-cc29d02c70a3`, `003719a0-8c91-455f-add8-b9e9787ebdde`
-
-| Field | Type(s) | Flags | Example |
-| --- | --- | --- | --- |
-| `created_at` | date-string | — | 2026-06-19T05:24:58.879Z |
-| `driver_id` | string | relation | 4180d7cb-a84a-447e-8574-a063bffd208a |
-| `external_id` | string | relation | 785-19 |
-| `gap` | null | nullable | null |
-| `grid` | string | — | 3 |
-| `id` | string | relation | 00065aa1-3013-4ef1-89e4-b392af85ea5f |
-| `laps` | number | — | 59 |
-| `pits` | number | — | 2 |
-| `position` | number | — | 1 |
-| `race_id` | string | relation | 35aaf347-cbcd-4469-b0ed-87b15ffcbd80 |
-| `time` | string | — | 2:00:26.144 |
 
 ### `f1_races`
 
@@ -116,21 +101,6 @@ _Generated 2026-08-19T19:22:32.340Z from project `deportix-api-dac8e` — read-o
 | `season` | number | — | 2024 |
 | `wins` | number | — | 0 |
 
-### `f1_team_rankings`
-
-- Documents: **156** (sampled 15)
-- Sample ids: `01143b6f-76b1-471a-81de-9918e8dddaa8`, `019dcb28-ca47-461e-acc3-2010eff990c2`, `01fce8da-8ae5-4cad-938a-668f96110ce2`, `04b6852d-7847-4534-b6b6-ec75cf5a6356`, `062c2a48-391b-4658-bebe-58135a73dcd3`
-
-| Field | Type(s) | Flags | Example |
-| --- | --- | --- | --- |
-| `created_at` | date-string | — | 2026-06-19T05:16:37.111Z |
-| `external_id` | string | relation | 2021-18 |
-| `id` | string | relation | 01143b6f-76b1-471a-81de-9918e8dddaa8 |
-| `points` | number | — | 13 |
-| `position` | number | — | 9 |
-| `season` | number | — | 2021 |
-| `team_id` | string | relation | cd080878-377d-4819-9497-20448fb009cb |
-
 ### `f1_teams`
 
 - Documents: **20** (sampled 15)
@@ -144,3 +114,52 @@ _Generated 2026-08-19T19:22:32.340Z from project `deportix-api-dac8e` — read-o
 | `logo` | string | — | https://media.api-sports.io/formula-1/teams/13.png |
 | `name` | string | — | Alpine F1 Team |
 | `updated_at` | date-string | — | 2026-06-19T04:53:55.056Z |
+
+### `leagues`
+
+- Documents: **1231** (sampled 15)
+- Sample ids: `004a2310-c508-4bbd-84f8-7073fdcc6ad8`, `0063639b-bfb8-44f8-952f-d1449ee1ac01`, `00ef2a40-638a-4207-b7b1-f3152f1d2d6a`, `017ff12e-9de1-44ab-83fd-5fb38ef29b02`, `01a438f8-e45c-4986-8d61-670f4fcaf4f8`
+
+| Field | Type(s) | Flags | Example |
+| --- | --- | --- | --- |
+| `_sources` | object | — | { league_logo } |
+| `country_id` | string \| null | relation, nullable | 2fad2a75-5e68-424b-9918-8cfdcb50af7c |
+| `created_at` | date-string | — | 2026-06-04T23:07:52.787Z |
+| `external_id` | string | relation | 179 |
+| `id` | string | relation | 004a2310-c508-4bbd-84f8-7073fdcc6ad8 |
+| `logo` | string | — | https://firebasestorage.googleapis.com/v0/b/deportix-api-… |
+| `name` | string | — | Premiership |
+| `sport_id` | string | relation | cdce9b99-4e5c-493d-b79c-6c60439bd604 |
+| `type` | string | — | League |
+| `updated_at` | date-string | — | 2026-06-05T20:52:39.557Z |
+
+### `seasons`
+
+- Documents: **8215** (sampled 15)
+- Sample ids: `0003a291-f46b-422d-b2ca-27ee6f031d4c`, `00067b23-5a45-4e50-b6e4-1b85ceef8e63`, `002d54fe-f7bd-4de9-862a-78fad6d01162`, `003d3799-f7db-45a7-973a-aed11683e4e3`, `0041f00b-e26d-4975-95f2-1e1d9c3c0ee3`
+
+| Field | Type(s) | Flags | Example |
+| --- | --- | --- | --- |
+| `created_at` | date-string | — | 2026-06-04T23:11:27.352Z |
+| `current` | boolean | — | false |
+| `end_date` | date-string | — | 2013-11-09T00:00:00.000Z |
+| `external_id` | string | relation | 329-2013 |
+| `id` | string | relation | 0003a291-f46b-422d-b2ca-27ee6f031d4c |
+| `league_id` | string | relation | 3119d682-0185-4e8d-b767-fc6abc8f9b85 |
+| `start_date` | date-string | — | 2013-03-02T00:00:00.000Z |
+| `updated_at` | date-string | — | 2026-06-05T22:50:50.129Z |
+| `year` | number | — | 2013 |
+
+### `sports`
+
+- Documents: **3** (sampled 3)
+- Sample ids: `9590fe3b-8c93-491c-965d-d5510d55f7f4`, `cdce9b99-4e5c-493d-b79c-6c60439bd604`, `ec2c0620-7616-427d-a8f6-80aa0fa25517`
+
+| Field | Type(s) | Flags | Example |
+| --- | --- | --- | --- |
+| `created_at` | date-string | — | 2026-06-04T23:02:55.117Z |
+| `id` | string | relation | 9590fe3b-8c93-491c-965d-d5510d55f7f4 |
+| `logo` | null | nullable | null |
+| `name` | string | — | NFL |
+| `slug` | string | — | american-football |
+| `updated_at` | date-string | — | 2026-06-05T01:08:54.965Z |

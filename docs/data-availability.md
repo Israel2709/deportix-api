@@ -1,19 +1,18 @@
 # Data Availability
-_Generated 2026-08-19T19:22:34.420Z from project `deportix-api-dac8e`. All figures are real Firestore counts._
+_Generated 2026-08-01T04:35:40.400Z from project `deportix-api-dac8e`. All figures are real Firestore counts._
 ## Headline findings
 - **Sports present:** `american-football`, `soccer`, `f1` (3).
-- **Leagues:** 0. **Seasons:** 0.
-- **Formula 1** is loaded in dedicated `f1_*` collections and exposed via **`/formula-1/*`** (not generic `/v1/leagues/...`).
-- **American football** uses `/american-football/*` and `nfl_*` collections (partial league linkage in `/v1`).
+- **Leagues:** 1231. **Seasons:** 8215.
+- **NFL & F1** exist as `sports` entries but have **no leagues and no team/game collections** loaded — their endpoints return empty collections (honest "no data yet").
 - **Liga MX (ext 262)** has season metadata only (no teams/matches/standings loaded yet).
-- Other soccer leagues (e.g. Liga Profesional Argentina ext 128, Ligue 1 ext 61) are data-rich and exercise the full `/v1` endpoint set.
+- Other soccer leagues (e.g. Liga Profesional Argentina ext 128, Ligue 1 ext 61) are data-rich and exercise the full endpoint set.
 - Coverage is **partial and uneven** by design of the manual loading process.
 ## Sport-level coverage
 | Sport | Name | Leagues | Team docs | Match docs | Standing docs |
 | --- | --- | ---: | ---: | ---: | ---: |
 | `american-football` | NFL | 1 | 0 | 0 | 0 |
 | `soccer` | Soccer | 1230 | 0 | 0 | 0 |
-| `f1` | Formula 1 | 0 | 20 | 2404 | 335 |
+| `f1` | Formula 1 | 0 | 20 | 0 | 0 |
 ## Featured leagues (configured in `src/lib/firebase/featured-leagues.ts`)
 | External id | League | Sport | Teams | Matches | Standings | Seasons |
 | --- | --- | --- | ---: | ---: | ---: | --- |
@@ -29,12 +28,11 @@ _Generated 2026-08-19T19:22:34.420Z from project `deportix-api-dac8e`. All figur
 - `GET /v1/leagues/{id}/seasons` — seasons exist for most leagues (incl. Liga MX).
 - `GET /v1/leagues/{id}/teams|matches|standings` — populated for data-rich soccer leagues; empty (but valid) for Liga MX until loaded.
 - `GET /v1/teams/{id}`, `GET /v1/teams/{id}/matches` — for teams that exist.
-- **`GET /formula-1/*`** — F1 catalog, calendar, and standings (see [formula-1-api-reference.md](./formula-1-api-reference.md)).
 ## Pending / not available
-- **Generic `/v1` for F1**: league/team/match endpoints return `404 DATA_NOT_AVAILABLE` for F1 leagues — use `/formula-1/*` instead.
+- **NFL**: no leagues or `nfl_*` collections in this project. NFL endpoints return empty until data is loaded. (Would require `nfl_teams`/`nfl_games`/`nfl_standings` + an NFL league document.)
 - **Liga MX teams/matches/standings**: pending until those docs are loaded for league ext 262.
 - **statistics**: not modeled in Firestore — coverage flag is always `false`.
-- **F1 write APIs**: not exposed; data is loaded operationally into Firestore.
+- **F1**: intentionally excluded from the generic league/team endpoints (different model).
 ## Suggested future normalizations / snapshots
 - A precomputed `data-status` snapshot document to avoid per-request `count()` fan-out.
 - Composite indexes (e.g. `league_id` + match date) if server-side sorted/paginated match queries are introduced.
