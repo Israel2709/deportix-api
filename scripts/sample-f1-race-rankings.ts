@@ -7,18 +7,25 @@ function loadEnv(path: string): Record<string, string> {
   for (const line of readFileSync(path, "utf8").split("\n")) {
     const match = line.match(/^([A-Z_]+)=(.*)$/);
     if (!match) continue;
-    let value = match[2].trim();
+    const key = match[1];
+    const raw = match[2];
+    if (key == null || raw == null) continue;
+    let value = raw.trim();
     if (value.startsWith('"') && value.endsWith('"')) {
       value = value.slice(1, -1);
     }
-    env[match[1]] = value;
+    env[key] = value;
   }
   return env;
 }
 
 async function main(): Promise<void> {
   const env = loadEnv(".env.local");
-  const privateKey = env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n");
+  const rawPrivateKey = env.FIREBASE_PRIVATE_KEY;
+  if (!rawPrivateKey) {
+    throw new Error("FIREBASE_PRIVATE_KEY is missing in .env.local");
+  }
+  const privateKey = rawPrivateKey.replace(/\\n/g, "\n");
   const app = initializeApp(
     {
       credential: cert({
