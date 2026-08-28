@@ -40,10 +40,10 @@ export interface BffWriteOutput extends BffRouteOutput {
 
 export type BffWriteHandler = (ctx: BffWriteContext) => Promise<BffWriteOutput>;
 
-type EnvelopeKind = 'soccer' | 'american-football' | 'formula-1';
+type EnvelopeKind = 'soccer' | 'american-football' | 'formula-1' | 'tennis';
 
 function usesFullApiSportsEnvelope(kind: EnvelopeKind): boolean {
-  return kind === 'american-football' || kind === 'formula-1';
+  return kind === 'american-football' || kind === 'formula-1' || kind === 'tennis';
 }
 
 function weakEtag(payload: string): string {
@@ -308,4 +308,21 @@ export function formula1BffPatchRoute(get: string) {
 
 export function formula1BffDeleteRoute(get: string) {
   return createBffWriteRoute('formula-1', get, 'DELETE', 204);
+}
+
+/** Tennis BFF route factories (full envelope; tennis-native resource shape). */
+export function tennisBffGetRoute(get: string) {
+  return createBffGetRoute('tennis', get);
+}
+
+export function tennisBffPostRoute(get: string) {
+  return createBffWriteRoute('tennis', get, 'POST', 201);
+}
+
+export function tennisBffPatchRoute(get: string) {
+  return createBffWriteRoute('tennis', get, 'PATCH', 200);
+}
+
+export function tennisBffDeleteRoute(get: string) {
+  return createBffWriteRoute('tennis', get, 'DELETE', 204);
 }

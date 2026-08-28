@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — American Football BFF with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal.\n**Canonical IDs:** server-generated UUIDs (Firestore document ids) are returned in `response[]`.\nPOST bodies must **not** include resource ids; reference existing entities by UUID in nested\n`league.id`, `team.id`, etc. Legacy api-sports numeric ids are accepted only as a read lookup\nfallback on PATCH/DELETE query params until old data is gone.\n\n**BFF Formula 1** (`/formula-1/*`) — Formula 1 BFF (api-sports Formula-1 shaped) with the same\nfull envelope. Maps F1 Firestore collections (`f1_competitions`, `f1_circuits`, `f1_drivers`,\n`f1_teams`, `f1_races`, `f1_rankings`, `f1_team_rankings`, `f1_race_rankings`) to competitions,\ncircuits, drivers (participants), teams, races (calendar/events), and rankings (results /\nchampionship standings). Not served by generic `/v1` league/team/match routes.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — American Football BFF with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal.\n**Canonical IDs:** server-generated UUIDs (Firestore document ids) are returned in `response[]`.\nPOST bodies must **not** include resource ids; reference existing entities by UUID in nested\n`league.id`, `team.id`, etc. Legacy api-sports numeric ids are accepted only as a read lookup\nfallback on PATCH/DELETE query params until old data is gone.\n\n**BFF Formula 1** (`/formula-1/*`) — Formula 1 BFF (api-sports Formula-1 shaped) with the same\nfull envelope. Maps F1 Firestore collections (`f1_competitions`, `f1_circuits`, `f1_drivers`,\n`f1_teams`, `f1_races`, `f1_rankings`, `f1_team_rankings`, `f1_race_rankings`) to competitions,\ncircuits, drivers (participants), teams, races (calendar/events), and rankings (results /\nchampionship standings). Not served by generic `/v1` league/team/match routes.\n\n**BFF Tennis** (`/tennis/*`) — Tennis-native BFF for App QD (quiniela) and the Deportix\nbackoffice. Full envelope. Models tournament editions, Main Draw rounds, players, entries,\nmatches and an explicit bracket graph. Draft vs published: list endpoints default to\n`published=true` (App QD). Use `published=all` in the backoffice. Not served by generic `/v1`\nleague/team/match routes. Scope v1: Grand Slam / ATP 1000 / WTA 1000, singles only.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -50,6 +50,10 @@ export const openapiDocument = {
     {
       "name": "bff-formula-1",
       "description": "**BFF Formula 1** — Formula 1 BFF under `/formula-1/*` (api-sports Formula-1 shape). Full envelope\n(`get`, `parameters`, `errors`, `results`, `paging`, `response`). Sport slug `f1`.\nCompetitions ≈ Grand Prix events; races ≈ calendar sessions; rankings ≈ results / standings.\nSwagger deep link — `/docs?tag=bff-formula-1`.\n"
+    },
+    {
+      "name": "bff-tennis",
+      "description": "**BFF Tennis** — Tennis-native BFF under `/tennis/*` for App QD and the Deportix backoffice.\nFull envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Sport slug `tennis`.\nTournaments are editions (e.g. US Open 2026 Men's Singles). Matches carry the bracket graph\n(`competitor1SourceMatchId`, `winnerToMatchId`, …). BYE is an entry type, not a fake match.\nSwagger deep link — `/docs?tag=bff-tennis`.\n"
     }
   ],
   "paths": {
@@ -4106,6 +4110,1693 @@ export const openapiDocument = {
         }
       }
     },
+    "/tennis/players": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List tennis players",
+        "description": "Permanent player catalog. Defaults to published players (`published=true`).",
+        "operationId": "tennisListPlayers",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISO country code"
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Players in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsPlayerList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create player",
+        "operationId": "tennisCreatePlayer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisPlayerCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Player created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsPlayerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update player",
+        "operationId": "tennisUpdatePlayer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisPlayerCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Player updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsPlayerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete player",
+        "operationId": "tennisDeletePlayer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Player deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/tennis/players/{playerId}": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Get player",
+        "operationId": "tennisGetPlayer",
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player in `response` (empty if missing).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsPlayerList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update player by path id",
+        "operationId": "tennisPatchPlayerById",
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisPlayerCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Player updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsPlayerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete player by path id",
+        "operationId": "tennisDeletePlayerById",
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Player deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/tournaments": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List tournament editions",
+        "description": "App QD should call this with the default `published=true`.",
+        "operationId": "tennisListTournaments",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "example": 2026
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "grand_slam",
+                "atp_1000",
+                "wta_1000"
+              ]
+            }
+          },
+          {
+            "name": "gender",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "male",
+                "female"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "upcoming",
+                "active",
+                "finished",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tournaments in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create tournament edition",
+        "operationId": "tennisCreateTournament",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisTournamentCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tournament created as an unpublished draft.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update tournament",
+        "operationId": "tennisUpdateTournament",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisTournamentCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tournament updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete tournament",
+        "operationId": "tennisDeleteTournament",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tournament deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/tournaments/{tournamentId}": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Get tournament edition",
+        "operationId": "tennisGetTournament",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tournament in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update tournament by path id",
+        "operationId": "tennisPatchTournamentById",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisTournamentCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tournament updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete tournament by path id",
+        "operationId": "tennisDeleteTournamentById",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tournament deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/tournaments/{tournamentId}/publish": {
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Publish tournament and Main Draw",
+        "description": "Runs integrity validations (sequential rounds, unique bracket positions, explicit\nbracket graph, Final without `winnerToMatchId`, TBD slots must have a source match)\nthen marks the tournament, rounds, entries and matches as published.\n",
+        "operationId": "tennisPublishTournament",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published tournament.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/tournaments/{tournamentId}/rounds": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List rounds of a tournament",
+        "operationId": "tennisListTournamentRounds",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rounds ordered by `roundNumber`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create round in a tournament",
+        "operationId": "tennisCreateTournamentRound",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisRoundNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Round created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      }
+    },
+    "/tennis/tournaments/{tournamentId}/entries": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List Main Draw entries",
+        "operationId": "tennisListTournamentEntries",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entries with nested player.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Add player to Main Draw",
+        "operationId": "tennisCreateTournamentEntry",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisEntryNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      }
+    },
+    "/tennis/tournaments/{tournamentId}/matches": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List Main Draw matches (bracket)",
+        "description": "Future matches exist even when competitors are still `null` (TBD).",
+        "operationId": "tennisListTournamentMatches",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "round",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TennisMatchStatus"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matches ordered by round then bracketPosition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create match in the bracket",
+        "operationId": "tennisCreateTournamentMatch",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisMatchNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Match created. `matchId` is permanent across reschedules and substitutions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      }
+    },
+    "/tennis/rounds": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List rounds",
+        "operationId": "tennisListRounds",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tournament",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required unless `id` is set"
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rounds in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create round",
+        "operationId": "tennisCreateRound",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisRoundCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Round created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update round",
+        "operationId": "tennisUpdateRound",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisRoundNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Round updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete round",
+        "operationId": "tennisDeleteRound",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Round deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/rounds/{roundId}": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Get round",
+        "operationId": "tennisGetRound",
+        "parameters": [
+          {
+            "name": "roundId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Round in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update round by path id",
+        "operationId": "tennisPatchRoundById",
+        "parameters": [
+          {
+            "name": "roundId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisRoundNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Round updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete round by path id",
+        "operationId": "tennisDeleteRoundById",
+        "parameters": [
+          {
+            "name": "roundId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Round deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/entries": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List entries",
+        "operationId": "tennisListEntries",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tournament",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "player",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entries in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create entry",
+        "operationId": "tennisCreateEntry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisEntryCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update entry (seed, ranking, entryType)",
+        "operationId": "tennisUpdateEntry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisEntryNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete entry",
+        "operationId": "tennisDeleteEntry",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/entries/{entryId}": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Get entry",
+        "operationId": "tennisGetEntry",
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update entry by path id",
+        "operationId": "tennisPatchEntryById",
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisEntryNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsEntryList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete entry by path id",
+        "operationId": "tennisDeleteEntryById",
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/matches": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "List matches",
+        "operationId": "tennisListMatches",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tournament",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "round",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TennisMatchStatus"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TennisPublished"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matches in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Create match",
+        "operationId": "tennisCreateMatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisMatchCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Match created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update match",
+        "description": "Reschedules and competitor substitutions keep the same `id`. Substituting a competitor\nafter the matchup was published sets `competitorChanged=true`.\n",
+        "operationId": "tennisUpdateMatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisMatchNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Match updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete match",
+        "operationId": "tennisDeleteMatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Match deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/matches/{matchId}": {
+      "get": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Get match",
+        "operationId": "tennisGetMatch",
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Update match by path id",
+        "operationId": "tennisPatchMatchById",
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisMatchNestedCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Match updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Delete match by path id",
+        "operationId": "tennisDeleteMatchById",
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Match deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/matches/{matchId}/result": {
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Record match result and advance the bracket",
+        "description": "Stores the official winner/loser, set scores and `resultType`. A normal result must be\nconsistent with the set tally. Retirement, walkover and disqualification require an\nexplicit `winnerId` (the player who advances). On success the winner is copied into\n`winnerToPosition` of `winnerToMatchId`.\n",
+        "operationId": "tennisRecordMatchResult",
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TennisMatchResultBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Match with result, published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/matches/{matchId}/publish": {
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Publish a single match",
+        "operationId": "tennisPublishMatch",
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsMatchList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
     "/v1/openapi.json": {
       "get": {
         "tags": [
@@ -4153,6 +5844,21 @@ export const openapiDocument = {
           "minimum": 1,
           "maximum": 100,
           "default": 20
+        }
+      },
+      "TennisPublished": {
+        "name": "published",
+        "in": "query",
+        "description": "`true` (default) returns only published records for App QD.\n`false` returns drafts. `all` returns everything (backoffice).\n",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            true,
+            false,
+            "all"
+          ],
+          "default": "true"
         }
       },
       "season": {
@@ -7726,6 +9432,1256 @@ export const openapiDocument = {
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/Formula1RaceRankingItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TennisCanonicalId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Server-assigned Firestore document id. Permanent for matches across reschedules."
+      },
+      "TennisCountryRef": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "US"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "flag": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisPlayerRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "fullName",
+          "displayName",
+          "country"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "photoUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/TennisCountryRef"
+          }
+        }
+      },
+      "TennisMatchStatus": {
+        "type": "string",
+        "enum": [
+          "pending_competitors",
+          "scheduled",
+          "live",
+          "suspended",
+          "postponed",
+          "finished",
+          "retirement",
+          "walkover",
+          "disqualification",
+          "cancelled"
+        ]
+      },
+      "TennisEntryType": {
+        "type": "string",
+        "enum": [
+          "direct",
+          "qualifier",
+          "wildcard",
+          "lucky_loser",
+          "protected_ranking",
+          "bye",
+          "other"
+        ]
+      },
+      "TennisSetScore": {
+        "type": "object",
+        "required": [
+          "set",
+          "competitor1",
+          "competitor2"
+        ],
+        "properties": {
+          "set": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "competitor1": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "competitor2": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "TennisPlayerItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "fullName",
+          "displayName",
+          "country",
+          "published"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Carlos Alcaraz"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Alcaraz"
+          },
+          "photoUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/TennisCountryRef"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisPlayerCreateBody": {
+        "type": "object",
+        "required": [
+          "fullName",
+          "displayName",
+          "countryCode"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "photoUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "countryCode": {
+            "type": "string",
+            "example": "ES"
+          },
+          "published": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TennisTournamentItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "gender",
+          "eventType",
+          "country",
+          "startDate",
+          "endDate",
+          "year",
+          "status",
+          "published"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "name": {
+            "type": "string",
+            "example": "US Open"
+          },
+          "shortName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "grand_slam",
+              "atp_1000",
+              "wta_1000"
+            ]
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female"
+            ]
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "singles"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/TennisCountryRef"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "example": "2026-08-24"
+          },
+          "endDate": {
+            "type": "string",
+            "example": "2026-09-13"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2026
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "upcoming",
+              "active",
+              "finished",
+              "cancelled"
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisTournamentCreateBody": {
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "gender",
+          "countryCode",
+          "startDate",
+          "endDate",
+          "year"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "shortName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "grand_slam",
+              "atp_1000",
+              "wta_1000"
+            ]
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female"
+            ]
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "singles"
+            ]
+          },
+          "countryCode": {
+            "type": "string"
+          },
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "upcoming",
+              "active",
+              "finished",
+              "cancelled"
+            ]
+          }
+        }
+      },
+      "TennisRoundItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "roundNumber",
+          "name",
+          "status",
+          "published"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "tournamentId": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "roundNumber": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Round of 64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "finished"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisRoundCreateBody": {
+        "type": "object",
+        "required": [
+          "tournamentId",
+          "roundNumber",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "finished"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisRoundNestedCreateBody": {
+        "type": "object",
+        "required": [
+          "roundNumber",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "roundNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "finished"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisEntryItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "player",
+          "published"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "tournamentId": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "player": {
+            "$ref": "#/components/schemas/TennisPlayerItem"
+          },
+          "seed": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ranking": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "entryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisEntryCreateBody": {
+        "type": "object",
+        "required": [
+          "tournamentId",
+          "playerId"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "playerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seed": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ranking": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "entryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "TennisEntryNestedCreateBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "playerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seed": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "ranking": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "entryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "TennisMatchItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "roundId",
+          "roundNumber",
+          "bracketPosition",
+          "status",
+          "competitorChanged",
+          "bracket",
+          "published"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "tournamentId": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "roundId": {
+            "$ref": "#/components/schemas/TennisCanonicalId"
+          },
+          "roundNumber": {
+            "type": "integer"
+          },
+          "roundName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bracketPosition": {
+            "type": "integer"
+          },
+          "competitor1": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisPlayerRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "competitor2": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisPlayerRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scheduledAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "court": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/TennisMatchStatus"
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "competitorChanged": {
+            "type": "boolean"
+          },
+          "bracket": {
+            "type": "object",
+            "required": [
+              "competitor1SourceMatchId",
+              "competitor2SourceMatchId",
+              "winnerToMatchId",
+              "winnerToPosition",
+              "competitor1EntryType",
+              "competitor2EntryType"
+            ],
+            "properties": {
+              "competitor1SourceMatchId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "competitor2SourceMatchId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "winnerToMatchId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "winnerToPosition": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "competitor_1",
+                  "competitor_2",
+                  null
+                ]
+              },
+              "competitor1EntryType": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/TennisEntryType"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "competitor2EntryType": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/TennisEntryType"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "result": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "winnerId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "loserId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "resultType": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "normal",
+                      "retirement",
+                      "walkover",
+                      "disqualification",
+                      null
+                    ]
+                  },
+                  "setsPlayer1": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "setsPlayer2": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "setScores": {
+                    "oneOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/TennisSetScore"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "finalScoreDisplay": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisMatchCreateBody": {
+        "type": "object",
+        "required": [
+          "tournamentId",
+          "roundId",
+          "bracketPosition"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bracketPosition": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "competitor1Id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "competitor2Id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "scheduledAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "court": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/TennisMatchStatus"
+          },
+          "competitor1SourceMatchId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "competitor2SourceMatchId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "winnerToMatchId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "winnerToPosition": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "competitor_1",
+              "competitor_2",
+              null
+            ]
+          },
+          "competitor1EntryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "competitor2EntryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "TennisMatchNestedCreateBody": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "roundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bracketPosition": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "competitor1Id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "competitor2Id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "scheduledAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "court": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/TennisMatchStatus"
+          },
+          "competitor1SourceMatchId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "competitor2SourceMatchId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "winnerToMatchId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "winnerToPosition": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "competitor_1",
+              "competitor_2",
+              null
+            ]
+          },
+          "competitor1EntryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "competitor2EntryType": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TennisEntryType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "TennisMatchResultBody": {
+        "type": "object",
+        "required": [
+          "winnerId",
+          "resultType"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "winnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "loserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "resultType": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "retirement",
+              "walkover",
+              "disqualification"
+            ]
+          },
+          "setsPlayer1": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "setsPlayer2": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "setScores": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TennisSetScore"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finalScoreDisplay": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "endedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "TennisApiSportsPlayerList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TennisPlayerItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TennisApiSportsTournamentList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TennisTournamentItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TennisApiSportsRoundList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TennisRoundItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TennisApiSportsEntryList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TennisEntryItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TennisApiSportsMatchList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TennisMatchItem"
                 }
               }
             }

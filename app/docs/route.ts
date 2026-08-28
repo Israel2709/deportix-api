@@ -11,6 +11,7 @@ const DOC_TAG_SLUGS = [
   'BFF',
   'bff-american-football',
   'bff-formula-1',
+  'bff-tennis',
 ] as const;
 
 /** Legacy Swagger deep links before tag slugs (spaces → %20). */

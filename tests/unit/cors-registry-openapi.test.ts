@@ -38,6 +38,8 @@ describe('sport registry', () => {
     expect(getSportConfig('soccer')?.collections.matches).toBe('soccer_matches');
     expect(getSportConfig('american-football')?.collections.matches).toBe('nfl_games');
     expect(getSportConfig('f1')?.genericEndpointsSupported).toBe(false);
+    expect(getSportConfig('tennis')?.genericEndpointsSupported).toBe(false);
+    expect(getSportConfig('tennis')?.collections.matches).toBe('tennis_matches');
     expect(getSportConfig('unknown')).toBeNull();
     expect(isSportSlug('soccer')).toBe(true);
     expect(isSportSlug('rugby')).toBe(false);
@@ -80,16 +82,15 @@ describe('OpenAPI document', () => {
       '/fixtures/rounds',
       '/standings',
       '/v1/openapi.json',
-      '/api/f1/drivers',
-      '/api/f1/drivers/{id}',
-      '/api/f1/teams',
-      '/api/f1/races',
-      '/api/f1/races/live',
-      '/api/f1/rankings/drivers',
-      '/api/f1/rankings/teams',
-      '/api/f1/rankings/races',
-      '/api/f1/competitions',
-      '/api/f1/circuits',
+      '/formula-1/seasons',
+      '/formula-1/drivers',
+      '/formula-1/races',
+      '/formula-1/circuits',
+      '/tennis/tournaments',
+      '/tennis/players',
+      '/tennis/matches',
+      '/tennis/tournaments/{tournamentId}/publish',
+      '/tennis/matches/{matchId}/result',
     ]) {
       expect(paths).toContain(p);
     }

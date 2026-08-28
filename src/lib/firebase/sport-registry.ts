@@ -7,7 +7,7 @@
  * collections and field names from this table. Adding a new sport = one entry here.
  */
 
-export type SportSlug = 'soccer' | 'american-football' | 'f1';
+export type SportSlug = 'soccer' | 'american-football' | 'f1' | 'tennis';
 
 export interface SportConfig {
   slug: SportSlug;
@@ -24,9 +24,9 @@ export interface SportConfig {
   homeTeamField: string;
   awayTeamField: string;
   /**
-   * Whether the generic league/team endpoints can serve this sport. F1 has a fundamentally
-   * different model (drivers/races/rankings) and is intentionally excluded from the generic
-   * team/match/standings endpoints in the MVP (it still appears in /sports and /data-status).
+   * Whether the generic league/team endpoints can serve this sport. F1 and tennis have
+   * fundamentally different models and are excluded from generic team/match/standings
+   * endpoints (they still appear in /sports and /data-status).
    */
   genericEndpointsSupported: boolean;
 }
@@ -72,6 +72,20 @@ export const SPORTS: Record<SportSlug, SportConfig> = {
     awayTeamField: '',
     genericEndpointsSupported: false,
   },
+  tennis: {
+    slug: 'tennis',
+    collections: {
+      teams: 'tennis_players',
+      matches: 'tennis_matches',
+      standings: 'tennis_entries',
+      rounds: 'tennis_rounds',
+    },
+    matchDateField: 'scheduled_at',
+    statusField: 'status',
+    homeTeamField: 'competitor_1_id',
+    awayTeamField: 'competitor_2_id',
+    genericEndpointsSupported: false,
+  },
 };
 
 /** Flat F1 Firestore collections (Formula 1 BFF — not served by generic /v1 league routes). */
@@ -84,6 +98,15 @@ export const F1_COLLECTIONS = {
   driverRankings: 'f1_rankings',
   teamRankings: 'f1_team_rankings',
   raceRankings: 'f1_race_rankings',
+} as const;
+
+/** Flat tennis Firestore collections (Tennis BFF — not served by generic /v1 league routes). */
+export const TENNIS_COLLECTIONS = {
+  players: 'tennis_players',
+  tournaments: 'tennis_tournaments',
+  rounds: 'tennis_rounds',
+  entries: 'tennis_entries',
+  matches: 'tennis_matches',
 } as const;
 
 export const SPORT_SLUGS = Object.keys(SPORTS) as SportSlug[];
