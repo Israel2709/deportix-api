@@ -126,18 +126,26 @@ function buildErrorResponse(
   });
 }
 
-async function parseJsonBody(request: NextRequest): Promise<unknown> {
+async function readJsonBody(request: NextRequest): Promise<unknown | undefined> {
+  const text = await request.text();
+  if (!text.trim()) return undefined;
   try {
-    return await request.json();
+    return JSON.parse(text);
   } catch {
     throw new ApiError('INVALID_REQUEST_BODY', 'Request body must be valid JSON.');
   }
 }
 
+async function parseJsonBody(request: NextRequest): Promise<unknown> {
+  const parsed = await readJsonBody(request);
+  if (parsed === undefined) {
+    throw new ApiError('INVALID_REQUEST_BODY', 'Request body must be valid JSON.');
+  }
+  return parsed;
+}
+
 async function parseOptionalJsonBody(request: NextRequest): Promise<unknown | undefined> {
-  const contentType = request.headers.get('content-type') ?? '';
-  if (!contentType.includes('application/json')) return undefined;
-  return parseJsonBody(request);
+  return readJsonBody(request);
 }
 
 function defaultCacheForKind(kind: EnvelopeKind): CachePolicy {
@@ -207,6 +215,7 @@ export function createBffWriteRoute(
   get: string,
   method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   defaultStatus: number,
+  options?: { optionalBody?: boolean },
 ) {
   const respond = createRouteResponder(kind, get);
 
@@ -223,7 +232,7 @@ export function createBffWriteRoute(
       try {
         const params = ctx?.params ? await ctx.params : {};
         const body =
-          method === 'DELETE'
+          method === 'DELETE' || options?.optionalBody
             ? await parseOptionalJsonBody(request)
             : await parseJsonBody(request);
         const out = await handler({ request, params, searchParams, requestId, body });
@@ -317,6 +326,11 @@ export function tennisBffGetRoute(get: string) {
 
 export function tennisBffPostRoute(get: string) {
   return createBffWriteRoute('tennis', get, 'POST', 201);
+}
+
+/** POST actions that take no body (publish tournament / match). */
+export function tennisBffActionPostRoute(get: string) {
+  return createBffWriteRoute('tennis', get, 'POST', 200, { optionalBody: true });
 }
 
 export function tennisBffPatchRoute(get: string) {
