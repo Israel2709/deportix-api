@@ -82,7 +82,11 @@ export async function publishTennisTournament(id: string): Promise<TennisTournam
     listTennisRoundsByTournament(existing.id),
     listTennisMatchesByTournament(existing.id),
   ]);
-  assertPublishableBracket(rounds.map(toRoundSnap), matches.map(toMatchSnap));
+  // Tournaments can go live before the draw exists. If rounds/matches are already
+  // loaded they are published too; TBD competitors are allowed.
+  if (rounds.length > 0 || matches.length > 0) {
+    assertPublishableBracket(rounds.map(toRoundSnap), matches.map(toMatchSnap));
+  }
 
   const now = new Date().toISOString();
   const entries = await listTennisEntriesByTournament(existing.id);

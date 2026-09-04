@@ -4675,8 +4675,8 @@ export const openapiDocument = {
         "tags": [
           "bff-tennis"
         ],
-        "summary": "Publish tournament and Main Draw",
-        "description": "Runs integrity validations (sequential rounds, unique bracket positions, explicit\nbracket graph, Final without `winnerToMatchId`, TBD slots must have a source match)\nthen marks the tournament, rounds, entries and matches as published.\n",
+        "summary": "Publish tournament",
+        "description": "Marks the tournament as published so App QD can list it. Rounds and matches are\noptional: a tournament may be announced before the Main Draw exists. If rounds,\nentries or matches are already loaded they are published too. TBD competitors\n(null player, no source match) are allowed — official draws often land days\nbefore the event.\n",
         "operationId": "tennisPublishTournament",
         "parameters": [
           {
@@ -5196,6 +5196,44 @@ export const openapiDocument = {
         "responses": {
           "204": {
             "description": "Round deleted."
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
+    "/tennis/rounds/{roundId}/publish": {
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Publish a round",
+        "description": "Marks the round as published. Matches in the round are published too, even when\ncompetitors are still TBD. Use this when the round structure is known but the\nofficial draw has not been released yet.\n",
+        "operationId": "tennisPublishRound",
+        "parameters": [
+          {
+            "name": "roundId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Round published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsRoundList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "404": {
             "$ref": "#/components/responses/AmericanFootballNotFound"

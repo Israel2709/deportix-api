@@ -328,7 +328,7 @@ export function tennisBffPostRoute(get: string) {
   return createBffWriteRoute('tennis', get, 'POST', 201);
 }
 
-/** POST actions that take no body (publish tournament / match). */
+/** POST actions that take no body (publish tournament / round / match). */
 export function tennisBffActionPostRoute(get: string) {
   return createBffWriteRoute('tennis', get, 'POST', 200, { optionalBody: true });
 }

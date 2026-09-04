@@ -90,6 +90,7 @@ describe('OpenAPI document', () => {
       '/tennis/players',
       '/tennis/matches',
       '/tennis/tournaments/{tournamentId}/publish',
+      '/tennis/rounds/{roundId}/publish',
       '/tennis/matches/{matchId}/result',
     ]) {
       expect(paths).toContain(p);

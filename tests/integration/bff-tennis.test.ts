@@ -18,7 +18,8 @@ vi.mock('@/lib/firebase/admin', () => ({
 
 const { fetchTennisTournaments } = await import('@/lib/bff/tennis/services/tournaments.service');
 const { fetchTennisMatches } = await import('@/lib/bff/tennis/services/matches.service');
-const { createTennisRound } = await import('@/lib/bff/tennis/writers/rounds.writer');
+const { fetchTennisRounds } = await import('@/lib/bff/tennis/services/rounds.service');
+const { createTennisRound, publishTennisRound } = await import('@/lib/bff/tennis/writers/rounds.writer');
 const { publishTennisTournament } = await import('@/lib/bff/tennis/writers/tournaments.writer');
 const { recordTennisMatchResult, updateTennisMatch } = await import(
   '@/lib/bff/tennis/writers/matches.writer'
@@ -130,6 +131,50 @@ describe('BFF Tennis', () => {
         name: 'Also round 1',
       }),
     ).rejects.toThrow(/roundNumber must be unique/);
+  });
+
+  it('publishes a tournament even when the draw is still empty', async () => {
+    state.db = makeFakeDb({
+      ...structuredClone(dataset()),
+      tennis_rounds: [],
+      tennis_entries: [],
+      tennis_matches: [],
+    });
+    const published = await publishTennisTournament(TOURNAMENT_ID);
+    expect(published.published).toBe(true);
+    const visible = await fetchTennisTournaments({ published: 'true' });
+    expect(visible).toHaveLength(1);
+  });
+
+  it('publishes a round whose matches still have TBD competitors', async () => {
+    state.db = makeFakeDb({
+      ...structuredClone(dataset()),
+      tennis_matches: [
+        {
+          id: MATCH101_ID,
+          tournament_id: TOURNAMENT_ID,
+          round_id: ROUND1_ID,
+          round_number: 1,
+          bracket_position: 1,
+          competitor_1_id: null,
+          competitor_2_id: null,
+          status: 'pending_competitors',
+          competitor_changed: false,
+          is_published: false,
+        },
+      ],
+    });
+    const published = await publishTennisRound(ROUND1_ID);
+    expect(published.published).toBe(true);
+
+    const rounds = await fetchTennisRounds({ tournamentId: TOURNAMENT_ID, published: 'true' });
+    expect(rounds.map((round) => round.id)).toContain(ROUND1_ID);
+
+    const matches = await fetchTennisMatches({ tournamentId: TOURNAMENT_ID, published: 'true' });
+    expect(matches).toHaveLength(1);
+    expect(matches[0]?.competitor1).toBeNull();
+    expect(matches[0]?.competitor2).toBeNull();
+    expect(matches[0]?.published).toBe(true);
   });
 
   it('publishes the draw after integrity checks', async () => {

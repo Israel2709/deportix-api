@@ -11,8 +11,12 @@ import {
 } from '@/lib/firebase/repositories/tennis.repository';
 import { mapTennisRound } from '../mappers/round.mapper';
 import { parseBody } from '../parse';
-import { toRoundSnap } from '../snaps';
-import { assertRoundNumbersUnique } from '../validation';
+import { toMatchSnap, toRoundSnap } from '../snaps';
+import {
+  assertDistinctCompetitors,
+  assertRoundNumbersUnique,
+  assertTimezoneIfScheduled,
+} from '../validation';
 import {
   tennisRoundCreateSchema,
   tennisRoundUpdateSchema,
@@ -70,4 +74,31 @@ export async function deleteTennisRound(id: string): Promise<void> {
     throw invalidRequestBody('Cannot delete a round that still has matches.');
   }
   await deleteTennisDoc(TENNIS_COLLECTIONS.rounds, existing.id);
+}
+
+export async function publishTennisRound(id: string): Promise<TennisRoundItem> {
+  const existing = await resolveTennisRound(id);
+  if (!existing) throw notFound('Round not found.');
+
+  const matches = await listTennisMatchesByRound(existing.id);
+  for (const match of matches) {
+    const snap = toMatchSnap(match);
+    assertDistinctCompetitors(snap.competitor1Id, snap.competitor2Id);
+    assertTimezoneIfScheduled(snap.scheduledAt, snap.timezone);
+  }
+
+  await Promise.all([
+    updateTennisDoc(TENNIS_COLLECTIONS.rounds, existing.id, { is_published: true }),
+    ...matches.map((match) =>
+      updateTennisDoc(TENNIS_COLLECTIONS.matches, match.id, {
+        is_published: true,
+        published_competitor_1_id: match.data.competitor_1_id ?? null,
+        published_competitor_2_id: match.data.competitor_2_id ?? null,
+      }),
+    ),
+  ]);
+
+  const published = await resolveTennisRound(existing.id);
+  if (!published) throw notFound('Round not found.');
+  return mapTennisRound(published);
 }

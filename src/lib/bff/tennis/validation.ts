@@ -55,11 +55,8 @@ export function assertByeSlot(
   }
 }
 
-/** Integrity checks that must pass before a tournament (or its bracket) is published. */
-export function assertPublishableBracket(rounds: TennisRoundSnap[], matches: TennisMatchSnap[]): void {
-  if (rounds.length === 0) fail('A tournament cannot be published without rounds.');
-  if (matches.length === 0) fail('A tournament cannot be published without matches.');
-
+export function assertRoundSequence(rounds: TennisRoundSnap[]): void {
+  if (rounds.length === 0) return;
   const sortedNumbers = [...new Set(rounds.map((round) => round.roundNumber))].sort((a, b) => a - b);
   if (sortedNumbers.length !== rounds.length) fail('roundNumber must be unique within the tournament.');
   for (let i = 0; i < sortedNumbers.length; i++) {
@@ -67,10 +64,26 @@ export function assertPublishableBracket(rounds: TennisRoundSnap[], matches: Ten
       fail('roundNumber values must be sequential starting at 1.');
     }
   }
+}
+
+/**
+ * Optional structure checks for a draw that already has rounds/matches.
+ * Tournaments may be published with no rounds. Rounds and matches may be published
+ * with TBD competitors (official draw often lands days before the event).
+ */
+export function assertPublishableBracket(rounds: TennisRoundSnap[], matches: TennisMatchSnap[]): void {
+  if (rounds.length === 0) {
+    if (matches.length > 0) fail('Matches exist without rounds.');
+    return;
+  }
+
+  assertRoundSequence(rounds);
+
+  if (matches.length === 0) return;
 
   const roundsById = new Map(rounds.map((round) => [round.id, round]));
   const matchesById = new Map(matches.map((match) => [match.id, match]));
-  const maxRound = sortedNumbers[sortedNumbers.length - 1]!;
+  const maxRound = Math.max(...rounds.map((round) => round.roundNumber));
   const positionKeys = new Set<string>();
 
   for (const match of matches) {
@@ -101,13 +114,6 @@ export function assertPublishableBracket(rounds: TennisRoundSnap[], matches: Ten
       'competitor2',
     );
 
-    if (!match.competitor1Id && !match.competitor1SourceMatchId) {
-      fail(`Match ${match.id} competitor1 is undefined and has no source match.`);
-    }
-    if (!match.competitor2Id && !match.competitor2SourceMatchId) {
-      fail(`Match ${match.id} competitor2 is undefined and has no source match.`);
-    }
-
     if (match.competitor1SourceMatchId && !matchesById.has(match.competitor1SourceMatchId)) {
       fail(`Match ${match.id} competitor1SourceMatchId does not exist in this tournament.`);
     }
@@ -117,8 +123,6 @@ export function assertPublishableBracket(rounds: TennisRoundSnap[], matches: Ten
 
     if (match.roundNumber === maxRound) {
       if (match.winnerToMatchId) fail('The Final cannot have winnerToMatchId.');
-    } else if (!match.winnerToMatchId) {
-      fail(`Match ${match.id} must point to a later-round match.`);
     }
 
     if (match.winnerToMatchId) {

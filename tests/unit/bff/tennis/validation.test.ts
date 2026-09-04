@@ -65,6 +65,14 @@ describe('Tennis bracket validation', () => {
     expect(() => assertPublishableBracket(rounds(), bracket())).not.toThrow();
   });
 
+  it('allows a tournament with no rounds or matches', () => {
+    expect(() => assertPublishableBracket([], [])).not.toThrow();
+  });
+
+  it('allows rounds with no matches yet', () => {
+    expect(() => assertPublishableBracket(rounds(), [])).not.toThrow();
+  });
+
   it('rejects a Final that points to another match', () => {
     const matches = bracket();
     matches[1]!.winnerToMatchId = M101;
@@ -72,11 +80,13 @@ describe('Tennis bracket validation', () => {
     expect(() => assertPublishableBracket(rounds(), matches)).toThrow(ApiError);
   });
 
-  it('rejects TBD competitors without a source match', () => {
+  it('allows TBD competitors without a source match', () => {
     const matches = bracket();
+    matches[0]!.competitor1Id = null;
+    matches[0]!.competitor2Id = null;
     matches[1]!.competitor1SourceMatchId = null;
     matches[1]!.competitor1Id = null;
-    expect(() => assertPublishableBracket(rounds(), matches)).toThrow(ApiError);
+    expect(() => assertPublishableBracket(rounds(), matches)).not.toThrow();
   });
 
   it('rejects non-sequential round numbers', () => {
