@@ -3,7 +3,7 @@ export const openapiDocument = {
   "openapi": "3.1.0",
   "info": {
     "title": "Deportix API",
-    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — American Football BFF with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal.\n**Canonical IDs:** server-generated UUIDs (Firestore document ids) are returned in `response[]`.\nPOST bodies must **not** include resource ids; reference existing entities by UUID in nested\n`league.id`, `team.id`, etc. Legacy api-sports numeric ids are accepted only as a read lookup\nfallback on PATCH/DELETE query params until old data is gone.\n\n**BFF Formula 1** (`/formula-1/*`) — Formula 1 BFF (api-sports Formula-1 shaped) with the same\nfull envelope. Maps F1 Firestore collections (`f1_competitions`, `f1_circuits`, `f1_drivers`,\n`f1_teams`, `f1_races`, `f1_rankings`, `f1_team_rankings`, `f1_race_rankings`) to competitions,\ncircuits, drivers (participants), teams, races (calendar/events), and rankings (results /\nchampionship standings). Not served by generic `/v1` league/team/match routes.\n\n**BFF Tennis** (`/tennis/*`) — Tennis-native BFF for App QD (quiniela) and the Deportix\nbackoffice. Full envelope. Models tournament editions, Main Draw rounds, players, entries,\nmatches and an explicit bracket graph. Draft vs published: list endpoints default to\n`published=true` (App QD). Use `published=all` in the backoffice. Not served by generic `/v1`\nleague/team/match routes. Scope v1: Grand Slam / ATP 1000 / WTA 1000, singles only.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
+    "description": "**Deportix API** is a public sports-data API powered by Cloud Firestore.\n\nIt exposes three complementary surfaces:\n\n**Deportix API** (`/v1/*`) — versioned REST with `{ data, meta }` envelope. Used by the\nDeportix portal and internal tooling. Supports match management (POST / PATCH / DELETE).\n\n**BFF — API-Sports soccer** (`/countries`, `/leagues`, `/fixtures`, …) — read-only\nendpoints that mirror API-Sports Football v3 paths and response shape\n(`{ response, results, errors }`). Intended for the Flutter soccer app.\n\n**BFF American Football** (`/american-football/*`) — American Football BFF with the **full**\nenvelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Supports GET and\nCRUD (POST / PATCH / DELETE) for manual data loading from the Deportix portal.\n**Canonical IDs:** server-generated UUIDs (Firestore document ids) are returned in `response[]`.\nPOST bodies must **not** include resource ids; reference existing entities by UUID in nested\n`league.id`, `team.id`, etc. Legacy api-sports numeric ids are accepted only as a read lookup\nfallback on PATCH/DELETE query params until old data is gone.\n\n**BFF Formula 1** (`/formula-1/*`) — Formula 1 BFF (api-sports Formula-1 shaped) with the same\nfull envelope. Maps F1 Firestore collections (`f1_competitions`, `f1_circuits`, `f1_drivers`,\n`f1_teams`, `f1_races`, `f1_rankings`, `f1_team_rankings`, `f1_race_rankings`,\n`f1_starting_grids`, `f1_fastest_laps`, `f1_pitstops`) to competitions, circuits, drivers\n(participants), teams, races (calendar/events), rankings (results / championship standings),\nstarting grid, fastest laps, and pit stops. Timezones use shared `reference_timezones`.\nNot served by generic `/v1` league/team/match routes.\n\n**BFF Tennis** (`/tennis/*`) — Tennis-native BFF for App QD (quiniela) and the Deportix\nbackoffice. Full envelope. Models tournament editions, Main Draw rounds, players, entries,\nmatches and an explicit bracket graph. Draft vs published: list endpoints default to\n`published=true` (App QD). Use `published=all` in the backoffice. Not served by generic `/v1`\nleague/team/match routes. Scope v1: Grand Slam / ATP 1000 / WTA 1000, singles only.\n\n## MVP notes & limitations\n- **Mostly read-only.** All list/get endpoints use `GET`. Match management is available via\n  `POST /v1/leagues/{leagueId}/matches` (create — defaults to current season, or target any\n  season via `?season=` / body `seasonId`),\n  `PATCH /v1/leagues/{leagueId}/matches/{matchId}` (partial update) and\n  `DELETE /v1/leagues/{leagueId}/matches/{matchId}` (permanent removal). Authentication\n  and rate limiting are not enforced yet; access is restricted operationally to authorized\n  platform users.\n- **Partial coverage is expected.** The platform is fed manually. Some resources may be\n  empty or incomplete. Use `GET /v1/data-status` to discover exactly what is available.\n- **American football coverage is partial and evolving** as data is loaded; some sub-resources may\n  return empty collections or be unavailable.\n- **Liga MX — Apertura 2026** starts in July 2026; depending on load progress, matches\n  and standings may not yet exist even when teams do.\n- **CORS is open** (`Access-Control-Allow-Origin: *`) on read endpoints. CORS is not a\n  security mechanism for a public API; it only governs browser reads.\n- **Dates** are ISO-8601 and interpreted in **UTC**.\n\n## Identifiers\nPath identifiers (`leagueId`, `teamId`) are the resource's stable id as returned by the\nAPI. The external provider id is also accepted as a fallback lookup.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Deportix API"
@@ -4103,6 +4103,585 @@ export const openapiDocument = {
           },
           "404": {
             "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/formula-1/rankings/startinggrid": {
+      "get": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Starting grid",
+        "description": "Grid positions for a race session. `race` (UUID) is required. Empty until data is loaded.",
+        "operationId": "formula1ListStartingGrid",
+        "parameters": [
+          {
+            "name": "race",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Starting grid rows in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsStartingGridList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Create starting grid entry",
+        "operationId": "formula1CreateStartingGrid",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Formula1StartingGridCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsStartingGridList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Update starting grid entry",
+        "operationId": "formula1UpdateStartingGrid",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Formula1StartingGridCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsStartingGridList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Delete starting grid entry",
+        "operationId": "formula1DeleteStartingGrid",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/formula-1/rankings/fastestlaps": {
+      "get": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Fastest laps ranking",
+        "description": "Best lap ranking for a race session. `race` (UUID) is required. Empty until data is loaded.",
+        "operationId": "formula1ListFastestLaps",
+        "parameters": [
+          {
+            "name": "race",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fastest lap rows in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsFastestLapList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Create fastest lap entry",
+        "operationId": "formula1CreateFastestLap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Formula1FastestLapCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsFastestLapList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Update fastest lap entry",
+        "operationId": "formula1UpdateFastestLap",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Formula1FastestLapCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsFastestLapList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Delete fastest lap entry",
+        "operationId": "formula1DeleteFastestLap",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/formula-1/pitstops": {
+      "get": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Pit stops",
+        "description": "Pit stop history for a race. `race` (UUID) is required. A driver may appear multiple times. Empty until data is loaded.",
+        "operationId": "formula1ListPitstops",
+        "parameters": [
+          {
+            "name": "race",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pit stop rows in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsPitstopList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Create pit stop entry",
+        "operationId": "formula1CreatePitstop",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Formula1PitstopCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsPitstopList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Update pit stop entry",
+        "operationId": "formula1UpdatePitstop",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Formula1PitstopCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsPitstopList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Delete pit stop entry",
+        "operationId": "formula1DeletePitstop",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/formula-1/timezone": {
+      "get": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "List timezones",
+        "description": "IANA timezone strings (shared `reference_timezones` catalog). Seeds common defaults when empty.",
+        "operationId": "formula1ListTimezones",
+        "responses": {
+          "200": {
+            "description": "Full api-sports envelope with timezone strings in `response`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsTimezoneList"
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Add timezone",
+        "operationId": "formula1CreateTimezone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmericanFootballTimezoneCreateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Timezone created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsTimezoneList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Rename timezone",
+        "operationId": "formula1UpdateTimezone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmericanFootballTimezoneUpdateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Timezone updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Formula1ApiSportsTimezoneList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "bff-formula-1"
+        ],
+        "summary": "Delete timezone",
+        "operationId": "formula1DeleteTimezone",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmericanFootballTimezoneDeleteBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Timezone deleted."
+          },
+          "400": {
+            "$ref": "#/components/responses/AmericanFootballInvalidParameter"
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"
@@ -9470,6 +10049,364 @@ export const openapiDocument = {
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/Formula1RaceRankingItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Formula1SessionDetailDriverRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Formula1CanonicalId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "abbr": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "number": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1StartingGridItem": {
+        "type": "object",
+        "required": [
+          "race",
+          "driver",
+          "position"
+        ],
+        "properties": {
+          "race": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Formula1CanonicalId"
+              }
+            }
+          },
+          "driver": {
+            "$ref": "#/components/schemas/Formula1SessionDetailDriverRef"
+          },
+          "team": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Formula1TeamItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "position": {
+            "type": "integer"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1StartingGridCreateBody": {
+        "type": "object",
+        "required": [
+          "raceId",
+          "driverId",
+          "position"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "raceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "driverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1FastestLapItem": {
+        "type": "object",
+        "required": [
+          "race",
+          "driver",
+          "position",
+          "lap"
+        ],
+        "properties": {
+          "race": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Formula1CanonicalId"
+              }
+            }
+          },
+          "driver": {
+            "$ref": "#/components/schemas/Formula1SessionDetailDriverRef"
+          },
+          "team": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Formula1TeamItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "position": {
+            "type": "integer"
+          },
+          "lap": {
+            "type": "integer"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "avg_speed": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1FastestLapCreateBody": {
+        "type": "object",
+        "required": [
+          "raceId",
+          "driverId",
+          "position",
+          "lap"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "raceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "driverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "lap": {
+            "type": "integer"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "avg_speed": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1PitstopItem": {
+        "type": "object",
+        "required": [
+          "race",
+          "driver",
+          "stops",
+          "lap"
+        ],
+        "properties": {
+          "race": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/Formula1CanonicalId"
+              }
+            }
+          },
+          "driver": {
+            "$ref": "#/components/schemas/Formula1SessionDetailDriverRef"
+          },
+          "team": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Formula1TeamItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stops": {
+            "type": "integer"
+          },
+          "lap": {
+            "type": "integer"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1PitstopCreateBody": {
+        "type": "object",
+        "required": [
+          "raceId",
+          "driverId",
+          "stops",
+          "lap"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "raceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "driverId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "stops": {
+            "type": "integer"
+          },
+          "lap": {
+            "type": "integer"
+          },
+          "time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "Formula1ApiSportsStartingGridList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Formula1StartingGridItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Formula1ApiSportsFastestLapList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Formula1FastestLapItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Formula1ApiSportsPitstopList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Formula1PitstopItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Formula1ApiSportsTimezoneList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AmericanFootballApiSportsEnvelope"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
               }
             }

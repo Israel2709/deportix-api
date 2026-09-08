@@ -98,6 +98,9 @@ export const F1_COLLECTIONS = {
   driverRankings: 'f1_rankings',
   teamRankings: 'f1_team_rankings',
   raceRankings: 'f1_race_rankings',
+  startingGrids: 'f1_starting_grids',
+  fastestLaps: 'f1_fastest_laps',
+  pitstops: 'f1_pitstops',
 } as const;
 
 /** Flat tennis Firestore collections (Tennis BFF — not served by generic /v1 league routes). */

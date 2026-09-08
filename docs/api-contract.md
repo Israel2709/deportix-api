@@ -89,22 +89,25 @@ paths and query params stay the same.
 
 ---
 
-## BFF — Formula 1 (read-only)
+## BFF — Formula 1
 
-Compatibilidad con **API-Sports Formula-1 v1** bajo `/formula-1/*`. Mismo envelope completo que American Football. Los datos viven en colecciones `f1_*` en Firestore; **no** se sirven por `/v1/leagues/{id}/teams|matches|standings`.
+Compatibilidad con **API-Sports Formula-1 v1** bajo `/formula-1/*`. Mismo envelope completo que American Football. Los datos viven en colecciones `f1_*` en Firestore; **no** se sirven por `/v1/leagues/{id}/teams|matches|standings`. CRUD disponible para carga desde portal / ingest.
 
 | Method | Path | Required params | Notes |
 | --- | --- | --- | --- |
-| GET | `/formula-1/timezone` | — | Zonas horarias de referencia. |
+| GET | `/formula-1/timezone` | — | Zonas horarias de referencia (`reference_timezones`). |
 | GET | `/formula-1/seasons` | — | Temporadas presentes en carreras cargadas. |
 | GET | `/formula-1/teams` | — | `?id`, `?search` opcionales. |
 | GET | `/formula-1/drivers` | — | `?team=` filtra por constructor. |
 | GET | `/formula-1/circuits` | — | |
 | GET | `/formula-1/competitions` | — | Grandes premios (nombre). |
 | GET | `/formula-1/races` | — | `?season=`, `?type=`, `?circuit=`, `?competition=`, `?id=`. |
-| GET | `/formula-1/rankings` | `race` | Resultado de carrera (`f1_race_rankings`). |
+| GET | `/formula-1/rankings/races` | `race` | Resultado de carrera (`f1_race_rankings`). |
 | GET | `/formula-1/rankings/drivers` | `season` | Campeonato de pilotos. |
 | GET | `/formula-1/rankings/teams` | `season` | Campeonato de constructores. |
+| GET | `/formula-1/rankings/startinggrid` | `race` | Parrilla de salida (`f1_starting_grids`). |
+| GET | `/formula-1/rankings/fastestlaps` | `race` | Ranking de vueltas rápidas (`f1_fastest_laps`). |
+| GET | `/formula-1/pitstops` | `race` | Paradas en pits (`f1_pitstops`). |
 
 Guía detallada con ejemplos: [formula-1-api-reference.md](./formula-1-api-reference.md).
 

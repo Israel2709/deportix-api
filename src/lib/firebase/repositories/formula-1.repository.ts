@@ -42,6 +42,18 @@ export async function listF1RaceRankingsByRace(raceId: string): Promise<RawDoc[]
   return fetchWhereEq(F1_COLLECTIONS.raceRankings, 'race_id', raceId);
 }
 
+export async function listF1StartingGridsByRace(raceId: string): Promise<RawDoc[]> {
+  return fetchWhereEq(F1_COLLECTIONS.startingGrids, 'race_id', raceId);
+}
+
+export async function listF1FastestLapsByRace(raceId: string): Promise<RawDoc[]> {
+  return fetchWhereEq(F1_COLLECTIONS.fastestLaps, 'race_id', raceId);
+}
+
+export async function listF1PitstopsByRace(raceId: string): Promise<RawDoc[]> {
+  return fetchWhereEq(F1_COLLECTIONS.pitstops, 'race_id', raceId);
+}
+
 export async function resolveF1Competition(id: string): Promise<RawDoc | null> {
   return resolveDoc(F1_COLLECTIONS.competitions, id);
 }
@@ -72,6 +84,18 @@ export async function resolveF1TeamRanking(id: string): Promise<RawDoc | null> {
 
 export async function resolveF1RaceRanking(id: string): Promise<RawDoc | null> {
   return resolveDoc(F1_COLLECTIONS.raceRankings, id);
+}
+
+export async function resolveF1StartingGrid(id: string): Promise<RawDoc | null> {
+  return resolveDoc(F1_COLLECTIONS.startingGrids, id);
+}
+
+export async function resolveF1FastestLap(id: string): Promise<RawDoc | null> {
+  return resolveDoc(F1_COLLECTIONS.fastestLaps, id);
+}
+
+export async function resolveF1Pitstop(id: string): Promise<RawDoc | null> {
+  return resolveDoc(F1_COLLECTIONS.pitstops, id);
 }
 
 export async function getF1TeamById(id: string): Promise<RawDoc | null> {

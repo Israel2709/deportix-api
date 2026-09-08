@@ -6,6 +6,11 @@ import {
   mapF1RaceRanking,
   mapF1TeamRanking,
 } from '@/lib/bff/formula-1/mappers/ranking.mapper';
+import {
+  mapF1FastestLap,
+  mapF1Pitstop,
+  mapF1StartingGrid,
+} from '@/lib/bff/formula-1/mappers/session-detail.mapper';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
 
 const competition: RawDoc = {
@@ -25,7 +30,13 @@ const team: RawDoc = {
 
 const driver: RawDoc = {
   id: '44444444-4444-4444-8444-444444444444',
-  data: { name: 'Oscar Piastri', number: 81, team_id: team.id },
+  data: {
+    name: 'Oscar Piastri',
+    number: 81,
+    team_id: team.id,
+    abbr: 'PIA',
+    image: 'https://example.com/piastri.png',
+  },
 };
 
 describe('Formula 1 catalog mappers', () => {
@@ -157,6 +168,101 @@ describe('Formula 1 ranking mappers', () => {
       gap: null,
       driver: { id: driver.id, name: 'Oscar Piastri', number: 81 },
       team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
+    });
+  });
+});
+
+describe('Formula 1 session-detail mappers', () => {
+  const raceId = '55555555-5555-4555-8555-555555555555';
+  const driverMap = new Map([[driver.id, driver]]);
+  const teamMap = new Map([[team.id, team]]);
+
+  it('maps starting grid, fastest lap and pit stop rows', () => {
+    expect(
+      mapF1StartingGrid(
+        {
+          id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+          data: { race_id: raceId, driver_id: driver.id, position: 1, time: '1:20.486' },
+        },
+        driverMap,
+        teamMap,
+      ),
+    ).toEqual({
+      race: { id: raceId },
+      driver: {
+        id: driver.id,
+        name: 'Oscar Piastri',
+        abbr: 'PIA',
+        number: 81,
+        image: 'https://example.com/piastri.png',
+      },
+      team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
+      position: 1,
+      time: '1:20.486',
+    });
+
+    expect(
+      mapF1FastestLap(
+        {
+          id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+          data: {
+            race_id: raceId,
+            driver_id: driver.id,
+            position: 1,
+            lap: 57,
+            time: '1:25.580',
+            avg_speed: '223.075',
+          },
+        },
+        driverMap,
+        teamMap,
+      ),
+    ).toEqual({
+      race: { id: raceId },
+      driver: {
+        id: driver.id,
+        name: 'Oscar Piastri',
+        abbr: 'PIA',
+        number: 81,
+        image: 'https://example.com/piastri.png',
+      },
+      team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
+      position: 1,
+      lap: 57,
+      time: '1:25.580',
+      avg_speed: '223.075',
+    });
+
+    expect(
+      mapF1Pitstop(
+        {
+          id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+          data: {
+            race_id: raceId,
+            driver_id: driver.id,
+            stops: 1,
+            lap: 12,
+            time: '2.401',
+            total_time: '2.401',
+          },
+        },
+        driverMap,
+        teamMap,
+      ),
+    ).toEqual({
+      race: { id: raceId },
+      driver: {
+        id: driver.id,
+        name: 'Oscar Piastri',
+        abbr: 'PIA',
+        number: 81,
+        image: 'https://example.com/piastri.png',
+      },
+      team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
+      stops: 1,
+      lap: 12,
+      time: '2.401',
+      total_time: '2.401',
     });
   });
 });

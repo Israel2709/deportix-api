@@ -23,9 +23,11 @@ info:
 
     **BFF Formula 1** (`/formula-1/*`) — Formula 1 BFF (api-sports Formula-1 shaped) with the same
     full envelope. Maps F1 Firestore collections (`f1_competitions`, `f1_circuits`, `f1_drivers`,
-    `f1_teams`, `f1_races`, `f1_rankings`, `f1_team_rankings`, `f1_race_rankings`) to competitions,
-    circuits, drivers (participants), teams, races (calendar/events), and rankings (results /
-    championship standings). Not served by generic `/v1` league/team/match routes.
+    `f1_teams`, `f1_races`, `f1_rankings`, `f1_team_rankings`, `f1_race_rankings`,
+    `f1_starting_grids`, `f1_fastest_laps`, `f1_pitstops`) to competitions, circuits, drivers
+    (participants), teams, races (calendar/events), rankings (results / championship standings),
+    starting grid, fastest laps, and pit stops. Timezones use shared `reference_timezones`.
+    Not served by generic `/v1` league/team/match routes.
 
     **BFF Tennis** (`/tennis/*`) — Tennis-native BFF for App QD (quiniela) and the Deportix
     backoffice. Full envelope. Models tournament editions, Main Draw rounds, players, entries,
@@ -2244,6 +2246,320 @@ paths:
           $ref: '#/components/responses/AmericanFootballNotFound'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/rankings/startinggrid:
+    get:
+      tags: [bff-formula-1]
+      summary: Starting grid
+      description: Grid positions for a race session. `race` (UUID) is required. Empty until data is loaded.
+      operationId: formula1ListStartingGrid
+      parameters:
+        - { name: race, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Starting grid rows in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsStartingGridList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    post:
+      tags: [bff-formula-1]
+      summary: Create starting grid entry
+      operationId: formula1CreateStartingGrid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Formula1StartingGridCreateBody'
+      responses:
+        '201':
+          description: Entry created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsStartingGridList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    patch:
+      tags: [bff-formula-1]
+      summary: Update starting grid entry
+      operationId: formula1UpdateStartingGrid
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Formula1StartingGridCreateBody'
+      responses:
+        '200':
+          description: Entry updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsStartingGridList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    delete:
+      tags: [bff-formula-1]
+      summary: Delete starting grid entry
+      operationId: formula1DeleteStartingGrid
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string } }
+      responses:
+        '204':
+          description: Entry deleted.
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/rankings/fastestlaps:
+    get:
+      tags: [bff-formula-1]
+      summary: Fastest laps ranking
+      description: Best lap ranking for a race session. `race` (UUID) is required. Empty until data is loaded.
+      operationId: formula1ListFastestLaps
+      parameters:
+        - { name: race, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Fastest lap rows in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsFastestLapList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    post:
+      tags: [bff-formula-1]
+      summary: Create fastest lap entry
+      operationId: formula1CreateFastestLap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Formula1FastestLapCreateBody'
+      responses:
+        '201':
+          description: Entry created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsFastestLapList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    patch:
+      tags: [bff-formula-1]
+      summary: Update fastest lap entry
+      operationId: formula1UpdateFastestLap
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Formula1FastestLapCreateBody'
+      responses:
+        '200':
+          description: Entry updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsFastestLapList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    delete:
+      tags: [bff-formula-1]
+      summary: Delete fastest lap entry
+      operationId: formula1DeleteFastestLap
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string } }
+      responses:
+        '204':
+          description: Entry deleted.
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/pitstops:
+    get:
+      tags: [bff-formula-1]
+      summary: Pit stops
+      description: Pit stop history for a race. `race` (UUID) is required. A driver may appear multiple times. Empty until data is loaded.
+      operationId: formula1ListPitstops
+      parameters:
+        - { name: race, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Pit stop rows in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsPitstopList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    post:
+      tags: [bff-formula-1]
+      summary: Create pit stop entry
+      operationId: formula1CreatePitstop
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Formula1PitstopCreateBody'
+      responses:
+        '201':
+          description: Entry created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsPitstopList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    patch:
+      tags: [bff-formula-1]
+      summary: Update pit stop entry
+      operationId: formula1UpdatePitstop
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Formula1PitstopCreateBody'
+      responses:
+        '200':
+          description: Entry updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsPitstopList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    delete:
+      tags: [bff-formula-1]
+      summary: Delete pit stop entry
+      operationId: formula1DeletePitstop
+      parameters:
+        - { name: id, in: query, required: true, schema: { type: string } }
+      responses:
+        '204':
+          description: Entry deleted.
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /formula-1/timezone:
+    get:
+      tags: [bff-formula-1]
+      summary: List timezones
+      description: IANA timezone strings (shared `reference_timezones` catalog). Seeds common defaults when empty.
+      operationId: formula1ListTimezones
+      responses:
+        '200':
+          description: Full api-sports envelope with timezone strings in `response`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsTimezoneList'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    post:
+      tags: [bff-formula-1]
+      summary: Add timezone
+      operationId: formula1CreateTimezone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmericanFootballTimezoneCreateBody'
+      responses:
+        '201':
+          description: Timezone created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsTimezoneList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    patch:
+      tags: [bff-formula-1]
+      summary: Rename timezone
+      operationId: formula1UpdateTimezone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmericanFootballTimezoneUpdateBody'
+      responses:
+        '200':
+          description: Timezone updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formula1ApiSportsTimezoneList'
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+    delete:
+      tags: [bff-formula-1]
+      summary: Delete timezone
+      operationId: formula1DeleteTimezone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmericanFootballTimezoneDeleteBody'
+      responses:
+        '204':
+          description: Timezone deleted.
+        '400':
+          $ref: '#/components/responses/AmericanFootballInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
   /tennis/players:
     get:
       tags: [bff-tennis]
@@ -4327,6 +4643,130 @@ components:
             response:
               type: array
               items: { $ref: '#/components/schemas/Formula1RaceRankingItem' }
+    Formula1SessionDetailDriverRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { $ref: '#/components/schemas/Formula1CanonicalId' }
+        name: { type: string }
+        abbr: { type: [string, 'null'] }
+        number: { type: [integer, 'null'] }
+        image: { type: [string, 'null'] }
+    Formula1StartingGridItem:
+      type: object
+      required: [race, driver, position]
+      properties:
+        race:
+          type: object
+          required: [id]
+          properties:
+            id: { $ref: '#/components/schemas/Formula1CanonicalId' }
+        driver: { $ref: '#/components/schemas/Formula1SessionDetailDriverRef' }
+        team:
+          oneOf:
+            - $ref: '#/components/schemas/Formula1TeamItem'
+            - type: 'null'
+        position: { type: integer }
+        time: { type: [string, 'null'] }
+    Formula1StartingGridCreateBody:
+      type: object
+      required: [raceId, driverId, position]
+      additionalProperties: false
+      properties:
+        raceId: { type: string, format: uuid }
+        driverId: { type: string, format: uuid }
+        position: { type: integer }
+        time: { type: [string, 'null'] }
+    Formula1FastestLapItem:
+      type: object
+      required: [race, driver, position, lap]
+      properties:
+        race:
+          type: object
+          required: [id]
+          properties:
+            id: { $ref: '#/components/schemas/Formula1CanonicalId' }
+        driver: { $ref: '#/components/schemas/Formula1SessionDetailDriverRef' }
+        team:
+          oneOf:
+            - $ref: '#/components/schemas/Formula1TeamItem'
+            - type: 'null'
+        position: { type: integer }
+        lap: { type: integer }
+        time: { type: [string, 'null'] }
+        avg_speed: { type: [string, 'null'] }
+    Formula1FastestLapCreateBody:
+      type: object
+      required: [raceId, driverId, position, lap]
+      additionalProperties: false
+      properties:
+        raceId: { type: string, format: uuid }
+        driverId: { type: string, format: uuid }
+        position: { type: integer }
+        lap: { type: integer }
+        time: { type: [string, 'null'] }
+        avg_speed: { type: [string, 'null'] }
+    Formula1PitstopItem:
+      type: object
+      required: [race, driver, stops, lap]
+      properties:
+        race:
+          type: object
+          required: [id]
+          properties:
+            id: { $ref: '#/components/schemas/Formula1CanonicalId' }
+        driver: { $ref: '#/components/schemas/Formula1SessionDetailDriverRef' }
+        team:
+          oneOf:
+            - $ref: '#/components/schemas/Formula1TeamItem'
+            - type: 'null'
+        stops: { type: integer }
+        lap: { type: integer }
+        time: { type: [string, 'null'] }
+        total_time: { type: [string, 'null'] }
+    Formula1PitstopCreateBody:
+      type: object
+      required: [raceId, driverId, stops, lap]
+      additionalProperties: false
+      properties:
+        raceId: { type: string, format: uuid }
+        driverId: { type: string, format: uuid }
+        stops: { type: integer }
+        lap: { type: integer }
+        time: { type: [string, 'null'] }
+        total_time: { type: [string, 'null'] }
+    Formula1ApiSportsStartingGridList:
+      allOf:
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
+        - type: object
+          properties:
+            response:
+              type: array
+              items: { $ref: '#/components/schemas/Formula1StartingGridItem' }
+    Formula1ApiSportsFastestLapList:
+      allOf:
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
+        - type: object
+          properties:
+            response:
+              type: array
+              items: { $ref: '#/components/schemas/Formula1FastestLapItem' }
+    Formula1ApiSportsPitstopList:
+      allOf:
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
+        - type: object
+          properties:
+            response:
+              type: array
+              items: { $ref: '#/components/schemas/Formula1PitstopItem' }
+    Formula1ApiSportsTimezoneList:
+      allOf:
+        - $ref: '#/components/schemas/AmericanFootballApiSportsEnvelope'
+        - type: object
+          properties:
+            response:
+              type: array
+              items: { type: string }
     TennisCanonicalId:
       type: string
       format: uuid
