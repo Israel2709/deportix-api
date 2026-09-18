@@ -76,6 +76,7 @@ describe('OpenAPI document', () => {
       '/v1/leagues/{leagueId}/matches/{matchId}',
       '/v1/teams/{teamId}',
       '/countries',
+      '/organizations',
       '/leagues',
       '/leagues/seasons',
       '/fixtures',

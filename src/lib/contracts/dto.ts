@@ -18,6 +18,7 @@ export interface LeagueDTO {
   type: string | null;
   sport: string | null;
   country: string | null;
+  organizationId: string | null;
   logo: string | null;
   altLogo: string | null;
   updatedAt: string | null;

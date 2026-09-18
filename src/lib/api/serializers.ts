@@ -81,6 +81,7 @@ export function serializeLeague(
     type: asStr(raw.type),
     sport: resolved.sport,
     country: resolved.country,
+    organizationId: asStr(raw.organization_id),
     logo: asStr(raw.logo),
     altLogo: asStr(raw.alt_logo),
     updatedAt: updatedAtOf(raw),
