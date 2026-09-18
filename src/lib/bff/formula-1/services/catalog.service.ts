@@ -13,6 +13,7 @@ import {
 import {
   mapF1Circuit,
   mapF1Competition,
+  mapF1CountryField,
   mapF1Driver,
   mapF1Team,
   nameMatches,
@@ -52,11 +53,13 @@ export async function fetchFormula1Circuits(query: Formula1CircuitQuery) {
   let docs = await listF1Circuits();
   if (query.name) docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.name!));
   if (query.country) {
-    docs = docs.filter((doc) => nameMatches(String(doc.data.country ?? ''), query.country!));
+    docs = docs.filter((doc) =>
+      nameMatches(mapF1CountryField(doc.data.country) ?? '', query.country!),
+    );
   }
   if (query.search) {
     docs = docs.filter((doc) => {
-      const haystack = `${doc.data.name ?? ''} ${doc.data.country ?? ''}`;
+      const haystack = `${doc.data.name ?? ''} ${mapF1CountryField(doc.data.country) ?? ''}`;
       return nameMatches(haystack, query.search!);
     });
   }

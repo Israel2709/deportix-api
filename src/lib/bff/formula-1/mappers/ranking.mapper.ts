@@ -22,7 +22,9 @@ function driverRef(driverMap: Map<string, RawDoc> | undefined, driverId: string)
   return {
     id: driverId,
     name: asStr(driver?.data.name) ?? '',
+    abbr: asStr(driver?.data.abbr),
     number: asNum(driver?.data.number),
+    image: asStr(driver?.data.image),
   };
 }
 
