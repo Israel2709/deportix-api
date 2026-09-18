@@ -1,7 +1,5 @@
 import type { LeagueDTO, SeasonDTO } from '@/lib/contracts/dto';
 import type { CountryRecord } from '@/lib/firebase/repositories/countries.repository';
-import type { OrganizationRecord } from '@/lib/firebase/repositories/organizations.repository';
-import { mapOrganizationRef } from './organization.mapper';
 
 export interface ApiSportsLeagueEntry {
   league: {
@@ -15,11 +13,6 @@ export interface ApiSportsLeagueEntry {
     code: string | null;
     flag: string | null;
   };
-  organization: {
-    id: string;
-    name: string;
-    logo: string | null;
-  } | null;
   seasons: Array<{
     year: number | null;
     start: string | null;
@@ -49,7 +42,6 @@ export function mapLeagueToApiSports(
   league: LeagueDTO,
   country: CountryRecord | null,
   seasons: SeasonDTO[],
-  organization: OrganizationRecord | null = null,
 ): ApiSportsLeagueEntry {
   return {
     league: {
@@ -63,7 +55,6 @@ export function mapLeagueToApiSports(
       code: country?.code ?? null,
       flag: country?.flag ?? null,
     },
-    organization: mapOrganizationRef(organization),
     seasons: seasons.map((season) => ({
       year: season.year,
       start: season.startDate,

@@ -11,17 +11,12 @@ import {
   soccerSeasonItemSchema,
   type SoccerSeasonItem,
 } from '../schemas/league.schema';
-import type { OrganizationRef } from '../schemas/organization.schema';
 import {
   createLeague,
   deleteLeague,
   getLeague,
   updateLeague,
 } from '@/lib/firebase/repositories/leagues.repository';
-import {
-  findOrganizationByName,
-  getOrganization,
-} from '@/lib/firebase/repositories/organizations.repository';
 import {
   createSeason,
   deleteSeason,
@@ -34,41 +29,6 @@ import { resolveSoccerLeague } from '../services/leagues.service';
 import { resolveCatalogLeagueType } from '@/lib/catalog/league-types.service';
 
 const seasonYearSchema = z.object({ year: z.number().int() }).strict();
-
-async function resolveLeagueOrganizationId(
-  ref: OrganizationRef | null | undefined,
-  countryId: string | null,
-): Promise<string | null | undefined> {
-  if (ref === undefined) return undefined;
-  if (ref === null) return null;
-  if (ref.id) {
-    const org = await getOrganization(ref.id);
-    if (!org || org.sportSlug !== 'soccer') throw invalidRequestBody('Organization not found.');
-    return org.id;
-  }
-  if (ref.name) {
-    if (!countryId) throw invalidRequestBody('Organization name requires a country.');
-    const org = await findOrganizationByName(countryId, ref.name, 'soccer');
-    if (!org) throw invalidRequestBody('Organization not found.');
-    return org.id;
-  }
-  throw invalidRequestBody('Organization must include id or name.');
-}
-
-async function mappedSoccerLeague(leagueId: string) {
-  const league = await getLeague(leagueId);
-  if (!league || league.sportSlug !== 'soccer') throw notFound('League not found.');
-
-  const countryMap = await buildCountryMap();
-  const country = league.dto.country
-    ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
-    : null;
-  const organization = league.dto.organizationId
-    ? await getOrganization(league.dto.organizationId)
-    : null;
-  const seasons = await listSeasonsByLeague(league.id);
-  return mapLeagueToApiSports(league.dto, country, seasons, organization);
-}
 
 async function syncSoccerLeagueSeasons(
   leagueId: string,
@@ -154,7 +114,6 @@ export async function createSoccerLeagueEntry(body: unknown) {
   }
 
   const leagueType = await resolveCatalogLeagueType(item.league.type);
-  const organizationId = await resolveLeagueOrganizationId(item.organization, countryId);
 
   const league = await createLeague({
     name: item.league.name,
@@ -164,7 +123,6 @@ export async function createSoccerLeagueEntry(body: unknown) {
     logo: item.league.logo ?? null,
     altLogo: null,
     countryId,
-    organizationId: organizationId ?? null,
     apiSportsPayload: null,
   });
 
@@ -179,36 +137,36 @@ export async function createSoccerLeagueEntry(body: unknown) {
     });
   }
 
-  return mappedSoccerLeague(league.id);
+  const countryMap = await buildCountryMap();
+  const country = league.dto.country
+    ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
+    : null;
+  const seasons = await listSeasonsByLeague(league.id);
+  return mapLeagueToApiSports(league.dto, country, seasons);
 }
 
 export async function updateSoccerLeagueEntry(id: string, body: unknown) {
   const item = soccerLeagueCreateSchema.parse(body);
   const leagueType = await resolveCatalogLeagueType(item.league.type);
-  const existing = await getLeague(id);
-  if (!existing || existing.sportSlug !== 'soccer') throw notFound('League not found.');
-
-  let countryId: string | null = existing.dto.country
-    ? ((await getCountryByKey(existing.dto.country))?.id ?? null)
-    : null;
-  if (item.country.name) {
-    const country = await getCountryByKey(item.country.name);
-    countryId = country?.id ?? countryId;
-  }
-  const organizationId = await resolveLeagueOrganizationId(item.organization, countryId);
 
   await updateLeague(id, {
     name: item.league.name,
     type: leagueType,
     logo: item.league.logo ?? null,
     alt_logo: null,
-    ...(countryId != null ? { country_id: countryId } : {}),
-    ...(organizationId !== undefined ? { organization_id: organizationId } : {}),
   });
 
   await syncSoccerLeagueSeasons(id, item.seasons);
 
-  return mappedSoccerLeague(id);
+  const league = await getLeague(id);
+  if (!league || league.sportSlug !== 'soccer') throw notFound('League not found.');
+
+  const countryMap = await buildCountryMap();
+  const country = league.dto.country
+    ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
+    : null;
+  const seasons = await listSeasonsByLeague(league.id);
+  return mapLeagueToApiSports(league.dto, country, seasons);
 }
 
 export async function deleteSoccerLeagueEntry(id: string) {

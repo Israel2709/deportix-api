@@ -74,8 +74,7 @@ paths and query params stay the same.
 | Method | Path | Required params | Notes |
 | --- | --- | --- | --- |
 | GET | `/countries` | — | `?name`, `?code` optional filters. |
-| GET/POST/PATCH/DELETE | `/organizations` | POST `country.name`; PATCH/DELETE `?id` | Sports orgs per country. `GET ?country=`, `?name=`. DELETE blocked if the org has leagues. Additive — Flutter can ignore. |
-| GET | `/leagues` | — | `?id`, `?country`, `?organization`, `?season`, `?current`. Additive `organization` on each entry. |
+| GET | `/leagues` | — | `?id`, `?country`, `?season`, `?current` filters. |
 | GET | `/leagues/seasons` | — | Global list of season years. |
 | GET | `/fixtures` | `league` and/or `team`, or `id`/`ids` | Full filter set in OpenAPI. |
 | GET | `/fixtures/rounds` | `league`, `season` | Returns round name strings. |

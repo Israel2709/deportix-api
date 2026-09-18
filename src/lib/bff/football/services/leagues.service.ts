@@ -1,6 +1,5 @@
 import { buildCountryMap } from '@/lib/firebase/repositories/countries.repository';
 import { getLeague, listLeagues } from '@/lib/firebase/repositories/leagues.repository';
-import { listOrganizations } from '@/lib/firebase/repositories/organizations.repository';
 import {
   findSeasonByYear,
   listDistinctSeasonYears,
@@ -28,29 +27,9 @@ function seasonsMatchFilter(
 }
 
 export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[]> {
-  const organizations = await listOrganizations({ sportSlug: 'soccer' });
-  const orgById = new Map(organizations.map((org) => [org.id, org]));
-
-  const matchingOrgIds = query.organization
-    ? new Set(
-        organizations
-          .filter(
-            (org) =>
-              org.id === query.organization ||
-              org.name.toLowerCase() === query.organization!.toLowerCase(),
-          )
-          .map((org) => org.id),
-      )
-    : null;
-
-  if (query.organization && matchingOrgIds && matchingOrgIds.size === 0) return [];
-
   if (query.id) {
     const league = await getLeague(query.id);
     if (!league || league.dto.sport !== 'soccer') return [];
-    if (matchingOrgIds && (!league.dto.organizationId || !matchingOrgIds.has(league.dto.organizationId))) {
-      return [];
-    }
     const [countryMap, seasons] = await Promise.all([
       buildCountryMap(),
       listSeasonsByLeague(league.id),
@@ -58,10 +37,7 @@ export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[
     const country = league.dto.country
       ? (countryMap.get(league.dto.country.toLowerCase()) ?? null)
       : null;
-    const organization = league.dto.organizationId
-      ? (orgById.get(league.dto.organizationId) ?? null)
-      : null;
-    return [mapLeagueToApiSports(league.dto, country, seasons, organization)];
+    return [mapLeagueToApiSports(league.dto, country, seasons)];
   }
 
   const [countryMap, leagues] = await Promise.all([
@@ -72,16 +48,12 @@ export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[
   const entries: unknown[] = [];
   for (const league of leagues) {
     if (query.country && !countryMatchesFilter(league.country, query.country)) continue;
-    if (matchingOrgIds && (!league.organizationId || !matchingOrgIds.has(league.organizationId))) {
-      continue;
-    }
 
     const seasons = await listSeasonsByLeague(league.id);
     if (!seasonsMatchFilter(seasons, query)) continue;
 
     const country = league.country ? (countryMap.get(league.country.toLowerCase()) ?? null) : null;
-    const organization = league.organizationId ? (orgById.get(league.organizationId) ?? null) : null;
-    entries.push(mapLeagueToApiSports(league, country, seasons, organization));
+    entries.push(mapLeagueToApiSports(league, country, seasons));
   }
 
   return entries;

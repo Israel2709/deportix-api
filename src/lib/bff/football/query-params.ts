@@ -22,15 +22,8 @@ export interface FixtureQuery {
 export interface LeagueQuery {
   id?: string;
   country?: string;
-  organization?: string;
   seasonYear?: number;
   current?: boolean;
-}
-
-export interface OrganizationQuery {
-  id?: string;
-  country?: string;
-  name?: string;
 }
 
 export interface StandingsQuery {
@@ -94,17 +87,8 @@ export function parseLeagueQuery(searchParams: URLSearchParams): LeagueQuery {
   return {
     id: parseStringParam(searchParams.get('id')),
     country: parseStringParam(searchParams.get('country')),
-    organization: parseStringParam(searchParams.get('organization')),
     seasonYear: parseSeasonParam(searchParams.get('season')),
     current: parseBooleanParam(searchParams.get('current')),
-  };
-}
-
-export function parseOrganizationQuery(searchParams: URLSearchParams): OrganizationQuery {
-  return {
-    id: parseStringParam(searchParams.get('id')),
-    country: parseStringParam(searchParams.get('country')),
-    name: parseStringParam(searchParams.get('name')),
   };
 }
 

@@ -1128,183 +1128,13 @@ export const openapiDocument = {
         }
       }
     },
-    "/organizations": {
-      "get": {
-        "tags": [
-          "BFF"
-        ],
-        "summary": "List sports organizations",
-        "description": "Soccer sports organizations associated with a country. Filter by `id`, `country`\n(name, code, or catalog id), or `name` (substring). Additive resource — not part of\nAPI-Sports Football v3.\n",
-        "operationId": "bffListOrganizations",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "country",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "example": "Mexico"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "API-Sports envelope with organization objects.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiSportsOrganizationList"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BffInvalidParameter"
-          },
-          "503": {
-            "$ref": "#/components/responses/DataSourceNotConfigured"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "BFF"
-        ],
-        "summary": "Create a sports organization",
-        "operationId": "bffCreateOrganization",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SoccerOrganizationWrite"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created organization.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiSportsOrganizationList"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BffInvalidParameter"
-          },
-          "503": {
-            "$ref": "#/components/responses/DataSourceNotConfigured"
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "BFF"
-        ],
-        "summary": "Update a sports organization",
-        "operationId": "bffUpdateOrganization",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SoccerOrganizationUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updated organization.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiSportsOrganizationList"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BffInvalidParameter"
-          },
-          "404": {
-            "$ref": "#/components/responses/ResourceNotFound"
-          },
-          "503": {
-            "$ref": "#/components/responses/DataSourceNotConfigured"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "BFF"
-        ],
-        "summary": "Delete a sports organization",
-        "description": "Rejected when the organization still has leagues.",
-        "operationId": "bffDeleteOrganization",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Organization deleted."
-          },
-          "400": {
-            "$ref": "#/components/responses/BffInvalidParameter"
-          },
-          "404": {
-            "$ref": "#/components/responses/ResourceNotFound"
-          },
-          "503": {
-            "$ref": "#/components/responses/DataSourceNotConfigured"
-          }
-        }
-      }
-    },
     "/leagues": {
       "get": {
         "tags": [
           "BFF"
         ],
         "summary": "List leagues (API-Sports)",
-        "description": "Soccer leagues with nested `seasons[]`. Filter by `id` (provider league id), `country`\n(name substring), `organization` (id or name), `season` (year — league must have that\nseason), or `current=true`. Response includes additive `organization` (`id`, `name`,\n`logo`) when the league belongs to a sports organization.\n",
+        "description": "Soccer leagues with nested `seasons[]`. Filter by `id` (provider league id), `country`\n(name substring), `season` (year — league must have that season), or `current=true`.\n",
         "operationId": "bffListLeagues",
         "parameters": [
           {
@@ -1318,14 +1148,6 @@ export const openapiDocument = {
           {
             "name": "country",
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "organization",
-            "in": "query",
-            "description": "Organization UUID or exact name.",
             "schema": {
               "type": "string"
             }
@@ -6956,84 +6778,6 @@ export const openapiDocument = {
           }
         ]
       },
-      "ApiSportsOrganization": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "example": "Federación Mexicana de Fútbol"
-          },
-          "logo": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "country": {
-            "$ref": "#/components/schemas/ApiSportsCountry"
-          }
-        }
-      },
-      "ApiSportsOrganizationList": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiSportsEnvelope"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "response": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ApiSportsOrganization"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "SoccerOrganizationWrite": {
-        "type": "object",
-        "required": [
-          "name",
-          "country"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "logo": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "country": {
-            "$ref": "#/components/schemas/ApiSportsCountry"
-          }
-        }
-      },
-      "SoccerOrganizationUpdate": {
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "logo": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        }
-      },
       "ApiSportsLeagueEntry": {
         "type": "object",
         "properties": {
@@ -7084,28 +6828,6 @@ export const openapiDocument = {
                 ]
               },
               "flag": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              }
-            }
-          },
-          "organization": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "description": "Additive sports organization. Null when the league is unassigned.",
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "name": {
-                "type": "string"
-              },
-              "logo": {
                 "type": [
                   "string",
                   "null"
@@ -9590,32 +9312,6 @@ export const openapiDocument = {
           "name": {
             "type": "string",
             "example": "Monaco Grand Prix"
-          },
-          "location": {
-            "oneOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "country": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "example": "Monaco"
-                  },
-                  "city": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "example": "Monte Carlo"
-                  }
-                }
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         }
       },
@@ -9628,31 +9324,6 @@ export const openapiDocument = {
         "properties": {
           "name": {
             "type": "string"
-          },
-          "location": {
-            "oneOf": [
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "country": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "city": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                }
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         }
       },
@@ -9763,25 +9434,12 @@ export const openapiDocument = {
             "type": "string",
             "example": "Oscar Piastri"
           },
-          "abbr": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "example": "PIA"
-          },
           "number": {
             "type": [
               "integer",
               "null"
             ],
             "example": 81
-          },
-          "image": {
-            "type": [
-              "string",
-              "null"
-            ]
           },
           "team": {
             "oneOf": [
@@ -9805,21 +9463,9 @@ export const openapiDocument = {
           "name": {
             "type": "string"
           },
-          "abbr": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "number": {
             "type": [
               "integer",
-              "null"
-            ]
-          },
-          "image": {
-            "type": [
-              "string",
               "null"
             ]
           },
@@ -10011,21 +9657,9 @@ export const openapiDocument = {
               "name": {
                 "type": "string"
               },
-              "abbr": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
               "number": {
                 "type": [
                   "integer",
-                  "null"
-                ]
-              },
-              "image": {
-                "type": [
-                  "string",
                   "null"
                 ]
               }
@@ -10187,21 +9821,9 @@ export const openapiDocument = {
               "name": {
                 "type": "string"
               },
-              "abbr": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
               "number": {
                 "type": [
                   "integer",
-                  "null"
-                ]
-              },
-              "image": {
-                "type": [
-                  "string",
                   "null"
                 ]
               }
@@ -10433,7 +10055,7 @@ export const openapiDocument = {
           }
         ]
       },
-      "Formula1DriverRef": {
+      "Formula1SessionDetailDriverRef": {
         "type": "object",
         "required": [
           "id",
@@ -10486,7 +10108,7 @@ export const openapiDocument = {
             }
           },
           "driver": {
-            "$ref": "#/components/schemas/Formula1DriverRef"
+            "$ref": "#/components/schemas/Formula1SessionDetailDriverRef"
           },
           "team": {
             "oneOf": [
@@ -10558,7 +10180,7 @@ export const openapiDocument = {
             }
           },
           "driver": {
-            "$ref": "#/components/schemas/Formula1DriverRef"
+            "$ref": "#/components/schemas/Formula1SessionDetailDriverRef"
           },
           "team": {
             "oneOf": [
@@ -10649,7 +10271,7 @@ export const openapiDocument = {
             }
           },
           "driver": {
-            "$ref": "#/components/schemas/Formula1DriverRef"
+            "$ref": "#/components/schemas/Formula1SessionDetailDriverRef"
           },
           "team": {
             "oneOf": [
