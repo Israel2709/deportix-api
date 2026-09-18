@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import { canonicalIdSchema, competitionLocationSchema } from './primitives';
+import { canonicalIdSchema } from './primitives';
 
 export const formula1CompetitionCreateSchema = z
   .object({
     name: z.string().min(1),
-    location: competitionLocationSchema.nullable().optional(),
   })
   .strict();
 
@@ -14,7 +13,6 @@ export const formula1CompetitionItemSchema = z
   .object({
     id: canonicalIdSchema,
     name: z.string(),
-    location: competitionLocationSchema.nullable().optional(),
   })
   .strict();
 

@@ -1,7 +1,6 @@
 import { asNum, asStr } from '@/lib/api/serializers';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
 import type { Formula1RaceItem } from '../schemas/race.schema';
-import { mapF1CompetitionLocation, mapF1CountryField } from './catalog.mapper';
 
 /** Placeholder when a race references a missing competition/circuit document. */
 const MISSING_REF_ID = '00000000-0000-4000-8000-000000000000';
@@ -21,13 +20,12 @@ export function mapF1Race(
     competition: {
       id: competitionId,
       name: asStr(competition?.data.name) ?? '',
-      location: mapF1CompetitionLocation(competition?.data.location),
     },
     circuit: {
       id: circuitId,
       name: asStr(circuit?.data.name) ?? '',
       image: asStr(circuit?.data.image),
-      country: mapF1CountryField(circuit?.data.country),
+      country: asStr(circuit?.data.country),
     },
     season: asNum(doc.data.season) ?? 0,
     type: asStr(doc.data.type) ?? '',

@@ -1,10 +1,21 @@
 import { z } from 'zod';
 import {
   canonicalIdSchema,
-  driverRefSchema,
+  nullableNumber,
   nullableString,
   teamRefSchema,
 } from './primitives';
+
+/** Driver ref enriched for starting grid / fastest laps / pit stops (API-Sports shape). */
+export const sessionDetailDriverRefSchema = z
+  .object({
+    id: canonicalIdSchema,
+    name: z.string(),
+    abbr: nullableString.optional(),
+    number: nullableNumber.optional(),
+    image: nullableString.optional(),
+  })
+  .strict();
 
 const raceRefSchema = z
   .object({
@@ -26,7 +37,7 @@ export const formula1StartingGridUpdateSchema = formula1StartingGridCreateSchema
 export const formula1StartingGridItemSchema = z
   .object({
     race: raceRefSchema,
-    driver: driverRefSchema,
+    driver: sessionDetailDriverRefSchema,
     team: teamRefSchema.nullable().optional(),
     position: z.number(),
     time: nullableString.optional(),
@@ -49,7 +60,7 @@ export const formula1FastestLapUpdateSchema = formula1FastestLapCreateSchema.par
 export const formula1FastestLapItemSchema = z
   .object({
     race: raceRefSchema,
-    driver: driverRefSchema,
+    driver: sessionDetailDriverRefSchema,
     team: teamRefSchema.nullable().optional(),
     position: z.number(),
     lap: z.number(),
@@ -74,7 +85,7 @@ export const formula1PitstopUpdateSchema = formula1PitstopCreateSchema.partial()
 export const formula1PitstopItemSchema = z
   .object({
     race: raceRefSchema,
-    driver: driverRefSchema,
+    driver: sessionDetailDriverRefSchema,
     team: teamRefSchema.nullable().optional(),
     stops: z.number(),
     lap: z.number(),

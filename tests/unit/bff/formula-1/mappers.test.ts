@@ -15,10 +15,7 @@ import type { RawDoc } from '@/lib/firebase/repositories/helpers';
 
 const competition: RawDoc = {
   id: '11111111-1111-4111-8111-111111111111',
-  data: {
-    name: 'Monaco Grand Prix',
-    location: { country: 'Monaco', city: 'Monte Carlo' },
-  },
+  data: { name: 'Monaco Grand Prix' },
 };
 
 const circuit: RawDoc = {
@@ -47,7 +44,6 @@ describe('Formula 1 catalog mappers', () => {
     expect(mapF1Competition(competition)).toEqual({
       id: competition.id,
       name: 'Monaco Grand Prix',
-      location: { country: 'Monaco', city: 'Monte Carlo' },
     });
     expect(mapF1Circuit(circuit)).toEqual({
       id: circuit.id,
@@ -66,9 +62,7 @@ describe('Formula 1 catalog mappers', () => {
     expect(mapF1Driver(driver, new Map([[team.id, team]]))).toEqual({
       id: driver.id,
       name: 'Oscar Piastri',
-      abbr: 'PIA',
       number: 81,
-      image: 'https://example.com/piastri.png',
       team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
     });
   });
@@ -96,7 +90,7 @@ describe('Formula 1 race mapper', () => {
       mapF1Race(race, new Map([[competition.id, competition]]), new Map([[circuit.id, circuit]])),
     ).toEqual({
       id: race.id,
-      competition: { id: competition.id, name: 'Monaco Grand Prix', location: { country: 'Monaco', city: 'Monte Carlo' } },
+      competition: { id: competition.id, name: 'Monaco Grand Prix' },
       circuit: {
         id: circuit.id,
         name: 'Circuit de Monaco',
@@ -154,13 +148,7 @@ describe('Formula 1 ranking mappers', () => {
       wins: 2,
       behind: 10,
       season: 2024,
-      driver: {
-        id: driver.id,
-        name: 'Oscar Piastri',
-        abbr: 'PIA',
-        number: 81,
-        image: 'https://example.com/piastri.png',
-      },
+      driver: { id: driver.id, name: 'Oscar Piastri', number: 81 },
       team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
     });
 
@@ -178,13 +166,7 @@ describe('Formula 1 ranking mappers', () => {
       grid: '2',
       pits: 2,
       gap: null,
-      driver: {
-        id: driver.id,
-        name: 'Oscar Piastri',
-        abbr: 'PIA',
-        number: 81,
-        image: 'https://example.com/piastri.png',
-      },
+      driver: { id: driver.id, name: 'Oscar Piastri', number: 81 },
       team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
     });
   });

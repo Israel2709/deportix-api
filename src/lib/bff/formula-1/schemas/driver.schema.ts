@@ -1,12 +1,10 @@
 import { z } from 'zod';
-import { canonicalIdSchema, nullableNumber, nullableString, teamRefSchema } from './primitives';
+import { canonicalIdSchema, nullableNumber, teamRefSchema } from './primitives';
 
 export const formula1DriverCreateSchema = z
   .object({
     name: z.string().min(1),
-    abbr: nullableString.optional(),
     number: nullableNumber.optional(),
-    image: nullableString.optional(),
     teamId: canonicalIdSchema.optional().nullable(),
   })
   .strict();
@@ -17,9 +15,7 @@ export const formula1DriverItemSchema = z
   .object({
     id: canonicalIdSchema,
     name: z.string(),
-    abbr: nullableString.optional(),
     number: nullableNumber.optional(),
-    image: nullableString.optional(),
     team: teamRefSchema.nullable().optional(),
   })
   .strict();

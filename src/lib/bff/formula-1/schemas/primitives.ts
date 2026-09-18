@@ -14,21 +14,11 @@ export const teamRefSchema = z
   })
   .strict();
 
-/** Shared driver ref (catalog, rankings, session-detail). */
 export const driverRefSchema = z
   .object({
     id: canonicalIdSchema,
     name: z.string(),
-    abbr: nullableString.optional(),
     number: nullableNumber.optional(),
-    image: nullableString.optional(),
-  })
-  .strict();
-
-export const competitionLocationSchema = z
-  .object({
-    country: nullableString.optional(),
-    city: nullableString.optional(),
   })
   .strict();
 
@@ -36,7 +26,6 @@ export const competitionRefSchema = z
   .object({
     id: canonicalIdSchema,
     name: z.string(),
-    location: competitionLocationSchema.nullable().optional(),
   })
   .strict();
 

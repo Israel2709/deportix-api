@@ -58,10 +58,10 @@ F1 stays **out of** generic `/v1/leagues/.../teams|matches|standings` (`genericE
 | Method | Path | Notes |
 | --- | --- | --- |
 | GET | `/formula-1/seasons` | Distinct years from `f1_races` |
-| GET/POST/PATCH/DELETE | `/formula-1/competitions` | `id` / `name` / `search`; `location: { country, city }` |
-| GET/POST/PATCH/DELETE | `/formula-1/circuits` | + `country` (string) + `image` |
+| GET/POST/PATCH/DELETE | `/formula-1/competitions` | `id` / `name` / `search` |
+| GET/POST/PATCH/DELETE | `/formula-1/circuits` | + `country` |
 | GET/POST/PATCH/DELETE | `/formula-1/teams` | Constructors |
-| GET/POST/PATCH/DELETE | `/formula-1/drivers` | + `abbr` / `image` / `number`; filter `team` |
+| GET/POST/PATCH/DELETE | `/formula-1/drivers` | Participants; filter `team` |
 | GET/POST/PATCH/DELETE | `/formula-1/races` | List requires `season` (unless `id`) |
 | GET/PATCH/DELETE | `/formula-1/races/{raceId}` | Path id variants |
 | GET/POST/PATCH/DELETE | `/formula-1/rankings/drivers` | Requires `season` on GET |

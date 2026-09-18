@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { formula1CompetitionCreateSchema } from '@/lib/bff/formula-1/schemas/competition.schema';
-import { formula1DriverCreateSchema } from '@/lib/bff/formula-1/schemas/driver.schema';
 import { formula1RaceCreateSchema } from '@/lib/bff/formula-1/schemas/race.schema';
 import { formula1DriverRankingCreateSchema } from '@/lib/bff/formula-1/schemas/ranking.schema';
 import {
@@ -82,26 +81,6 @@ describe('Formula 1 write schemas', () => {
         lap: 12,
         time: '2.401',
         total_time: '2.401',
-      }).success,
-    ).toBe(true);
-  });
-
-  it('accepts competition create with location', () => {
-    expect(
-      formula1CompetitionCreateSchema.safeParse({
-        name: 'Monaco Grand Prix',
-        location: { country: 'Monaco', city: 'Monte Carlo' },
-      }).success,
-    ).toBe(true);
-  });
-
-  it('accepts driver create with abbr and image', () => {
-    expect(
-      formula1DriverCreateSchema.safeParse({
-        name: 'Oscar Piastri',
-        abbr: 'PIA',
-        number: 81,
-        image: 'https://example.com/piastri.png',
       }).success,
     ).toBe(true);
   });

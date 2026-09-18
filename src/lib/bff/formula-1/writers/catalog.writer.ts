@@ -58,10 +58,7 @@ function parse<T>(schema: { safeParse: (v: unknown) => { success: true; data: T 
 
 export async function createFormula1Competition(body: unknown): Promise<Formula1CompetitionItem> {
   const input = parse<Formula1CompetitionCreate>(formula1CompetitionCreateSchema, body, 'competition');
-  const doc = await createF1Doc(F1_COLLECTIONS.competitions, {
-    name: input.name,
-    location: input.location ?? null,
-  });
+  const doc = await createF1Doc(F1_COLLECTIONS.competitions, { name: input.name });
   return mapF1Competition(doc);
 }
 
@@ -74,7 +71,6 @@ export async function updateFormula1Competition(
   const patch = parse<Formula1CompetitionUpdate>(formula1CompetitionUpdateSchema, body, 'competition');
   const doc = await updateF1Doc(F1_COLLECTIONS.competitions, existing.id, {
     ...(patch.name != null ? { name: patch.name } : {}),
-    ...(patch.location !== undefined ? { location: patch.location } : {}),
   });
   return mapF1Competition(doc);
 }
@@ -150,9 +146,7 @@ export async function createFormula1Driver(body: unknown): Promise<Formula1Drive
   await assertTeamExists(input.teamId);
   const doc = await createF1Doc(F1_COLLECTIONS.drivers, {
     name: input.name,
-    abbr: input.abbr ?? null,
     number: input.number ?? null,
-    image: input.image ?? null,
     team_id: input.teamId ?? null,
   });
   const teams = await listF1Teams();
@@ -166,9 +160,7 @@ export async function updateFormula1Driver(id: string, body: unknown): Promise<F
   if (patch.teamId !== undefined) await assertTeamExists(patch.teamId);
   const doc = await updateF1Doc(F1_COLLECTIONS.drivers, existing.id, {
     ...(patch.name != null ? { name: patch.name } : {}),
-    ...(patch.abbr !== undefined ? { abbr: patch.abbr } : {}),
     ...(patch.number !== undefined ? { number: patch.number } : {}),
-    ...(patch.image !== undefined ? { image: patch.image } : {}),
     ...(patch.teamId !== undefined ? { team_id: patch.teamId } : {}),
   });
   const teams = await listF1Teams();
