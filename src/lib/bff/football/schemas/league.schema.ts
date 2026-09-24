@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { canonicalIdSchema, countryRefSchema, nullableString } from './primitives';
+import { organizationRefSchema } from './organization.schema';
 
 const soccerCoverageSchema = z
   .object({
@@ -35,6 +36,7 @@ export const soccerLeagueCreateSchema = z
       })
       .strict(),
     country: countryRefSchema,
+    organization: organizationRefSchema.nullable().optional(),
     seasons: z.array(soccerSeasonItemSchema),
   })
   .strict();
@@ -50,6 +52,7 @@ export const soccerLeagueItemSchema = z
       })
       .strict(),
     country: countryRefSchema,
+    organization: organizationRefSchema.nullable().optional(),
     seasons: z.array(soccerSeasonItemSchema),
   })
   .strict();

@@ -60,6 +60,7 @@ export async function createLeague(input: {
   logo?: string | null;
   altLogo?: string | null;
   countryId?: string | null;
+  organizationId?: string | null;
   apiSportsPayload?: unknown;
 }): Promise<LeagueRecord> {
   const ctx = await loadCatalogContext();
@@ -76,6 +77,7 @@ export async function createLeague(input: {
     logo: input.logo ?? null,
     alt_logo: input.altLogo ?? null,
     country_id: input.countryId ?? null,
+    organization_id: input.organizationId ?? null,
     created_at: now,
     updated_at: now,
   };

@@ -66,7 +66,8 @@ function makeQuery(rows: Row[], filters: Array<[string, unknown]>, limitN?: numb
 export function makeFakeDb(data: Dataset) {
   return {
     collection: (name: string) => {
-      const rows = data[name] ?? [];
+      if (!data[name]) data[name] = [];
+      const rows = data[name]!;
       return {
         ...makeQuery(rows, []),
         doc: (id: string) => ({
