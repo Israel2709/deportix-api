@@ -5,10 +5,39 @@ import type { Formula1CompetitionItem } from '../schemas/competition.schema';
 import type { Formula1DriverItem } from '../schemas/driver.schema';
 import type { Formula1TeamItem } from '../schemas/team.schema';
 
+/** Country may be a string or a nested `{ name }` object from older/provider-shaped docs. */
+export function mapF1CountryField(value: unknown): string | null {
+  const direct = asStr(value);
+  if (direct) return direct;
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return asStr((value as Record<string, unknown>).name);
+  }
+  return null;
+}
+
+export function mapF1CompetitionLocation(
+  value: unknown,
+): { country?: string | null; city?: string | null } | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const country = asStr(value);
+    return country ? { country, city: null } : null;
+  }
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const raw = value as Record<string, unknown>;
+    const country = mapF1CountryField(raw.country) ?? asStr(raw.country);
+    const city = asStr(raw.city);
+    if (country == null && city == null) return null;
+    return { country, city };
+  }
+  return null;
+}
+
 export function mapF1Competition(doc: RawDoc): Formula1CompetitionItem {
   return {
     id: doc.id,
     name: asStr(doc.data.name) ?? '',
+    location: mapF1CompetitionLocation(doc.data.location),
   };
 }
 
@@ -17,7 +46,7 @@ export function mapF1Circuit(doc: RawDoc): Formula1CircuitItem {
     id: doc.id,
     name: asStr(doc.data.name) ?? '',
     image: asStr(doc.data.image),
-    country: asStr(doc.data.country),
+    country: mapF1CountryField(doc.data.country),
   };
 }
 
@@ -35,7 +64,9 @@ export function mapF1Driver(doc: RawDoc, teamMap?: Map<string, RawDoc>): Formula
   return {
     id: doc.id,
     name: asStr(doc.data.name) ?? '',
+    abbr: asStr(doc.data.abbr),
     number: asNum(doc.data.number),
+    image: asStr(doc.data.image),
     team: teamDoc
       ? {
           id: teamDoc.id,
