@@ -1,5 +1,7 @@
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { invalidRequestBody, notFound } from '@/lib/api/errors';
 import { F1_COLLECTIONS } from '@/lib/firebase/sport-registry';
+import { createDoc, updateDocFields } from '@/lib/firebase/repositories/helpers';
 import {
   createF1Doc,
   deleteF1Doc,
@@ -7,6 +9,7 @@ import {
   getF1TeamById,
   listF1Teams,
   buildTeamMap,
+  getF1CompetitionById,
   resolveF1Circuit,
   resolveF1Competition,
   resolveF1Driver,
@@ -56,12 +59,60 @@ function parse<T>(schema: { safeParse: (v: unknown) => { success: true; data: T 
   return parsed.data;
 }
 
+function calendarTimestamp(value: string | null | undefined): Timestamp | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value.trim() === '') return null;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isNaN(date.getTime()) ? null : Timestamp.fromDate(date);
+}
+
+function assignDefined(target: Record<string, unknown>, key: string, value: unknown) {
+  if (value !== undefined) target[key] = value;
+}
+
+/**
+ * Writable competition fields. `createdAt` is never included: create sets it
+ * with serverTimestamp(), and updates leave the original value in place.
+ */
+function competitionWriteFields(
+  input: Formula1CompetitionCreate | Formula1CompetitionUpdate,
+): Record<string, unknown> {
+  const fields: Record<string, unknown> = {};
+  assignDefined(fields, 'name', input.name);
+  assignDefined(fields, 'slug', input.slug);
+  assignDefined(fields, 'shortName', input.shortName);
+  assignDefined(fields, 'officialName', input.officialName);
+  assignDefined(fields, 'championshipType', input.championshipType);
+  assignDefined(fields, 'status', input.status);
+  assignDefined(fields, 'startDate', calendarTimestamp(input.startDate));
+  assignDefined(fields, 'endDate', calendarTimestamp(input.endDate));
+  assignDefined(fields, 'rounds', input.rounds);
+  assignDefined(fields, 'classifications', input.classifications);
+  assignDefined(fields, 'sprint', input.sprint);
+  assignDefined(fields, 'grid', input.grid);
+  assignDefined(fields, 'pointsSystemId', input.pointsSystemId);
+  assignDefined(fields, 'branding', input.branding);
+  assignDefined(fields, 'website', input.website);
+  assignDefined(fields, 'description', input.description);
+  assignDefined(fields, 'active', input.active);
+  assignDefined(fields, 'location', input.location);
+  if ('seasonId' in input) assignDefined(fields, 'seasonId', input.seasonId);
+  return fields;
+}
+
 export async function createFormula1Competition(body: unknown): Promise<Formula1CompetitionItem> {
   const input = parse<Formula1CompetitionCreate>(formula1CompetitionCreateSchema, body, 'competition');
-  const doc = await createF1Doc(F1_COLLECTIONS.competitions, {
+  const id = crypto.randomUUID();
+  await createDoc(F1_COLLECTIONS.competitions, id, {
+    ...competitionWriteFields(input),
+    id,
     name: input.name,
     location: input.location ?? null,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
   });
+  const doc = await getF1CompetitionById(id);
+  if (!doc) throw notFound('Competition not found.');
   return mapF1Competition(doc);
 }
 
@@ -72,10 +123,15 @@ export async function updateFormula1Competition(
   const existing = await resolveF1Competition(id);
   if (!existing) throw notFound('Competition not found.');
   const patch = parse<Formula1CompetitionUpdate>(formula1CompetitionUpdateSchema, body, 'competition');
-  const doc = await updateF1Doc(F1_COLLECTIONS.competitions, existing.id, {
-    ...(patch.name != null ? { name: patch.name } : {}),
-    ...(patch.location !== undefined ? { location: patch.location } : {}),
+  const fields = competitionWriteFields(patch);
+  delete fields.createdAt;
+  delete fields.seasonId;
+  await updateDocFields(F1_COLLECTIONS.competitions, existing.id, {
+    ...fields,
+    updatedAt: FieldValue.serverTimestamp(),
   });
+  const doc = await getF1CompetitionById(existing.id);
+  if (!doc) throw notFound('Competition not found.');
   return mapF1Competition(doc);
 }
 
