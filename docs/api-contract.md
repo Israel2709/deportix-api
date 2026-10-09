@@ -101,7 +101,7 @@ Compatibilidad con **API-Sports Formula-1 v1** bajo `/formula-1/*`. Mismo envelo
 | GET | `/formula-1/teams` | — | `?id`, `?search` opcionales. |
 | GET | `/formula-1/drivers` | — | `?team=` filtra por constructor. |
 | GET | `/formula-1/circuits` | — | |
-| GET | `/formula-1/competitions` | — | Grandes premios (nombre). |
+| GET | `/formula-1/competitions` | — | `?season=` (año → `seasonId`), `?country=` (`location.country`), `?id`, `?name`, `?search`. |
 | GET | `/formula-1/races` | — | `?season=`, `?type=`, `?circuit=`, `?competition=`, `?id=`. |
 | GET | `/formula-1/rankings/races` | `race` | Resultado de carrera (`f1_race_rankings`). |
 | GET | `/formula-1/rankings/drivers` | `season` | Campeonato de pilotos. |

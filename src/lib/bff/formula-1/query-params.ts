@@ -7,6 +7,13 @@ export interface Formula1IdNameQuery {
   search?: string;
 }
 
+export interface Formula1CompetitionQuery extends Formula1IdNameQuery {
+  /** Year matching competition `seasonId` (string year, e.g. `2026`). */
+  season?: number;
+  /** Match against `location.country`. */
+  country?: string;
+}
+
 export interface Formula1CircuitQuery extends Formula1IdNameQuery {
   country?: string;
 }
@@ -47,6 +54,16 @@ export function parseFormula1IdNameQuery(searchParams: URLSearchParams): Formula
     id: parseStringParam(searchParams.get('id')),
     name: parseStringParam(searchParams.get('name')),
     search: parseStringParam(searchParams.get('search')),
+  };
+}
+
+export function parseFormula1CompetitionQuery(
+  searchParams: URLSearchParams,
+): Formula1CompetitionQuery {
+  return {
+    ...parseFormula1IdNameQuery(searchParams),
+    season: parseSeasonParam(searchParams.get('season')),
+    country: parseStringParam(searchParams.get('country')),
   };
 }
 

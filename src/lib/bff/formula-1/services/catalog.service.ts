@@ -13,6 +13,7 @@ import {
 import {
   mapF1Circuit,
   mapF1Competition,
+  mapF1CompetitionLocation,
   mapF1CountryField,
   mapF1Driver,
   mapF1Team,
@@ -20,6 +21,7 @@ import {
 } from '../mappers/catalog.mapper';
 import type {
   Formula1CircuitQuery,
+  Formula1CompetitionQuery,
   Formula1DriverQuery,
   Formula1IdNameQuery,
 } from '../query-params';
@@ -28,7 +30,7 @@ export async function fetchFormula1Seasons(): Promise<number[]> {
   return listF1SeasonYears();
 }
 
-export async function fetchFormula1Competitions(query: Formula1IdNameQuery) {
+export async function fetchFormula1Competitions(query: Formula1CompetitionQuery) {
   if (query.id) {
     const doc = await resolveF1Competition(query.id);
     return doc ? [mapF1Competition(doc)] : [];
@@ -36,8 +38,22 @@ export async function fetchFormula1Competitions(query: Formula1IdNameQuery) {
 
   let docs = await listF1Competitions();
   if (query.name) docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.name!));
+  if (query.season != null) {
+    const seasonKey = String(query.season);
+    docs = docs.filter((doc) => String(doc.data.seasonId ?? '') === seasonKey);
+  }
+  if (query.country) {
+    docs = docs.filter((doc) => {
+      const location = mapF1CompetitionLocation(doc.data.location);
+      return nameMatches(location?.country ?? '', query.country!);
+    });
+  }
   if (query.search) {
-    docs = docs.filter((doc) => nameMatches(String(doc.data.name ?? ''), query.search!));
+    docs = docs.filter((doc) => {
+      const location = mapF1CompetitionLocation(doc.data.location);
+      const haystack = `${doc.data.name ?? ''} ${location?.country ?? ''} ${location?.city ?? ''}`;
+      return nameMatches(haystack, query.search!);
+    });
   }
   return docs
     .map(mapF1Competition)

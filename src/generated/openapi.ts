@@ -2885,6 +2885,22 @@ export const openapiDocument = {
             }
           },
           {
+            "name": "season",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by competition seasonId year (e.g. 2026)."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by location.country (case-insensitive substring)."
+          },
+          {
             "name": "search",
             "in": "query",
             "schema": {

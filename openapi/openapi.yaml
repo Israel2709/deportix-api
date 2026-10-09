@@ -1659,6 +1659,8 @@ paths:
       parameters:
         - { name: id, in: query, schema: { type: string } }
         - { name: name, in: query, schema: { type: string } }
+        - { name: season, in: query, schema: { type: integer }, description: Filter by competition seasonId year (e.g. 2026). }
+        - { name: country, in: query, schema: { type: string }, description: Filter by location.country (case-insensitive substring). }
         - { name: search, in: query, schema: { type: string } }
       responses:
         '200':

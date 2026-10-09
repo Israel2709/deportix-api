@@ -58,7 +58,7 @@ F1 stays **out of** generic `/v1/leagues/.../teams|matches|standings` (`genericE
 | Method | Path | Notes |
 | --- | --- | --- |
 | GET | `/formula-1/seasons` | Distinct years from `f1_races` |
-| GET/POST/PATCH/DELETE | `/formula-1/competitions` | `id` / `name` / `search`; `location: { country, city }` |
+| GET/POST/PATCH/DELETE | `/formula-1/competitions` | GET filters: `id` / `name` / `season` (year → `seasonId`) / `country` (`location.country`) / `search`; body: `location: { country, city }` |
 | GET/POST/PATCH/DELETE | `/formula-1/circuits` | + `country` (string) + `image` |
 | GET/POST/PATCH/DELETE | `/formula-1/teams` | Constructors |
 | GET/POST/PATCH/DELETE | `/formula-1/drivers` | + `abbr` / `image` / `number`; filter `team` |
@@ -84,12 +84,13 @@ Session-detail GETs (`startinggrid`, `fastestlaps`, `pitstops`) return an empty 
 ## Recommended read flow (portal / consumers)
 
 1. `GET /formula-1/seasons`
-2. `GET /formula-1/races?season=2024` — calendar
-3. `GET /formula-1/rankings/drivers?season=2024` — championship
-4. `GET /formula-1/rankings/races?race=<uuid>` — session results (positions)
-5. `GET /formula-1/rankings/startinggrid?race=<uuid>` — grid
-6. `GET /formula-1/rankings/fastestlaps?race=<uuid>` — fastest laps
-7. `GET /formula-1/pitstops?race=<uuid>` — pit stops
+2. `GET /formula-1/competitions?season=2024&country=Mexico` — competitions for a season/country
+3. `GET /formula-1/races?season=2024` — calendar
+4. `GET /formula-1/rankings/drivers?season=2024` — championship
+5. `GET /formula-1/rankings/races?race=<uuid>` — session results (positions)
+6. `GET /formula-1/rankings/startinggrid?race=<uuid>` — grid
+7. `GET /formula-1/rankings/fastestlaps?race=<uuid>` — fastest laps
+8. `GET /formula-1/pitstops?race=<uuid>` — pit stops
 
 ## Create order (writes)
 

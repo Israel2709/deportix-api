@@ -7,7 +7,7 @@ import {
   formula1BffPatchRoute,
   formula1BffPostRoute,
 } from '@/lib/bff/shared/handler';
-import { parseFormula1IdNameQuery } from '@/lib/bff/formula-1/query-params';
+import { parseFormula1CompetitionQuery } from '@/lib/bff/formula-1/query-params';
 import { fetchFormula1Competitions } from '@/lib/bff/formula-1/services/catalog.service';
 import {
   createFormula1Competition,
@@ -18,7 +18,7 @@ import {
 export const runtime = 'nodejs';
 
 export const GET = formula1BffGetRoute('competitions')(async ({ searchParams }) => {
-  const response = await fetchFormula1Competitions(parseFormula1IdNameQuery(searchParams));
+  const response = await fetchFormula1Competitions(parseFormula1CompetitionQuery(searchParams));
   return { response, cache: CACHE.standard };
 });
 
