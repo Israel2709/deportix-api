@@ -94,6 +94,7 @@ export const F1_COLLECTIONS = {
   circuits: 'f1_circuits',
   drivers: 'f1_drivers',
   teams: 'f1_teams',
+  entries: 'f1_entries',
   races: 'f1_races',
   driverRankings: 'f1_rankings',
   teamRankings: 'f1_team_rankings',

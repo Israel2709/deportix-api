@@ -49,6 +49,14 @@ export type Formula1StartingGridQuery = Formula1RaceRankingsQuery;
 export type Formula1FastestLapsQuery = Formula1RaceRankingsQuery;
 export type Formula1PitstopsQuery = Formula1RaceRankingsQuery;
 
+export interface Formula1EntriesQuery {
+  id?: string;
+  competitionId?: string;
+  season?: number;
+  driverId?: string;
+  teamId?: string;
+}
+
 export function parseFormula1IdNameQuery(searchParams: URLSearchParams): Formula1IdNameQuery {
   return {
     id: parseStringParam(searchParams.get('id')),
@@ -121,6 +129,18 @@ export function parseFormula1RaceRankingsQuery(
 export const parseFormula1StartingGridQuery = parseFormula1RaceRankingsQuery;
 export const parseFormula1FastestLapsQuery = parseFormula1RaceRankingsQuery;
 export const parseFormula1PitstopsQuery = parseFormula1RaceRankingsQuery;
+
+export function parseFormula1EntriesQuery(
+  searchParams: URLSearchParams,
+): Formula1EntriesQuery {
+  return {
+    id: parseStringParam(searchParams.get('id')),
+    competitionId: parseStringParam(searchParams.get('competition')),
+    season: parseSeasonParam(searchParams.get('season')),
+    driverId: parseStringParam(searchParams.get('driver')),
+    teamId: parseStringParam(searchParams.get('team')),
+  };
+}
 
 export function requireFormula1Param(value: string | undefined, paramName: string): string {
   if (!value) {

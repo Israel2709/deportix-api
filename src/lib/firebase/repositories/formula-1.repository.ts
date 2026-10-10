@@ -26,6 +26,22 @@ export async function listF1Teams(): Promise<RawDoc[]> {
   return fetchAll(F1_COLLECTIONS.teams);
 }
 
+export async function listF1EntriesByCompetition(competitionId: string): Promise<RawDoc[]> {
+  return fetchWhereEq(F1_COLLECTIONS.entries, 'competition_id', competitionId);
+}
+
+export async function listF1Entries(): Promise<RawDoc[]> {
+  return fetchAll(F1_COLLECTIONS.entries);
+}
+
+export async function resolveF1Entry(id: string): Promise<RawDoc | null> {
+  return resolveDoc(F1_COLLECTIONS.entries, id);
+}
+
+export async function getF1EntryById(id: string): Promise<RawDoc | null> {
+  return getDocById(F1_COLLECTIONS.entries, id);
+}
+
 export async function listF1RacesBySeason(season: number): Promise<RawDoc[]> {
   return fetchWhereEq(F1_COLLECTIONS.races, 'season', season);
 }
