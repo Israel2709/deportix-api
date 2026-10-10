@@ -39,6 +39,12 @@ export async function fetchFormula1DriverRankings(query: Formula1DriverRankingsQ
 
   let filtered = docs;
 
+  if (query.competition) {
+    filtered = filtered.filter(
+      (doc) => String(doc.data.competition_id ?? '') === query.competition,
+    );
+  }
+
   if (query.driver) {
     const driver = await resolveF1Driver(query.driver);
     if (!driver) return [];
@@ -68,6 +74,13 @@ export async function fetchFormula1TeamRankings(query: Formula1TeamRankingsQuery
   const teamMap = buildTeamMap(teams);
 
   let filtered = docs;
+
+  if (query.competition) {
+    filtered = filtered.filter(
+      (doc) => String(doc.data.competition_id ?? '') === query.competition,
+    );
+  }
+
   if (query.team) {
     const team = await resolveF1Team(query.team);
     if (!team) return [];

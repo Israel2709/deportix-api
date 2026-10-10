@@ -1,5 +1,7 @@
+import { FieldValue } from 'firebase-admin/firestore';
 import { invalidRequestBody, notFound } from '@/lib/api/errors';
 import { F1_COLLECTIONS } from '@/lib/firebase/sport-registry';
+import { updateDocFields } from '@/lib/firebase/repositories/helpers';
 import {
   buildCircuitMap,
   buildCompetitionMap,
@@ -20,6 +22,20 @@ import {
   type Formula1RaceItem,
   type Formula1RaceUpdate,
 } from '../schemas/race.schema';
+
+async function linkRaceToCompetition(competitionId: string, raceId: string): Promise<void> {
+  await updateDocFields(F1_COLLECTIONS.competitions, competitionId, {
+    races: FieldValue.arrayUnion(raceId),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+}
+
+async function unlinkRaceFromCompetition(competitionId: string, raceId: string): Promise<void> {
+  await updateDocFields(F1_COLLECTIONS.competitions, competitionId, {
+    races: FieldValue.arrayRemove(raceId),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+}
 
 function parseCreate(body: unknown): Formula1RaceCreate {
   const parsed = formula1RaceCreateSchema.safeParse(body);
@@ -68,6 +84,7 @@ export async function createFormula1Race(body: unknown): Promise<Formula1RaceIte
     laps_current: input.laps?.current ?? null,
     laps_total: input.laps?.total ?? null,
   });
+  await linkRaceToCompetition(input.competitionId, doc.id);
   return toRaceItem(doc);
 }
 
@@ -76,6 +93,11 @@ export async function updateFormula1Race(id: string, body: unknown): Promise<For
   if (!existing) throw notFound('Race not found.');
   const patch = parseUpdate(body);
   await assertRefs(patch.competitionId, patch.circuitId);
+
+  const previousCompetitionId =
+    typeof existing.data.competition_id === 'string' ? existing.data.competition_id : null;
+  const nextCompetitionId = patch.competitionId ?? previousCompetitionId;
+
   const doc = await updateF1Doc(F1_COLLECTIONS.races, existing.id, {
     ...(patch.competitionId != null ? { competition_id: patch.competitionId } : {}),
     ...(patch.circuitId != null ? { circuit_id: patch.circuitId } : {}),
@@ -88,11 +110,26 @@ export async function updateFormula1Race(id: string, body: unknown): Promise<For
     ...(patch.laps?.current !== undefined ? { laps_current: patch.laps.current } : {}),
     ...(patch.laps?.total !== undefined ? { laps_total: patch.laps.total } : {}),
   });
+
+  if (
+    previousCompetitionId &&
+    nextCompetitionId &&
+    previousCompetitionId !== nextCompetitionId
+  ) {
+    await unlinkRaceFromCompetition(previousCompetitionId, existing.id);
+    await linkRaceToCompetition(nextCompetitionId, existing.id);
+  }
+
   return toRaceItem(doc);
 }
 
 export async function deleteFormula1Race(id: string): Promise<void> {
   const existing = await resolveF1Race(id);
   if (!existing) throw notFound('Race not found.');
+  const competitionId =
+    typeof existing.data.competition_id === 'string' ? existing.data.competition_id : null;
   await deleteF1Doc(F1_COLLECTIONS.races, existing.id);
+  if (competitionId) {
+    await unlinkRaceFromCompetition(competitionId, existing.id);
+  }
 }

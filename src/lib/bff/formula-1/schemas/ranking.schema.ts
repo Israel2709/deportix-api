@@ -9,11 +9,13 @@ import {
 
 export const formula1DriverRankingCreateSchema = z
   .object({
+    competitionId: canonicalIdSchema,
     driverId: canonicalIdSchema,
     season: z.number().int(),
     position: z.number().int(),
     points: nullableNumber.optional(),
     wins: nullableNumber.optional(),
+    podiums: nullableNumber.optional(),
     behind: nullableNumber.optional(),
   })
   .strict();
@@ -22,9 +24,12 @@ export const formula1DriverRankingUpdateSchema = formula1DriverRankingCreateSche
 
 export const formula1DriverRankingItemSchema = z
   .object({
+    id: canonicalIdSchema,
+    competitionId: canonicalIdSchema.nullable().optional(),
     position: z.number(),
     points: nullableNumber.optional(),
     wins: nullableNumber.optional(),
+    podiums: nullableNumber.optional(),
     behind: nullableNumber.optional(),
     season: z.number(),
     driver: driverRefSchema,
@@ -34,10 +39,13 @@ export const formula1DriverRankingItemSchema = z
 
 export const formula1TeamRankingCreateSchema = z
   .object({
+    competitionId: canonicalIdSchema,
     teamId: canonicalIdSchema,
     season: z.number().int(),
     position: z.number().int(),
     points: nullableNumber.optional(),
+    wins: nullableNumber.optional(),
+    podiums: nullableNumber.optional(),
   })
   .strict();
 
@@ -45,8 +53,12 @@ export const formula1TeamRankingUpdateSchema = formula1TeamRankingCreateSchema.p
 
 export const formula1TeamRankingItemSchema = z
   .object({
+    id: canonicalIdSchema,
+    competitionId: canonicalIdSchema.nullable().optional(),
     position: z.number(),
     points: nullableNumber.optional(),
+    wins: nullableNumber.optional(),
+    podiums: nullableNumber.optional(),
     season: z.number(),
     team: teamRefSchema,
   })

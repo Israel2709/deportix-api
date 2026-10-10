@@ -98,12 +98,30 @@ export async function updateFormula1Entry(
   if (!existing) throw notFound('Entry not found.');
   const patch = parse<Formula1EntryUpdate>(formula1EntryUpdateSchema, body, 'entry');
 
+  if (patch.driverId) {
+    const driver = await getF1DriverById(patch.driverId);
+    if (!driver) throw invalidRequestBody('driverId must reference an existing driver.');
+    const siblings = await listF1EntriesByCompetition(String(existing.data.competition_id ?? ''));
+    const season = Number(existing.data.season);
+    const duplicate = siblings.some(
+      (doc) =>
+        doc.id !== existing.id &&
+        doc.data.driver_id === patch.driverId &&
+        Number(doc.data.season) === season &&
+        doc.data.active !== false,
+    );
+    if (duplicate) {
+      throw invalidRequestBody('That driver is already entered in this competition season.');
+    }
+  }
+
   if (patch.teamId) {
     const team = await getF1TeamById(patch.teamId);
     if (!team) throw invalidRequestBody('teamId must reference an existing constructor.');
   }
 
   const doc = await updateF1Doc(F1_COLLECTIONS.entries, existing.id, {
+    ...(patch.driverId != null ? { driver_id: patch.driverId } : {}),
     ...(patch.teamId != null ? { team_id: patch.teamId } : {}),
     ...(patch.number !== undefined ? { number: patch.number } : {}),
     ...(patch.role !== undefined ? { role: patch.role } : {}),

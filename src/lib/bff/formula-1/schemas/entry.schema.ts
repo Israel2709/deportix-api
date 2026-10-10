@@ -23,6 +23,7 @@ export const formula1EntryCreateSchema = z
 
 export const formula1EntryUpdateSchema = z
   .object({
+    driverId: canonicalIdSchema.optional(),
     teamId: canonicalIdSchema.optional(),
     number: nullableNumber.optional(),
     role: entryRoleSchema.optional(),

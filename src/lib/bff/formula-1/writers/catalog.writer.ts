@@ -130,6 +130,7 @@ export async function createFormula1Competition(body: unknown): Promise<Formula1
     name: input.name,
     slug: uniqueCompetitionSlug(input.name, id),
     location: input.location ?? null,
+    races: [],
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   });

@@ -32,12 +32,14 @@ export interface Formula1RacesQuery {
 
 export interface Formula1DriverRankingsQuery {
   season?: number;
+  competition?: string;
   driver?: string;
   team?: string;
 }
 
 export interface Formula1TeamRankingsQuery {
   season?: number;
+  competition?: string;
   team?: string;
 }
 
@@ -104,6 +106,7 @@ export function parseFormula1DriverRankingsQuery(
 ): Formula1DriverRankingsQuery {
   return {
     season: parseSeasonParam(searchParams.get('season')),
+    competition: parseStringParam(searchParams.get('competition')),
     driver: parseStringParam(searchParams.get('driver')),
     team: parseStringParam(searchParams.get('team')),
   };
@@ -114,6 +117,7 @@ export function parseFormula1TeamRankingsQuery(
 ): Formula1TeamRankingsQuery {
   return {
     season: parseSeasonParam(searchParams.get('season')),
+    competition: parseStringParam(searchParams.get('competition')),
     team: parseStringParam(searchParams.get('team')),
   };
 }

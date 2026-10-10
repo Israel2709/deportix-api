@@ -50,6 +50,7 @@ describe('Formula 1 catalog mappers', () => {
       location: { country: 'Monaco', city: 'Monte Carlo' },
       classifications: { drivers: true, constructors: true },
       sprint: { enabled: true },
+      races: [],
     });
     expect(mapF1Circuit(circuit)).toEqual({
       id: circuit.id,
@@ -151,9 +152,12 @@ describe('Formula 1 ranking mappers', () => {
     const teamMap = new Map([[team.id, team]]);
 
     expect(mapF1DriverRanking(driverRanking, driverMap, teamMap)).toEqual({
+      id: driverRanking.id,
+      competitionId: null,
       position: 2,
       points: 245,
       wins: 2,
+      podiums: null,
       behind: 10,
       season: 2024,
       driver: {
@@ -167,8 +171,12 @@ describe('Formula 1 ranking mappers', () => {
     });
 
     expect(mapF1TeamRanking(teamRanking, teamMap)).toEqual({
+      id: teamRanking.id,
+      competitionId: null,
       position: 1,
       points: 500,
+      wins: null,
+      podiums: null,
       season: 2024,
       team: { id: team.id, name: 'McLaren', logo: 'https://example.com/mclaren.png' },
     });

@@ -37,9 +37,12 @@ export function mapF1DriverRanking(
   const driver = driverMap?.get(driverId);
   const teamId = asStr(driver?.data.team_id);
   return {
+    id: doc.id,
+    competitionId: asStr(doc.data.competition_id),
     position: asNum(doc.data.position) ?? 0,
     points: asNum(doc.data.points),
     wins: asNum(doc.data.wins),
+    podiums: asNum(doc.data.podiums),
     behind: asNum(doc.data.behind),
     season: asNum(doc.data.season) ?? 0,
     driver: driverRef(driverMap, driverId),
@@ -53,8 +56,12 @@ export function mapF1TeamRanking(
 ): Formula1TeamRankingItem {
   const teamId = asStr(doc.data.team_id) ?? '';
   return {
+    id: doc.id,
+    competitionId: asStr(doc.data.competition_id),
     position: asNum(doc.data.position) ?? 0,
     points: asNum(doc.data.points),
+    wins: asNum(doc.data.wins),
+    podiums: asNum(doc.data.podiums),
     season: asNum(doc.data.season) ?? 0,
     team: teamRef(teamMap, teamId) ?? { id: teamId, name: '', logo: null },
   };

@@ -109,6 +109,13 @@ export function mapF1Competition(doc: RawDoc): Formula1CompetitionItem {
   if (website) item.website = website;
   if (typeof doc.data.active === 'boolean') item.active = doc.data.active;
 
+  const racesRaw = doc.data.races;
+  if (Array.isArray(racesRaw)) {
+    item.races = racesRaw.filter((id): id is string => typeof id === 'string' && id.length > 0);
+  } else {
+    item.races = [];
+  }
+
   return item;
 }
 

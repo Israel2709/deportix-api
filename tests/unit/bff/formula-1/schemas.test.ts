@@ -98,10 +98,13 @@ describe('Formula 1 write schemas', () => {
   it('accepts driver ranking create body', () => {
     expect(
       formula1DriverRankingCreateSchema.safeParse({
+        competitionId: '11111111-1111-4111-8111-111111111111',
         driverId: '44444444-4444-4444-8444-444444444444',
         season: 2024,
         position: 1,
         points: 100,
+        wins: 2,
+        podiums: 5,
       }).success,
     ).toBe(true);
   });

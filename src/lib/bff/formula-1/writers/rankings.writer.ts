@@ -5,6 +5,7 @@ import {
   buildTeamMap,
   createF1Doc,
   deleteF1Doc,
+  getF1CompetitionById,
   getF1DriverById,
   getF1RaceById,
   getF1TeamById,
@@ -93,15 +94,20 @@ async function participantMaps() {
 
 export async function createFormula1DriverRanking(body: unknown): Promise<Formula1DriverRankingItem> {
   const input = parseCreateDriver(body);
+  if (!(await getF1CompetitionById(input.competitionId))) {
+    throw invalidRequestBody('competitionId must reference an existing competition.');
+  }
   if (!(await getF1DriverById(input.driverId))) {
     throw invalidRequestBody('driverId must reference an existing driver.');
   }
   const doc = await createF1Doc(F1_COLLECTIONS.driverRankings, {
+    competition_id: input.competitionId,
     driver_id: input.driverId,
     season: input.season,
     position: input.position,
     points: input.points ?? null,
     wins: input.wins ?? null,
+    podiums: input.podiums ?? null,
     behind: input.behind ?? null,
   });
   const maps = await participantMaps();
@@ -115,15 +121,20 @@ export async function updateFormula1DriverRanking(
   const existing = await resolveF1DriverRanking(id);
   if (!existing) throw notFound('Driver ranking not found.');
   const patch = parseUpdateDriver(body);
+  if (patch.competitionId && !(await getF1CompetitionById(patch.competitionId))) {
+    throw invalidRequestBody('competitionId must reference an existing competition.');
+  }
   if (patch.driverId && !(await getF1DriverById(patch.driverId))) {
     throw invalidRequestBody('driverId must reference an existing driver.');
   }
   const doc = await updateF1Doc(F1_COLLECTIONS.driverRankings, existing.id, {
+    ...(patch.competitionId != null ? { competition_id: patch.competitionId } : {}),
     ...(patch.driverId != null ? { driver_id: patch.driverId } : {}),
     ...(patch.season != null ? { season: patch.season } : {}),
     ...(patch.position != null ? { position: patch.position } : {}),
     ...(patch.points !== undefined ? { points: patch.points } : {}),
     ...(patch.wins !== undefined ? { wins: patch.wins } : {}),
+    ...(patch.podiums !== undefined ? { podiums: patch.podiums } : {}),
     ...(patch.behind !== undefined ? { behind: patch.behind } : {}),
   });
   const maps = await participantMaps();
@@ -138,14 +149,20 @@ export async function deleteFormula1DriverRanking(id: string): Promise<void> {
 
 export async function createFormula1TeamRanking(body: unknown): Promise<Formula1TeamRankingItem> {
   const input = parseCreateTeam(body);
+  if (!(await getF1CompetitionById(input.competitionId))) {
+    throw invalidRequestBody('competitionId must reference an existing competition.');
+  }
   if (!(await getF1TeamById(input.teamId))) {
     throw invalidRequestBody('teamId must reference an existing team.');
   }
   const doc = await createF1Doc(F1_COLLECTIONS.teamRankings, {
+    competition_id: input.competitionId,
     team_id: input.teamId,
     season: input.season,
     position: input.position,
     points: input.points ?? null,
+    wins: input.wins ?? null,
+    podiums: input.podiums ?? null,
   });
   const teams = await listF1Teams();
   return mapF1TeamRanking(doc, buildTeamMap(teams));
@@ -158,14 +175,20 @@ export async function updateFormula1TeamRanking(
   const existing = await resolveF1TeamRanking(id);
   if (!existing) throw notFound('Team ranking not found.');
   const patch = parseUpdateTeam(body);
+  if (patch.competitionId && !(await getF1CompetitionById(patch.competitionId))) {
+    throw invalidRequestBody('competitionId must reference an existing competition.');
+  }
   if (patch.teamId && !(await getF1TeamById(patch.teamId))) {
     throw invalidRequestBody('teamId must reference an existing team.');
   }
   const doc = await updateF1Doc(F1_COLLECTIONS.teamRankings, existing.id, {
+    ...(patch.competitionId != null ? { competition_id: patch.competitionId } : {}),
     ...(patch.teamId != null ? { team_id: patch.teamId } : {}),
     ...(patch.season != null ? { season: patch.season } : {}),
     ...(patch.position != null ? { position: patch.position } : {}),
     ...(patch.points !== undefined ? { points: patch.points } : {}),
+    ...(patch.wins !== undefined ? { wins: patch.wins } : {}),
+    ...(patch.podiums !== undefined ? { podiums: patch.podiums } : {}),
   });
   const teams = await listF1Teams();
   return mapF1TeamRanking(doc, buildTeamMap(teams));

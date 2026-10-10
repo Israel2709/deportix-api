@@ -129,6 +129,8 @@ export const formula1CompetitionItemSchema = z
       .optional(),
     website: z.string().nullable().optional(),
     active: z.boolean().optional(),
+    /** Race session ids belonging to this competition (owned by race writers). */
+    races: z.array(canonicalIdSchema).optional(),
   })
   .strict();
 
