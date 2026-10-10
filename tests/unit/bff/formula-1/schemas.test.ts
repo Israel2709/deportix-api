@@ -10,7 +10,7 @@ import {
 } from '@/lib/bff/formula-1/schemas/session-detail.schema';
 
 describe('Formula 1 write schemas', () => {
-  it('rejects server-managed fields and an invalid sprint', () => {
+  it('rejects server-managed and removed competition fields', () => {
     expect(
       formula1CompetitionCreateSchema.safeParse({ name: 'Monaco', createdAt: 'now' }).success,
     ).toBe(false);
@@ -19,17 +19,40 @@ describe('Formula 1 write schemas', () => {
         name: 'Monaco Grand Prix',
         slug: 'monaco-grand-prix',
         seasonId: '2026',
-        rounds: 24,
-        sprint: { enabled: true, rounds: 6 },
+        sprint: { enabled: true },
+        classifications: { drivers: true, constructors: true },
         website: 'https://www.formula1.com',
-        branding: { primaryColor: '#E10600', secondaryColor: '#15151E' },
+        branding: { logoUrl: 'https://example.com/logo.png' },
       }).success,
     ).toBe(true);
     expect(
       formula1CompetitionCreateSchema.safeParse({
         name: 'Monaco Grand Prix',
-        rounds: 6,
-        sprint: { enabled: true, rounds: 8 },
+        rounds: 24,
+      }).success,
+    ).toBe(false);
+    expect(
+      formula1CompetitionCreateSchema.safeParse({
+        name: 'Monaco Grand Prix',
+        grid: { maxTeams: 10 },
+      }).success,
+    ).toBe(false);
+    expect(
+      formula1CompetitionCreateSchema.safeParse({
+        name: 'Monaco Grand Prix',
+        description: 'nope',
+      }).success,
+    ).toBe(false);
+    expect(
+      formula1CompetitionCreateSchema.safeParse({
+        name: 'Monaco Grand Prix',
+        branding: { primaryColor: '#E10600' },
+      }).success,
+    ).toBe(false);
+    expect(
+      formula1CompetitionCreateSchema.safeParse({
+        name: 'Monaco Grand Prix',
+        sprint: { enabled: true, rounds: 6 },
       }).success,
     ).toBe(false);
     expect(

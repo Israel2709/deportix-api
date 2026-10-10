@@ -70,12 +70,17 @@ function assignDefined(target: Record<string, unknown>, key: string, value: unkn
   if (value !== undefined) target[key] = value;
 }
 
+const DEFAULT_CLASSIFICATIONS = { drivers: true, constructors: true } as const;
+const DEFAULT_SPRINT = { enabled: true } as const;
+
 /**
  * Writable competition fields. `createdAt` is never included: create sets it
  * with serverTimestamp(), and updates leave the original value in place.
+ * Classifications and sprint are always forced to their defaults.
  */
 function competitionWriteFields(
   input: Formula1CompetitionCreate | Formula1CompetitionUpdate,
+  options: { forceDefaults: boolean },
 ): Record<string, unknown> {
   const fields: Record<string, unknown> = {};
   assignDefined(fields, 'name', input.name);
@@ -86,17 +91,16 @@ function competitionWriteFields(
   assignDefined(fields, 'status', input.status);
   assignDefined(fields, 'startDate', calendarTimestamp(input.startDate));
   assignDefined(fields, 'endDate', calendarTimestamp(input.endDate));
-  assignDefined(fields, 'rounds', input.rounds);
-  assignDefined(fields, 'classifications', input.classifications);
-  assignDefined(fields, 'sprint', input.sprint);
-  assignDefined(fields, 'grid', input.grid);
   assignDefined(fields, 'pointsSystemId', input.pointsSystemId);
   assignDefined(fields, 'branding', input.branding);
   assignDefined(fields, 'website', input.website);
-  assignDefined(fields, 'description', input.description);
   assignDefined(fields, 'active', input.active);
   assignDefined(fields, 'location', input.location);
   if ('seasonId' in input) assignDefined(fields, 'seasonId', input.seasonId);
+  if (options.forceDefaults) {
+    fields.classifications = { ...DEFAULT_CLASSIFICATIONS };
+    fields.sprint = { ...DEFAULT_SPRINT };
+  }
   return fields;
 }
 
@@ -104,7 +108,7 @@ export async function createFormula1Competition(body: unknown): Promise<Formula1
   const input = parse<Formula1CompetitionCreate>(formula1CompetitionCreateSchema, body, 'competition');
   const id = crypto.randomUUID();
   await createDoc(F1_COLLECTIONS.competitions, id, {
-    ...competitionWriteFields(input),
+    ...competitionWriteFields(input, { forceDefaults: true }),
     id,
     name: input.name,
     location: input.location ?? null,
@@ -123,7 +127,7 @@ export async function updateFormula1Competition(
   const existing = await resolveF1Competition(id);
   if (!existing) throw notFound('Competition not found.');
   const patch = parse<Formula1CompetitionUpdate>(formula1CompetitionUpdateSchema, body, 'competition');
-  const fields = competitionWriteFields(patch);
+  const fields = competitionWriteFields(patch, { forceDefaults: true });
   delete fields.createdAt;
   delete fields.seasonId;
   await updateDocFields(F1_COLLECTIONS.competitions, existing.id, {

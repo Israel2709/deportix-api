@@ -48,6 +48,8 @@ describe('Formula 1 catalog mappers', () => {
       id: competition.id,
       name: 'Monaco Grand Prix',
       location: { country: 'Monaco', city: 'Monte Carlo' },
+      classifications: { drivers: true, constructors: true },
+      sprint: { enabled: true },
     });
     expect(mapF1Circuit(circuit)).toEqual({
       id: circuit.id,

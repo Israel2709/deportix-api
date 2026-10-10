@@ -10,13 +10,6 @@ const championshipTypeSchema = z.enum([
 
 const competitionStatusSchema = z.enum(['scheduled', 'active', 'completed', 'cancelled']);
 
-const hexColorSchema = z
-  .string()
-  .regex(/^#[0-9A-Fa-f]{6}$/, 'Color must be #RRGGBB.')
-  .nullable();
-
-const optionalPositiveInt = z.number().int().min(1).nullable();
-
 const calendarDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD.')
@@ -42,7 +35,7 @@ const competitionFieldsSchema = z
     status: competitionStatusSchema.optional(),
     startDate: calendarDateSchema.optional(),
     endDate: calendarDateSchema.optional(),
-    rounds: z.number().int().min(1).optional(),
+    /** Accepted but always persisted as both true. */
     classifications: z
       .object({
         drivers: z.boolean(),
@@ -50,17 +43,10 @@ const competitionFieldsSchema = z
       })
       .strict()
       .optional(),
+    /** Accepted but always persisted as `{ enabled: true }`. */
     sprint: z
       .object({
         enabled: z.boolean(),
-        rounds: z.number().int().min(1).nullable().optional(),
-      })
-      .strict()
-      .optional(),
-    grid: z
-      .object({
-        maxTeams: optionalPositiveInt.optional(),
-        driversPerTeam: optionalPositiveInt.optional(),
       })
       .strict()
       .optional(),
@@ -68,13 +54,10 @@ const competitionFieldsSchema = z
     branding: z
       .object({
         logoUrl: z.string().nullable().optional(),
-        primaryColor: hexColorSchema.optional(),
-        secondaryColor: hexColorSchema.optional(),
       })
       .strict()
       .optional(),
     website: z.string().nullable().optional(),
-    description: z.string().nullable().optional(),
     active: z.boolean().optional(),
     location: competitionLocationSchema.nullable().optional(),
   })
@@ -85,8 +68,6 @@ function refineCompetition(
     startDate?: string | null;
     endDate?: string | null;
     website?: string | null;
-    rounds?: number;
-    sprint?: { enabled: boolean; rounds?: number | null };
   },
   ctx: z.RefinementCtx,
 ) {
@@ -106,25 +87,6 @@ function refineCompetition(
         message: 'website must be a valid http(s) URL.',
       });
     }
-  }
-
-  if (!value.sprint?.enabled) return;
-
-  if (value.sprint.rounds == null) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['sprint', 'rounds'],
-      message: 'sprint.rounds is required when sprint is enabled.',
-    });
-    return;
-  }
-
-  if (value.rounds != null && value.sprint.rounds > value.rounds) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['sprint', 'rounds'],
-      message: 'sprint.rounds cannot be greater than rounds.',
-    });
   }
 }
 
@@ -148,7 +110,6 @@ export const formula1CompetitionItemSchema = z
     status: competitionStatusSchema.optional(),
     startDate: z.string().nullable().optional(),
     endDate: z.string().nullable().optional(),
-    rounds: z.number().int().optional(),
     classifications: z
       .object({
         drivers: z.boolean(),
@@ -157,26 +118,16 @@ export const formula1CompetitionItemSchema = z
       .optional(),
     sprint: z
       .object({
-        enabled: z.boolean(),
-        rounds: z.number().int().optional(),
-      })
-      .optional(),
-    grid: z
-      .object({
-        maxTeams: z.number().int().optional(),
-        driversPerTeam: z.number().int().optional(),
+        enabled: z.literal(true),
       })
       .optional(),
     pointsSystemId: z.string().nullable().optional(),
     branding: z
       .object({
         logoUrl: z.string().nullable().optional(),
-        primaryColor: z.string().nullable().optional(),
-        secondaryColor: z.string().nullable().optional(),
       })
       .optional(),
     website: z.string().nullable().optional(),
-    description: z.string().nullable().optional(),
     active: z.boolean().optional(),
   })
   .strict();

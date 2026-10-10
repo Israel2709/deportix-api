@@ -19,7 +19,7 @@ export const runtime = 'nodejs';
 
 export const GET = formula1BffGetRoute('competitions')(async ({ searchParams }) => {
   const response = await fetchFormula1Competitions(parseFormula1CompetitionQuery(searchParams));
-  return { response, cache: CACHE.standard };
+  return { response, cache: CACHE.dynamic };
 });
 
 export const POST = formula1BffPostRoute('competitions')(async ({ body }) => {

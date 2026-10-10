@@ -91,52 +91,22 @@ export function mapF1Competition(doc: RawDoc): Formula1CompetitionItem {
   if (startDate) item.startDate = startDate;
   const endDate = asCalendarDate(doc.data.endDate);
   if (endDate) item.endDate = endDate;
-  const rounds = asNum(doc.data.rounds);
-  if (rounds != null) item.rounds = rounds;
 
-  const classifications = asObject(doc.data.classifications);
-  if (classifications) {
-    item.classifications = {
-      drivers: classifications.drivers !== false,
-      constructors: classifications.constructors !== false,
-    };
-  }
-
-  const sprint = asObject(doc.data.sprint);
-  if (sprint) {
-    const sprintRounds = asNum(sprint.rounds);
-    item.sprint = {
-      enabled: sprint.enabled === true,
-      ...(sprintRounds != null ? { rounds: sprintRounds } : {}),
-    };
-  }
-
-  const grid = asObject(doc.data.grid);
-  if (grid) {
-    const maxTeams = asNum(grid.maxTeams);
-    const driversPerTeam = asNum(grid.driversPerTeam);
-    item.grid = {
-      ...(maxTeams != null ? { maxTeams } : {}),
-      ...(driversPerTeam != null ? { driversPerTeam } : {}),
-    };
-  }
+  // Always exposed with drivers/constructors active and sprint enabled.
+  item.classifications = { drivers: true, constructors: true };
+  item.sprint = { enabled: true };
 
   const pointsSystemId = asStr(doc.data.pointsSystemId);
   if (pointsSystemId) item.pointsSystemId = pointsSystemId;
 
   const branding = asObject(doc.data.branding);
   if (branding) {
-    item.branding = {
-      logoUrl: asStr(branding.logoUrl),
-      primaryColor: asStr(branding.primaryColor),
-      secondaryColor: asStr(branding.secondaryColor),
-    };
+    const logoUrl = asStr(branding.logoUrl);
+    if (logoUrl) item.branding = { logoUrl };
   }
 
   const website = asStr(doc.data.website);
   if (website) item.website = website;
-  const description = asStr(doc.data.description);
-  if (description) item.description = description;
   if (typeof doc.data.active === 'boolean') item.active = doc.data.active;
 
   return item;
