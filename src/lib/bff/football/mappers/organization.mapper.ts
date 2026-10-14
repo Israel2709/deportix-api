@@ -5,6 +5,7 @@ export interface ApiSportsOrganizationEntry {
   id: string;
   name: string;
   logo: string | null;
+  logo_alt: string | null;
   country: {
     name: string | null;
     code: string | null;
@@ -20,6 +21,7 @@ export function mapOrganizationToApiSports(
     id: org.id,
     name: org.name,
     logo: org.logo,
+    logo_alt: org.logoAlt,
     country: {
       name: country?.name ?? null,
       code: country?.code ?? null,
@@ -32,7 +34,8 @@ export function mapOrganizationRef(org: OrganizationRecord | null): {
   id: string;
   name: string;
   logo: string | null;
+  logo_alt: string | null;
 } | null {
   if (!org) return null;
-  return { id: org.id, name: org.name, logo: org.logo };
+  return { id: org.id, name: org.name, logo: org.logo, logo_alt: org.logoAlt };
 }

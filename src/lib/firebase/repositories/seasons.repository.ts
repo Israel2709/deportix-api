@@ -47,6 +47,14 @@ export async function findSeasonInLeague(
   );
 }
 
+/** All season rows for a calendar year (across leagues). */
+export async function listSeasonsByYear(year: number): Promise<SeasonDTO[]> {
+  const docs = await fetchWhereEq(COLLECTION, 'year', year);
+  return docs
+    .map((doc) => serializeSeason(doc.id, doc.data))
+    .sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
+}
+
 /** Distinct season years across the platform (API-Sports `/leagues/seasons`). */
 export async function listDistinctSeasonYears(): Promise<number[]> {
   const docs = await fetchAll(COLLECTION, 10_000);

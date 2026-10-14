@@ -37,6 +37,7 @@ export async function createSoccerOrganizationEntry(body: unknown) {
     sportSlug: 'soccer',
     countryId: country.id,
     logo: item.logo ?? null,
+    logoAlt: item.logo_alt ?? null,
   });
   return toApiSports(org.id);
 }
@@ -56,6 +57,7 @@ export async function updateSoccerOrganizationEntry(id: string, body: unknown) {
   const updated = await updateOrganization(id, {
     name: item.name,
     logo: item.logo ?? null,
+    logoAlt: item.logo_alt ?? null,
   });
   return toApiSports(updated.id);
 }

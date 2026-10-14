@@ -19,6 +19,7 @@ export interface ApiSportsLeagueEntry {
     id: string;
     name: string;
     logo: string | null;
+    logo_alt: string | null;
   } | null;
   seasons: Array<{
     year: number | null;

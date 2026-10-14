@@ -5,6 +5,7 @@ import {
   findSeasonByYear,
   listDistinctSeasonYears,
   listSeasonsByLeague,
+  listSeasonsByYear,
 } from '@/lib/firebase/repositories/seasons.repository';
 import { mapGlobalSeasonYears, mapLeagueToApiSports } from '../mappers/league.mapper';
 import type { LeagueQuery } from '../query-params';
@@ -64,19 +65,34 @@ export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[
     return [mapLeagueToApiSports(league.dto, country, seasons, organization)];
   }
 
-  const [countryMap, leagues] = await Promise.all([
+  const [countryMap, leagues, seasonsForYear] = await Promise.all([
     buildCountryMap(),
     listLeagues({ sportSlug: 'soccer' }),
+    query.seasonYear != null ? listSeasonsByYear(query.seasonYear) : Promise.resolve(null),
   ]);
+
+  // When filtering by season year, avoid per-league season fetches (N+1 over ~1k leagues).
+  const seasonsByLeagueId = new Map<string, NonNullable<typeof seasonsForYear>>();
+  if (seasonsForYear) {
+    for (const season of seasonsForYear) {
+      if (!season.leagueId) continue;
+      const list = seasonsByLeagueId.get(season.leagueId) ?? [];
+      list.push(season);
+      seasonsByLeagueId.set(season.leagueId, list);
+    }
+  }
+  const leagueIdsForYear = seasonsForYear != null ? new Set(seasonsByLeagueId.keys()) : null;
 
   const entries: unknown[] = [];
   for (const league of leagues) {
+    if (leagueIdsForYear && !leagueIdsForYear.has(league.id)) continue;
     if (query.country && !countryMatchesFilter(league.country, query.country)) continue;
     if (matchingOrgIds && (!league.organizationId || !matchingOrgIds.has(league.organizationId))) {
       continue;
     }
 
-    const seasons = await listSeasonsByLeague(league.id);
+    const seasons =
+      seasonsByLeagueId.get(league.id) ?? (await listSeasonsByLeague(league.id));
     if (!seasonsMatchFilter(seasons, query)) continue;
 
     const country = league.country ? (countryMap.get(league.country.toLowerCase()) ?? null) : null;

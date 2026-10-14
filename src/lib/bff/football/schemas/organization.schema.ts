@@ -12,6 +12,7 @@ export const soccerOrganizationCreateSchema = z
   .object({
     name: z.string().min(1),
     logo: nullableString.optional(),
+    logo_alt: nullableString.optional(),
     country: countryRefSchema,
   })
   .strict();
@@ -20,6 +21,7 @@ export const soccerOrganizationUpdateSchema = z
   .object({
     name: z.string().min(1),
     logo: nullableString.optional(),
+    logo_alt: nullableString.optional(),
   })
   .strict();
 

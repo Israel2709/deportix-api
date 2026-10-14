@@ -20,6 +20,7 @@ export interface OrganizationRecord {
   id: string;
   name: string;
   logo: string | null;
+  logoAlt: string | null;
   countryId: string | null;
   sportSlug: SportSlug | null;
 }
@@ -29,6 +30,7 @@ function toRecord(doc: RawDoc, sportSlug: SportSlug | null): OrganizationRecord 
     id: doc.id,
     name: asStr(doc.data.name) ?? '',
     logo: asStr(doc.data.logo),
+    logoAlt: asStr(doc.data.logo_alt) ?? asStr(doc.data.alt_logo),
     countryId: asStr(doc.data.country_id),
     sportSlug,
   };
@@ -95,6 +97,7 @@ export async function createOrganization(input: {
   sportSlug: SportSlug;
   countryId: string;
   logo?: string | null;
+  logoAlt?: string | null;
 }): Promise<OrganizationRecord> {
   const ctx = await loadCatalogContext();
   const sportId = ctx.sportIdBySlug.get(input.sportSlug);
@@ -105,6 +108,7 @@ export async function createOrganization(input: {
   const data = {
     name: input.name,
     logo: input.logo ?? null,
+    logo_alt: input.logoAlt ?? null,
     country_id: input.countryId,
     sport_id: sportId,
     created_at: now,
@@ -118,7 +122,7 @@ export async function createOrganization(input: {
 
 export async function updateOrganization(
   id: string,
-  patch: { name?: string; logo?: string | null },
+  patch: { name?: string; logo?: string | null; logoAlt?: string | null },
 ): Promise<OrganizationRecord> {
   const existing = await getDocById(COLLECTION, id);
   if (!existing) throw notFound('Organization not found.');
@@ -126,6 +130,7 @@ export async function updateOrganization(
   const fields: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (patch.name !== undefined) fields.name = patch.name;
   if (patch.logo !== undefined) fields.logo = patch.logo;
+  if (patch.logoAlt !== undefined) fields.logo_alt = patch.logoAlt;
 
   await updateDocFields(COLLECTION, existing.id, fields);
   const updated = await getOrganization(existing.id);
