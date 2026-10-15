@@ -79,14 +79,13 @@ export function mapF1Competition(doc: RawDoc): Formula1CompetitionItem {
     item.championshipType = championshipType;
   }
   const status = asStr(doc.data.status);
-  if (
+  item.status =
     status === 'scheduled' ||
     status === 'active' ||
     status === 'completed' ||
     status === 'cancelled'
-  ) {
-    item.status = status;
-  }
+      ? status
+      : 'scheduled';
   const startDate = asCalendarDate(doc.data.startDate);
   if (startDate) item.startDate = startDate;
   const endDate = asCalendarDate(doc.data.endDate);

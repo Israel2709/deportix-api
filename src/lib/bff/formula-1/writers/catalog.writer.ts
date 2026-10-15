@@ -124,8 +124,10 @@ function competitionWriteFields(
 export async function createFormula1Competition(body: unknown): Promise<Formula1CompetitionItem> {
   const input = parse<Formula1CompetitionCreate>(formula1CompetitionCreateSchema, body, 'competition');
   const id = crypto.randomUUID();
+  const fields = competitionWriteFields(input, { forceDefaults: true });
+  if (fields.status == null) fields.status = 'scheduled';
   await createDoc(F1_COLLECTIONS.competitions, id, {
-    ...competitionWriteFields(input, { forceDefaults: true }),
+    ...fields,
     id,
     name: input.name,
     slug: uniqueCompetitionSlug(input.name, id),
