@@ -41,11 +41,15 @@ export async function getRawSoccerTeam(idOrExternalId: string): Promise<RawDoc |
   return resolveDoc(COLLECTION, idOrExternalId);
 }
 
+/**
+ * Resolve a team that may participate in `leagueId`.
+ * Membership is season-scoped (`soccer_season_participants`); `league_id` on the
+ * team doc is legacy and no longer required for lookup.
+ */
 export async function requireSoccerTeamInLeague(leagueId: string, teamId: string): Promise<RawDoc> {
   const team = await getRawSoccerTeam(teamId);
-  if (!team || asStr(team.data.league_id) !== leagueId) {
-    throw notFound('Team not found.');
-  }
+  if (!team) throw notFound('Team not found.');
+  void leagueId;
   return team;
 }
 

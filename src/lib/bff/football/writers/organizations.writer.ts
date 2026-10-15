@@ -36,6 +36,7 @@ export async function createSoccerOrganizationEntry(body: unknown) {
     name: item.name,
     sportSlug: 'soccer',
     countryId: country.id,
+    abbreviation: item.abbreviation ?? null,
     logo: item.logo ?? null,
     logoAlt: item.logo_alt ?? null,
   });
@@ -56,6 +57,7 @@ export async function updateSoccerOrganizationEntry(id: string, body: unknown) {
 
   const updated = await updateOrganization(id, {
     name: item.name,
+    abbreviation: item.abbreviation ?? null,
     logo: item.logo ?? null,
     logoAlt: item.logo_alt ?? null,
   });

@@ -18,6 +18,7 @@ export interface ApiSportsLeagueEntry {
   organization: {
     id: string;
     name: string;
+    abbreviation: string | null;
     logo: string | null;
     logo_alt: string | null;
   } | null;

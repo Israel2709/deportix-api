@@ -19,6 +19,7 @@ const LEAGUES_COLLECTION = 'leagues';
 export interface OrganizationRecord {
   id: string;
   name: string;
+  abbreviation: string | null;
   logo: string | null;
   logoAlt: string | null;
   countryId: string | null;
@@ -29,6 +30,10 @@ function toRecord(doc: RawDoc, sportSlug: SportSlug | null): OrganizationRecord 
   return {
     id: doc.id,
     name: asStr(doc.data.name) ?? '',
+    abbreviation:
+      asStr(doc.data.abbreviation) ??
+      asStr(doc.data.siglas) ??
+      asStr(doc.data.short_name),
     logo: asStr(doc.data.logo),
     logoAlt: asStr(doc.data.logo_alt) ?? asStr(doc.data.alt_logo),
     countryId: asStr(doc.data.country_id),
@@ -96,6 +101,7 @@ export async function createOrganization(input: {
   name: string;
   sportSlug: SportSlug;
   countryId: string;
+  abbreviation?: string | null;
   logo?: string | null;
   logoAlt?: string | null;
 }): Promise<OrganizationRecord> {
@@ -107,6 +113,7 @@ export async function createOrganization(input: {
   const now = new Date().toISOString();
   const data = {
     name: input.name,
+    abbreviation: input.abbreviation?.trim() || null,
     logo: input.logo ?? null,
     logo_alt: input.logoAlt ?? null,
     country_id: input.countryId,
@@ -122,13 +129,22 @@ export async function createOrganization(input: {
 
 export async function updateOrganization(
   id: string,
-  patch: { name?: string; logo?: string | null; logoAlt?: string | null },
+  patch: {
+    name?: string;
+    abbreviation?: string | null;
+    logo?: string | null;
+    logoAlt?: string | null;
+  },
 ): Promise<OrganizationRecord> {
   const existing = await getDocById(COLLECTION, id);
   if (!existing) throw notFound('Organization not found.');
 
   const fields: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (patch.name !== undefined) fields.name = patch.name;
+  if (patch.abbreviation !== undefined) {
+    fields.abbreviation =
+      typeof patch.abbreviation === 'string' ? patch.abbreviation.trim() || null : null;
+  }
   if (patch.logo !== undefined) fields.logo = patch.logo;
   if (patch.logoAlt !== undefined) fields.logo_alt = patch.logoAlt;
 

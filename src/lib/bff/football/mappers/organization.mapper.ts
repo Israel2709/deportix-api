@@ -4,6 +4,7 @@ import type { OrganizationRecord } from '@/lib/firebase/repositories/organizatio
 export interface ApiSportsOrganizationEntry {
   id: string;
   name: string;
+  abbreviation: string | null;
   logo: string | null;
   logo_alt: string | null;
   country: {
@@ -20,6 +21,7 @@ export function mapOrganizationToApiSports(
   return {
     id: org.id,
     name: org.name,
+    abbreviation: org.abbreviation,
     logo: org.logo,
     logo_alt: org.logoAlt,
     country: {
@@ -33,9 +35,16 @@ export function mapOrganizationToApiSports(
 export function mapOrganizationRef(org: OrganizationRecord | null): {
   id: string;
   name: string;
+  abbreviation: string | null;
   logo: string | null;
   logo_alt: string | null;
 } | null {
   if (!org) return null;
-  return { id: org.id, name: org.name, logo: org.logo, logo_alt: org.logoAlt };
+  return {
+    id: org.id,
+    name: org.name,
+    abbreviation: org.abbreviation,
+    logo: org.logo,
+    logo_alt: org.logoAlt,
+  };
 }
