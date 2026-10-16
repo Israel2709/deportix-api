@@ -14,6 +14,18 @@ const lapsSchema = z
   })
   .strict();
 
+const highlightsSchema = z
+  .object({
+    p1DriverId: nullableString.optional(),
+    p2DriverId: nullableString.optional(),
+    p3DriverId: nullableString.optional(),
+    poleDriverId: nullableString.optional(),
+    fastestDriverId: nullableString.optional(),
+    winningTeamId: nullableString.optional(),
+    updatedAt: nullableString.optional(),
+  })
+  .strict();
+
 export const formula1RaceCreateSchema = z
   .object({
     competitionId: canonicalIdSchema,
@@ -25,6 +37,7 @@ export const formula1RaceCreateSchema = z
     timezone: nullableString.optional(),
     distance: nullableString.optional(),
     laps: lapsSchema.optional(),
+    highlights: highlightsSchema.optional(),
   })
   .strict();
 
@@ -42,6 +55,7 @@ export const formula1RaceItemSchema = z
     timezone: nullableString.optional(),
     date: z.string(),
     status: z.string(),
+    highlights: highlightsSchema.optional(),
   })
   .strict();
 

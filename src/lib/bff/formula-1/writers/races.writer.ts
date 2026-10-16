@@ -98,6 +98,22 @@ export async function updateFormula1Race(id: string, body: unknown): Promise<For
     typeof existing.data.competition_id === 'string' ? existing.data.competition_id : null;
   const nextCompetitionId = patch.competitionId ?? previousCompetitionId;
 
+  const highlightsPatch =
+    patch.highlights !== undefined
+      ? {
+          highlights: {
+            p1_driver_id: patch.highlights.p1DriverId ?? null,
+            p2_driver_id: patch.highlights.p2DriverId ?? null,
+            p3_driver_id: patch.highlights.p3DriverId ?? null,
+            pole_driver_id: patch.highlights.poleDriverId ?? null,
+            fastest_driver_id: patch.highlights.fastestDriverId ?? null,
+            winning_team_id: patch.highlights.winningTeamId ?? null,
+            updated_at:
+              patch.highlights.updatedAt ?? new Date().toISOString(),
+          },
+        }
+      : {};
+
   const doc = await updateF1Doc(F1_COLLECTIONS.races, existing.id, {
     ...(patch.competitionId != null ? { competition_id: patch.competitionId } : {}),
     ...(patch.circuitId != null ? { circuit_id: patch.circuitId } : {}),
@@ -109,6 +125,7 @@ export async function updateFormula1Race(id: string, body: unknown): Promise<For
     ...(patch.distance !== undefined ? { distance: patch.distance } : {}),
     ...(patch.laps?.current !== undefined ? { laps_current: patch.laps.current } : {}),
     ...(patch.laps?.total !== undefined ? { laps_total: patch.laps.total } : {}),
+    ...highlightsPatch,
   });
 
   if (

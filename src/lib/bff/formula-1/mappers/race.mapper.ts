@@ -6,6 +6,23 @@ import { mapF1CompetitionLocation, mapF1CountryField } from './catalog.mapper';
 /** Placeholder when a race references a missing competition/circuit document. */
 const MISSING_REF_ID = '00000000-0000-4000-8000-000000000000';
 
+function mapHighlights(
+  raw: unknown,
+): Formula1RaceItem['highlights'] | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const data = raw as Record<string, unknown>;
+  return {
+    p1DriverId: asStr(data.p1_driver_id) ?? asStr(data.p1DriverId),
+    p2DriverId: asStr(data.p2_driver_id) ?? asStr(data.p2DriverId),
+    p3DriverId: asStr(data.p3_driver_id) ?? asStr(data.p3DriverId),
+    poleDriverId: asStr(data.pole_driver_id) ?? asStr(data.poleDriverId),
+    fastestDriverId:
+      asStr(data.fastest_driver_id) ?? asStr(data.fastestDriverId),
+    winningTeamId: asStr(data.winning_team_id) ?? asStr(data.winningTeamId),
+    updatedAt: asStr(data.updated_at) ?? asStr(data.updatedAt),
+  };
+}
+
 export function mapF1Race(
   doc: RawDoc,
   competitionMap?: Map<string, RawDoc>,
@@ -15,6 +32,7 @@ export function mapF1Race(
   const circuitId = asStr(doc.data.circuit_id) ?? MISSING_REF_ID;
   const competition = competitionMap?.get(competitionId);
   const circuit = circuitMap?.get(circuitId);
+  const highlights = mapHighlights(doc.data.highlights);
 
   return {
     id: doc.id,
@@ -39,6 +57,7 @@ export function mapF1Race(
     timezone: asStr(doc.data.timezone) ?? 'utc',
     date: asStr(doc.data.race_date) ?? asStr(doc.data.date) ?? '',
     status: asStr(doc.data.status) ?? '',
+    ...(highlights ? { highlights } : {}),
   };
 }
 

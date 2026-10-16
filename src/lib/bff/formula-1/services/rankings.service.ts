@@ -43,6 +43,9 @@ export async function fetchFormula1DriverRankings(query: Formula1DriverRankingsQ
     filtered = filtered.filter(
       (doc) => String(doc.data.competition_id ?? '') === query.competition,
     );
+  } else {
+    // Championship standings are season-wide (no competition scope).
+    filtered = filtered.filter((doc) => !doc.data.competition_id);
   }
 
   if (query.driver) {
@@ -79,6 +82,9 @@ export async function fetchFormula1TeamRankings(query: Formula1TeamRankingsQuery
     filtered = filtered.filter(
       (doc) => String(doc.data.competition_id ?? '') === query.competition,
     );
+  } else {
+    // Championship standings are season-wide (no competition scope).
+    filtered = filtered.filter((doc) => !doc.data.competition_id);
   }
 
   if (query.team) {

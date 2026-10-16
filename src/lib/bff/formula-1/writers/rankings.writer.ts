@@ -94,14 +94,14 @@ async function participantMaps() {
 
 export async function createFormula1DriverRanking(body: unknown): Promise<Formula1DriverRankingItem> {
   const input = parseCreateDriver(body);
-  if (!(await getF1CompetitionById(input.competitionId))) {
+  if (input.competitionId && !(await getF1CompetitionById(input.competitionId))) {
     throw invalidRequestBody('competitionId must reference an existing competition.');
   }
   if (!(await getF1DriverById(input.driverId))) {
     throw invalidRequestBody('driverId must reference an existing driver.');
   }
   const doc = await createF1Doc(F1_COLLECTIONS.driverRankings, {
-    competition_id: input.competitionId,
+    competition_id: input.competitionId ?? null,
     driver_id: input.driverId,
     season: input.season,
     position: input.position,
@@ -149,14 +149,14 @@ export async function deleteFormula1DriverRanking(id: string): Promise<void> {
 
 export async function createFormula1TeamRanking(body: unknown): Promise<Formula1TeamRankingItem> {
   const input = parseCreateTeam(body);
-  if (!(await getF1CompetitionById(input.competitionId))) {
+  if (input.competitionId && !(await getF1CompetitionById(input.competitionId))) {
     throw invalidRequestBody('competitionId must reference an existing competition.');
   }
   if (!(await getF1TeamById(input.teamId))) {
     throw invalidRequestBody('teamId must reference an existing team.');
   }
   const doc = await createF1Doc(F1_COLLECTIONS.teamRankings, {
-    competition_id: input.competitionId,
+    competition_id: input.competitionId ?? null,
     team_id: input.teamId,
     season: input.season,
     position: input.position,

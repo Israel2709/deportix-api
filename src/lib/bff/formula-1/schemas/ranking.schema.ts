@@ -9,7 +9,8 @@ import {
 
 export const formula1DriverRankingCreateSchema = z
   .object({
-    competitionId: canonicalIdSchema,
+    /** Optional — championship standings are season-wide. */
+    competitionId: canonicalIdSchema.nullable().optional(),
     driverId: canonicalIdSchema,
     season: z.number().int(),
     position: z.number().int(),
@@ -39,7 +40,8 @@ export const formula1DriverRankingItemSchema = z
 
 export const formula1TeamRankingCreateSchema = z
   .object({
-    competitionId: canonicalIdSchema,
+    /** Optional — championship standings are season-wide. */
+    competitionId: canonicalIdSchema.nullable().optional(),
     teamId: canonicalIdSchema,
     season: z.number().int(),
     position: z.number().int(),
