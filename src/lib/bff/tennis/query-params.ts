@@ -46,7 +46,6 @@ export interface TennisMatchesQuery {
   tournamentId?: string;
   roundId?: string;
   status?: string;
-  published: PublishedFilter;
 }
 
 function parsePublished(searchParams: URLSearchParams): PublishedFilter {
@@ -100,7 +99,6 @@ export function parseTennisMatchesQuery(searchParams: URLSearchParams): TennisMa
     tournamentId: parseStringParam(searchParams.get('tournament')),
     roundId: parseStringParam(searchParams.get('round')),
     status: parseEnumParam(searchParams.get('status'), [...MATCH_STATUSES], 'status'),
-    published: parsePublished(searchParams),
   };
 }
 

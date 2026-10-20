@@ -89,7 +89,6 @@ function dataset(): Dataset {
         winner_to_position: 'competitor_1',
         status: 'scheduled',
         competitor_changed: false,
-        is_published: false,
       },
       {
         id: MATCH201_ID,
@@ -104,7 +103,6 @@ function dataset(): Dataset {
         winner_to_match_id: null,
         status: 'pending_competitors',
         competitor_changed: false,
-        is_published: false,
       },
     ],
   };
@@ -160,7 +158,6 @@ describe('BFF Tennis', () => {
           competitor_2_id: null,
           status: 'pending_competitors',
           competitor_changed: false,
-          is_published: false,
         },
       ],
     });
@@ -170,11 +167,11 @@ describe('BFF Tennis', () => {
     const rounds = await fetchTennisRounds({ tournamentId: TOURNAMENT_ID, published: 'true' });
     expect(rounds.map((round) => round.id)).toContain(ROUND1_ID);
 
-    const matches = await fetchTennisMatches({ tournamentId: TOURNAMENT_ID, published: 'true' });
+    const matches = await fetchTennisMatches({ tournamentId: TOURNAMENT_ID });
     expect(matches).toHaveLength(1);
     expect(matches[0]?.competitor1).toBeNull();
     expect(matches[0]?.competitor2).toBeNull();
-    expect(matches[0]?.published).toBe(true);
+    expect(matches[0]).not.toHaveProperty('published');
   });
 
   it('publishes the draw after integrity checks', async () => {
@@ -201,9 +198,9 @@ describe('BFF Tennis', () => {
 
     expect(result.result?.winnerId).toBe(PLAYER1_ID);
     expect(result.status).toBe('finished');
-    expect(result.published).toBe(true);
+    expect(result).not.toHaveProperty('published');
 
-    const final = await fetchTennisMatches({ id: MATCH201_ID, published: 'all' });
+    const final = await fetchTennisMatches({ id: MATCH201_ID });
     expect(final[0]?.competitor1?.id).toBe(PLAYER1_ID);
   });
 

@@ -7,7 +7,6 @@ import {
 } from '@/lib/bff/shared/handler';
 import { fetchTennisMatches } from '@/lib/bff/tennis/services/matches.service';
 import { createTennisMatch } from '@/lib/bff/tennis/writers/matches.writer';
-import type { PublishedFilter } from '@/lib/bff/tennis/query-params';
 
 export const runtime = 'nodejs';
 
@@ -19,17 +18,11 @@ function requireTournamentId(params: Record<string, string>): string {
   return tournamentId;
 }
 
-function publishedFilter(raw: string | null): PublishedFilter {
-  if (raw === 'all' || raw === 'false') return raw;
-  return 'true';
-}
-
 export const GET = tennisBffGetRoute('matches')(async ({ params, searchParams }) => {
   const response = await fetchTennisMatches({
     tournamentId: requireTournamentId(params),
     roundId: searchParams.get('round')?.trim() || undefined,
     status: searchParams.get('status')?.trim() || undefined,
-    published: publishedFilter(searchParams.get('published')),
   });
   return { response, cache: CACHE.none };
 });

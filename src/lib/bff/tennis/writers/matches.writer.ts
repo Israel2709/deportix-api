@@ -119,7 +119,8 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
   const scheduledAt = input.scheduledAt ?? null;
   const timezone = input.timezone ?? (scheduledAt ? 'utc' : null);
   assertTimezoneIfScheduled(scheduledAt, timezone);
-  // Inherit publish state from the tournament so draws added after go-live are visible.
+  // Snapshot competitors when the edition is already live so later substitutions
+  // can set competitorChanged. Matches themselves have no published flag.
   const tournamentPublished = asBool(tournament.data.is_published);
   const doc = await createTennisDoc(TENNIS_COLLECTIONS.matches, {
     tournament_id: input.tournamentId,
@@ -150,7 +151,6 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
     sets_player_2: null,
     set_scores: null,
     final_score_display: null,
-    is_published: tournamentPublished,
   });
   return toItem(doc);
 }
@@ -221,11 +221,16 @@ export async function updateTennisMatch(id: string, body: unknown): Promise<Tenn
     );
   }
 
-  const wasPublished = asBool(existing.data.is_published);
+  const [edition, currentRound] = await Promise.all([
+    getTennisTournamentById(tournamentId),
+    getTennisRoundById(asStr(existing.data.round_id) ?? ''),
+  ]);
+  const editionOrRoundPublished =
+    asBool(edition?.data.is_published) || asBool(currentRound?.data.is_published);
   const published1 = asStr(existing.data.published_competitor_1_id);
   const published2 = asStr(existing.data.published_competitor_2_id);
   const competitorChanged =
-    wasPublished &&
+    editionOrRoundPublished &&
     ((patch.competitor1Id !== undefined && patch.competitor1Id !== published1) ||
       (patch.competitor2Id !== undefined && patch.competitor2Id !== published2));
 
@@ -347,25 +352,10 @@ export async function recordTennisMatchResult(id: string, body: unknown): Promis
     status,
     started_at: input.startedAt !== undefined ? input.startedAt : existing.data.started_at ?? null,
     ended_at: input.endedAt ?? new Date().toISOString(),
-    is_published: true,
   });
 
   await advanceWinner({ ...existing, data: { ...existing.data, ...updated.data } }, input.winnerId);
   const fresh = await getTennisMatchById(existing.id);
   if (!fresh) throw notFound('Match not found.');
   return toItem(fresh);
-}
-
-export async function publishTennisMatch(id: string): Promise<TennisMatchItem> {
-  const existing = await resolveTennisMatch(id);
-  if (!existing) throw notFound('Match not found.');
-  const snap = toMatchSnap(existing);
-  assertDistinctCompetitors(snap.competitor1Id, snap.competitor2Id);
-  assertTimezoneIfScheduled(snap.scheduledAt, snap.timezone);
-  const doc = await updateTennisDoc(TENNIS_COLLECTIONS.matches, existing.id, {
-    is_published: true,
-    published_competitor_1_id: existing.data.competitor_1_id ?? null,
-    published_competitor_2_id: existing.data.competitor_2_id ?? null,
-  });
-  return toItem(doc);
 }

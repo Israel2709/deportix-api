@@ -90,7 +90,6 @@ export const tennisMatchItemSchema = z
       })
       .strict()
       .nullable(),
-    published: z.boolean(),
     createdAt: nullableString,
     updatedAt: nullableString,
   })

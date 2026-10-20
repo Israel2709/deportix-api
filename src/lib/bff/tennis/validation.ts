@@ -68,8 +68,9 @@ export function assertRoundSequence(rounds: TennisRoundSnap[]): void {
 
 /**
  * Optional structure checks for a draw that already has rounds/matches.
- * Tournaments may be published with no rounds. Rounds and matches may be published
+ * Tournaments may be published with no rounds. Rounds may be published
  * with TBD competitors (official draw often lands days before the event).
+ * Individual matches do not have a published flag.
  */
 export function assertPublishableBracket(rounds: TennisRoundSnap[], matches: TennisMatchSnap[]): void {
   if (rounds.length === 0) {

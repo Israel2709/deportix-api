@@ -18,7 +18,7 @@ function requireMatchId(params: Record<string, string>): string {
 }
 
 export const GET = tennisBffGetRoute('matches')(async ({ params }) => {
-  const response = await fetchTennisMatches({ id: requireMatchId(params), published: 'all' });
+  const response = await fetchTennisMatches({ id: requireMatchId(params) });
   return { response, cache: CACHE.none };
 });
 

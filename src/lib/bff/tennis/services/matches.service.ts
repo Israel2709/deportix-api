@@ -9,7 +9,7 @@ import {
   resolveTennisMatch,
 } from '@/lib/firebase/repositories/tennis.repository';
 import { mapTennisMatch, sortMatches } from '../mappers/match.mapper';
-import { matchesPublishedFilter, type TennisMatchesQuery } from '../query-params';
+import type { TennisMatchesQuery } from '../query-params';
 import type { TennisMatchItem } from '../schemas/match.schema';
 
 export async function fetchTennisMatches(query: TennisMatchesQuery): Promise<TennisMatchItem[]> {
@@ -20,8 +20,7 @@ export async function fetchTennisMatches(query: TennisMatchesQuery): Promise<Ten
     const doc = await resolveTennisMatch(query.id);
     if (!doc) return [];
     const rounds = await listTennisRoundsByTournament(String(doc.data.tournament_id ?? ''));
-    const item = mapTennisMatch(doc, playerMap, buildDocMap(rounds), countries);
-    return matchesPublishedFilter(item.published, query.published) ? [item] : [];
+    return [mapTennisMatch(doc, playerMap, buildDocMap(rounds), countries)];
   }
 
   if (!query.tournamentId && !query.roundId) {
@@ -42,10 +41,6 @@ export async function fetchTennisMatches(query: TennisMatchesQuery): Promise<Ten
 
   return docs
     .map((doc) => mapTennisMatch(doc, playerMap, roundMap, countries))
-    .filter((item) => {
-      if (!matchesPublishedFilter(item.published, query.published)) return false;
-      if (query.status && item.status !== query.status) return false;
-      return true;
-    })
+    .filter((item) => !query.status || item.status === query.status)
     .sort(sortMatches);
 }

@@ -94,7 +94,6 @@ describe('Tennis mappers', () => {
           { set: 2, competitor_1: 6, competitor_2: 3 },
         ],
         final_score_display: '6-4, 6-3',
-        is_published: true,
       },
     };
 
@@ -116,5 +115,6 @@ describe('Tennis mappers', () => {
         { set: 2, competitor1: 6, competitor2: 3 },
       ],
     });
+    expect(mapped).not.toHaveProperty('published');
   });
 });

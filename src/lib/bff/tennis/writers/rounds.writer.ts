@@ -92,7 +92,6 @@ export async function publishTennisRound(id: string): Promise<TennisRoundItem> {
     updateTennisDoc(TENNIS_COLLECTIONS.rounds, existing.id, { is_published: true }),
     ...matches.map((match) =>
       updateTennisDoc(TENNIS_COLLECTIONS.matches, match.id, {
-        is_published: true,
         published_competitor_1_id: match.data.competitor_1_id ?? null,
         published_competitor_2_id: match.data.competitor_2_id ?? null,
       }),

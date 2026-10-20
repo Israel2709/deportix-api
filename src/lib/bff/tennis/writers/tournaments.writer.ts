@@ -82,8 +82,9 @@ export async function publishTennisTournament(id: string): Promise<TennisTournam
     listTennisRoundsByTournament(existing.id),
     listTennisMatchesByTournament(existing.id),
   ]);
-  // Tournaments can go live before the draw exists. If rounds/matches are already
-  // loaded they are published too; TBD competitors are allowed.
+  // Tournaments can go live before the draw exists. Rounds and entries already
+  // loaded are published too. Matches have no published flag; competitor snapshots
+  // are stored so later substitutions can set competitorChanged.
   if (rounds.length > 0 || matches.length > 0) {
     assertPublishableBracket(rounds.map(toRoundSnap), matches.map(toMatchSnap));
   }
@@ -100,7 +101,6 @@ export async function publishTennisTournament(id: string): Promise<TennisTournam
     ),
     ...matches.map((match) =>
       updateTennisDoc(TENNIS_COLLECTIONS.matches, match.id, {
-        is_published: true,
         published_competitor_1_id: match.data.competitor_1_id ?? null,
         published_competitor_2_id: match.data.competitor_2_id ?? null,
       }),

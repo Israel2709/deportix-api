@@ -31,8 +31,10 @@ info:
 
     **BFF Tennis** (`/tennis/*`) — Tennis-native BFF for App QD (quiniela) and the Deportix
     backoffice. Full envelope. Models tournament editions, Main Draw rounds, players, entries,
-    matches and an explicit bracket graph. Draft vs published: list endpoints default to
-    `published=true` (App QD). Use `published=all` in the backoffice. Not served by generic `/v1`
+    matches and an explicit bracket graph. Draft vs published applies to players, tournaments,
+    rounds and entries: those list endpoints default to `published=true` (App QD). Use
+    `published=all` in the backoffice. Individual matches have no `published` flag and are not
+    filtered by publication. Not served by generic `/v1`
     league/team/match routes. Scope v1: Grand Slam / ATP 1000 / WTA 1000, singles only.
 
     ## MVP notes & limitations
@@ -2910,10 +2912,10 @@ paths:
       summary: Publish tournament
       description: |
         Marks the tournament as published so App QD can list it. Rounds and matches are
-        optional: a tournament may be announced before the Main Draw exists. If rounds,
-        entries or matches are already loaded they are published too. TBD competitors
-        (null player, no source match) are allowed — official draws often land days
-        before the event.
+        optional: a tournament may be announced before the Main Draw exists. If rounds
+        or entries are already loaded they are published too. Individual matches have no
+        `published` flag. TBD competitors (null player, no source match) are allowed —
+        official draws often land days before the event.
       operationId: tennisPublishTournament
       parameters:
         - { name: tournamentId, in: path, required: true, schema: { type: string } }
@@ -3004,7 +3006,6 @@ paths:
         - { name: tournamentId, in: path, required: true, schema: { type: string } }
         - { name: round, in: query, schema: { type: string, format: uuid } }
         - { name: status, in: query, schema: { $ref: '#/components/schemas/TennisMatchStatus' } }
-        - { $ref: '#/components/parameters/TennisPublished' }
       responses:
         '200':
           description: Matches ordered by round then bracketPosition.
@@ -3144,9 +3145,9 @@ paths:
       tags: [bff-tennis]
       summary: Publish a round
       description: |
-        Marks the round as published. Matches in the round are published too, even when
-        competitors are still TBD. Use this when the round structure is known but the
-        official draw has not been released yet.
+        Marks the round as published, even when competitors are still TBD. Individual
+        matches have no `published` flag. Use this when the round structure is known but
+        the official draw has not been released yet.
       operationId: tennisPublishRound
       parameters:
         - { name: roundId, in: path, required: true, schema: { type: string } }
@@ -3279,10 +3280,9 @@ paths:
         - { name: tournament, in: query, schema: { type: string } }
         - { name: round, in: query, schema: { type: string } }
         - { name: status, in: query, schema: { $ref: '#/components/schemas/TennisMatchStatus' } }
-        - { $ref: '#/components/parameters/TennisPublished' }
       responses:
         '200':
-          description: Matches in `response`.
+          description: Matches in `response`. Individual matches are not filtered by `published`.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/TennisApiSportsMatchList' }
@@ -3310,7 +3310,8 @@ paths:
       summary: Update match
       description: |
         Reschedules and competitor substitutions keep the same `id`. Substituting a competitor
-        after the matchup was published sets `competitorChanged=true`.
+        after the tournament or round is published sets `competitorChanged=true`.
+        Matches have no `published` field.
       operationId: tennisUpdateMatch
       parameters:
         - { name: id, in: query, required: true, schema: { type: string } }
@@ -3402,27 +3403,12 @@ paths:
             schema: { $ref: '#/components/schemas/TennisMatchResultBody' }
       responses:
         '200':
-          description: Match with result, published.
+          description: Match with result recorded.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/TennisApiSportsMatchList' }
         '400':
           $ref: '#/components/responses/AmericanFootballInvalidParameter'
-        '404':
-          $ref: '#/components/responses/AmericanFootballNotFound'
-  /tennis/matches/{matchId}/publish:
-    post:
-      tags: [bff-tennis]
-      summary: Publish a single match
-      operationId: tennisPublishMatch
-      parameters:
-        - { name: matchId, in: path, required: true, schema: { type: string } }
-      responses:
-        '200':
-          description: Match published.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TennisApiSportsMatchList' }
         '404':
           $ref: '#/components/responses/AmericanFootballNotFound'
   /v1/openapi.json:
@@ -3464,8 +3450,9 @@ components:
       name: published
       in: query
       description: |
-        `true` (default) returns only published records for App QD.
+        `true` (default) returns only published players, tournaments, rounds or entries for App QD.
         `false` returns drafts. `all` returns everything (backoffice).
+        Does not apply to individual matches, which have no `published` flag.
       required: false
       schema:
         type: string
@@ -5107,7 +5094,7 @@ components:
         entryType: { oneOf: [{ $ref: '#/components/schemas/TennisEntryType' }, { type: 'null' }] }
     TennisMatchItem:
       type: object
-      required: [id, tournamentId, roundId, roundNumber, bracketPosition, status, competitorChanged, bracket, published]
+      required: [id, tournamentId, roundId, roundNumber, bracketPosition, status, competitorChanged, bracket]
       properties:
         id: { $ref: '#/components/schemas/TennisCanonicalId' }
         tournamentId: { $ref: '#/components/schemas/TennisCanonicalId' }
@@ -5156,7 +5143,6 @@ components:
                     - type: 'null'
                 finalScoreDisplay: { type: [string, 'null'] }
             - type: 'null'
-        published: { type: boolean }
         createdAt: { type: [string, 'null'] }
         updatedAt: { type: [string, 'null'] }
     TennisMatchCreateBody:

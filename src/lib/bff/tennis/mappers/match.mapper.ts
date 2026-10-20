@@ -131,7 +131,6 @@ export function mapTennisMatch(
           finalScoreDisplay: asStr(doc.data.final_score_display),
         }
       : null,
-    published: asBool(doc.data.is_published),
     createdAt: asStr(doc.data.created_at),
     updatedAt: asStr(doc.data.updated_at),
   };
