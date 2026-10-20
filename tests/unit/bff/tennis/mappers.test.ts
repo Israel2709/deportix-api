@@ -51,6 +51,7 @@ describe('Tennis mappers', () => {
         start_date: '2026-08-24',
         end_date: '2026-09-13',
         year: 2026,
+        draw_size: 128,
         status: 'upcoming',
         is_published: false,
       },
@@ -60,6 +61,7 @@ describe('Tennis mappers', () => {
       name: 'US Open',
       category: 'grand_slam',
       eventType: 'singles',
+      drawSize: 128,
       published: false,
     });
   });

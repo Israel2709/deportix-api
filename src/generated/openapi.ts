@@ -5492,6 +5492,41 @@ export const openapiDocument = {
         }
       }
     },
+    "/tennis/tournaments/{tournamentId}/unpublish": {
+      "post": {
+        "tags": [
+          "bff-tennis"
+        ],
+        "summary": "Unpublish tournament (draft)",
+        "description": "Marks the tournament as draft so App QD no longer lists it. Rounds and entries\nalready loaded are unpublished too. Individual matches have no `published` flag.\n",
+        "operationId": "tennisUnpublishTournament",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tournament marked as draft.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TennisApiSportsTournamentList"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/AmericanFootballNotFound"
+          }
+        }
+      }
+    },
     "/tennis/tournaments/{tournamentId}/rounds": {
       "get": {
         "tags": [
@@ -11047,6 +11082,12 @@ export const openapiDocument = {
               "null"
             ]
           },
+          "altImageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "startDate": {
             "type": "string",
             "example": "2026-08-24"
@@ -11058,6 +11099,14 @@ export const openapiDocument = {
           "year": {
             "type": "integer",
             "example": 2026
+          },
+          "drawSize": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 128,
+            "description": "Expected main-draw size (number of participants)."
           },
           "status": {
             "type": "string",
@@ -11149,6 +11198,12 @@ export const openapiDocument = {
               "null"
             ]
           },
+          "altImageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "startDate": {
             "type": "string"
           },
@@ -11157,6 +11212,14 @@ export const openapiDocument = {
           },
           "year": {
             "type": "integer"
+          },
+          "drawSize": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "example": 128,
+            "description": "Expected main-draw size (number of participants)."
           },
           "status": {
             "type": "string",

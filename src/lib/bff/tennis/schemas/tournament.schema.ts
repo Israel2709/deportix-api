@@ -20,9 +20,12 @@ export const tennisTournamentCreateSchema = z
     countryCode: z.string().min(2).max(3),
     city: nullableString.optional(),
     imageUrl: nullableString.optional(),
+    altImageUrl: nullableString.optional(),
     startDate: dateOnlySchema,
     endDate: dateOnlySchema,
     year: z.number().int().min(1900).max(2100),
+    /** Expected main-draw size (e.g. 32, 64, 128). */
+    drawSize: z.number().int().min(2).max(256).nullable().optional(),
     status: tournamentStatusSchema.optional(),
   })
   .strict();
@@ -40,9 +43,11 @@ export const tennisTournamentItemSchema = z
     country: countryRefSchema,
     city: nullableString,
     imageUrl: nullableString,
+    altImageUrl: nullableString,
     startDate: z.string(),
     endDate: z.string(),
     year: z.number(),
+    drawSize: z.number().int().nullable(),
     status: tournamentStatusSchema,
     published: z.boolean(),
     publishedAt: nullableString,

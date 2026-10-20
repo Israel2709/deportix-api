@@ -37,9 +37,11 @@ export async function createTennisTournament(body: unknown): Promise<TennisTourn
     country_code: input.countryCode.toUpperCase(),
     city: input.city ?? null,
     image_url: input.imageUrl ?? null,
+    alt_image_url: input.altImageUrl ?? null,
     start_date: input.startDate,
     end_date: input.endDate,
     year: input.year,
+    draw_size: input.drawSize ?? null,
     status: input.status ?? 'upcoming',
     is_published: false,
     published_at: null,
@@ -60,9 +62,11 @@ export async function updateTennisTournament(id: string, body: unknown): Promise
     ...(patch.countryCode != null ? { country_code: patch.countryCode.toUpperCase() } : {}),
     ...(patch.city !== undefined ? { city: patch.city } : {}),
     ...(patch.imageUrl !== undefined ? { image_url: patch.imageUrl } : {}),
+    ...(patch.altImageUrl !== undefined ? { alt_image_url: patch.altImageUrl } : {}),
     ...(patch.startDate != null ? { start_date: patch.startDate } : {}),
     ...(patch.endDate != null ? { end_date: patch.endDate } : {}),
     ...(patch.year != null ? { year: patch.year } : {}),
+    ...(patch.drawSize !== undefined ? { draw_size: patch.drawSize } : {}),
     ...(patch.status != null ? { status: patch.status } : {}),
   });
   return toItem(doc);
@@ -110,6 +114,31 @@ export async function publishTennisTournament(id: string): Promise<TennisTournam
   const doc = await updateTennisDoc(TENNIS_COLLECTIONS.tournaments, existing.id, {
     is_published: true,
     published_at: now,
+  });
+  return toItem(doc);
+}
+
+export async function unpublishTennisTournament(id: string): Promise<TennisTournamentItem> {
+  const existing = await resolveTennisTournament(id);
+  if (!existing) throw notFound('Tournament not found.');
+
+  const [rounds, entries] = await Promise.all([
+    listTennisRoundsByTournament(existing.id),
+    listTennisEntriesByTournament(existing.id),
+  ]);
+
+  await Promise.all([
+    ...rounds.map((round) =>
+      updateTennisDoc(TENNIS_COLLECTIONS.rounds, round.id, { is_published: false }),
+    ),
+    ...entries.map((entry) =>
+      updateTennisDoc(TENNIS_COLLECTIONS.entries, entry.id, { is_published: false }),
+    ),
+  ]);
+
+  const doc = await updateTennisDoc(TENNIS_COLLECTIONS.tournaments, existing.id, {
+    is_published: false,
+    published_at: null,
   });
   return toItem(doc);
 }

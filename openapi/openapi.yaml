@@ -2929,6 +2929,24 @@ paths:
           $ref: '#/components/responses/AmericanFootballInvalidParameter'
         '404':
           $ref: '#/components/responses/AmericanFootballNotFound'
+  /tennis/tournaments/{tournamentId}/unpublish:
+    post:
+      tags: [bff-tennis]
+      summary: Unpublish tournament (draft)
+      description: |
+        Marks the tournament as draft so App QD no longer lists it. Rounds and entries
+        already loaded are unpublished too. Individual matches have no `published` flag.
+      operationId: tennisUnpublishTournament
+      parameters:
+        - { name: tournamentId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Tournament marked as draft.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TennisApiSportsTournamentList' }
+        '404':
+          $ref: '#/components/responses/AmericanFootballNotFound'
   /tennis/tournaments/{tournamentId}/rounds:
     get:
       tags: [bff-tennis]
@@ -5001,9 +5019,14 @@ components:
         country: { $ref: '#/components/schemas/TennisCountryRef' }
         city: { type: [string, 'null'] }
         imageUrl: { type: [string, 'null'] }
+        altImageUrl: { type: [string, 'null'] }
         startDate: { type: string, example: '2026-08-24' }
         endDate: { type: string, example: '2026-09-13' }
         year: { type: integer, example: 2026 }
+        drawSize:
+          type: [integer, 'null']
+          example: 128
+          description: Expected main-draw size (number of participants).
         status: { type: string, enum: [upcoming, active, finished, cancelled] }
         published: { type: boolean }
         publishedAt: { type: [string, 'null'] }
@@ -5022,9 +5045,14 @@ components:
         countryCode: { type: string }
         city: { type: [string, 'null'] }
         imageUrl: { type: [string, 'null'] }
+        altImageUrl: { type: [string, 'null'] }
         startDate: { type: string }
         endDate: { type: string }
         year: { type: integer }
+        drawSize:
+          type: [integer, 'null']
+          example: 128
+          description: Expected main-draw size (number of participants).
         status: { type: string, enum: [upcoming, active, finished, cancelled] }
     TennisRoundItem:
       type: object

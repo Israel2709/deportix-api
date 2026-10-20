@@ -34,6 +34,7 @@ export function mapTennisEntry(
         displayName: '',
         photoUrl: null,
         country: { code: '', name: null, flag: null },
+        gender: null,
         published: false,
         createdAt: null,
         updatedAt: null,

@@ -71,6 +71,7 @@ describe('NFL mappers canonical ids', () => {
         type: 'league',
         sport: 'american-football',
         country: 'USA',
+        organizationId: null,
         logo: null,
         altLogo: null,
         updatedAt: null,
