@@ -2676,6 +2676,7 @@ paths:
         - { name: id, in: query, schema: { type: string, format: uuid } }
         - { name: search, in: query, schema: { type: string } }
         - { name: country, in: query, schema: { type: string }, description: ISO country code }
+        - { name: gender, in: query, schema: { type: string, enum: [male, female] } }
         - { $ref: '#/components/parameters/TennisPublished' }
       responses:
         '200':
@@ -4978,25 +4979,27 @@ components:
         competitor2: { type: integer, minimum: 0 }
     TennisPlayerItem:
       type: object
-      required: [id, fullName, displayName, country, published]
+      required: [id, fullName, displayName, country, gender, published]
       properties:
         id: { $ref: '#/components/schemas/TennisCanonicalId' }
         fullName: { type: string, example: Carlos Alcaraz }
         displayName: { type: string, example: Alcaraz }
         photoUrl: { type: [string, 'null'] }
         country: { $ref: '#/components/schemas/TennisCountryRef' }
+        gender: { type: [string, 'null'], enum: [male, female, null] }
         published: { type: boolean }
         createdAt: { type: [string, 'null'] }
         updatedAt: { type: [string, 'null'] }
     TennisPlayerCreateBody:
       type: object
-      required: [fullName, displayName, countryCode]
+      required: [fullName, displayName, countryCode, gender]
       additionalProperties: false
       properties:
         fullName: { type: string }
         displayName: { type: string }
         photoUrl: { type: [string, 'null'] }
         countryCode: { type: string, example: ES }
+        gender: { type: string, enum: [male, female] }
         published: { type: boolean }
     TennisTournamentItem:
       type: object

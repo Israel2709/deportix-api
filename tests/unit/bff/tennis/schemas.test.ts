@@ -13,14 +13,23 @@ describe('Tennis write schemas', () => {
         fullName: 'Carlos Alcaraz',
         displayName: 'Alcaraz',
         countryCode: 'ES',
+        gender: 'male',
       }).success,
     ).toBe(true);
+    expect(
+      tennisPlayerCreateSchema.safeParse({
+        fullName: 'Carlos Alcaraz',
+        displayName: 'Alcaraz',
+        countryCode: 'ES',
+      }).success,
+    ).toBe(false);
     expect(
       tennisPlayerCreateSchema.safeParse({
         id: ID,
         fullName: 'Carlos Alcaraz',
         displayName: 'Alcaraz',
         countryCode: 'ES',
+        gender: 'male',
       }).success,
     ).toBe(false);
   });

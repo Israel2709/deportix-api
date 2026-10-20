@@ -13,6 +13,7 @@ export interface TennisPlayersQuery {
   id?: string;
   search?: string;
   country?: string;
+  gender?: string;
   published: PublishedFilter;
 }
 
@@ -58,6 +59,7 @@ export function parseTennisPlayersQuery(searchParams: URLSearchParams): TennisPl
     id: parseStringParam(searchParams.get('id')),
     search: parseStringParam(searchParams.get('search')),
     country: parseStringParam(searchParams.get('country')),
+    gender: parseEnumParam(searchParams.get('gender'), [...TENNIS_GENDERS], 'gender'),
     published: parsePublished(searchParams),
   };
 }

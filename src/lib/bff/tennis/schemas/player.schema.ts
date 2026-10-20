@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { canonicalIdSchema, countryRefSchema, nullableString } from './primitives';
+import {
+  canonicalIdSchema,
+  countryRefSchema,
+  nullableString,
+  tennisGenderSchema,
+} from './primitives';
 
 export const tennisPlayerCreateSchema = z
   .object({
@@ -7,6 +12,7 @@ export const tennisPlayerCreateSchema = z
     displayName: z.string().min(1),
     photoUrl: nullableString.optional(),
     countryCode: z.string().min(2).max(3),
+    gender: tennisGenderSchema,
     published: z.boolean().optional(),
   })
   .strict();
@@ -20,6 +26,7 @@ export const tennisPlayerItemSchema = z
     displayName: z.string(),
     photoUrl: nullableString,
     country: countryRefSchema,
+    gender: tennisGenderSchema.nullable(),
     published: z.boolean(),
     createdAt: nullableString,
     updatedAt: nullableString,

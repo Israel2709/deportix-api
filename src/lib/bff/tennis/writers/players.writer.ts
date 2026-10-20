@@ -36,6 +36,7 @@ export async function createTennisPlayer(body: unknown): Promise<TennisPlayerIte
     display_name: input.displayName,
     photo_url: input.photoUrl ?? null,
     country_code: input.countryCode.toUpperCase(),
+    gender: input.gender,
     is_published: input.published ?? true,
   });
   return toItem(doc);
@@ -50,6 +51,7 @@ export async function updateTennisPlayer(id: string, body: unknown): Promise<Ten
     ...(patch.displayName != null ? { display_name: patch.displayName } : {}),
     ...(patch.photoUrl !== undefined ? { photo_url: patch.photoUrl } : {}),
     ...(patch.countryCode != null ? { country_code: patch.countryCode.toUpperCase() } : {}),
+    ...(patch.gender != null ? { gender: patch.gender } : {}),
     ...(patch.published !== undefined ? { is_published: patch.published } : {}),
   });
   return toItem(doc);

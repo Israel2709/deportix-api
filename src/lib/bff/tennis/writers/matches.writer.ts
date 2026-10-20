@@ -92,7 +92,6 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
   const competitor1Id = input.competitor1Id ?? null;
   const competitor2Id = input.competitor2Id ?? null;
   assertDistinctCompetitors(competitor1Id, competitor2Id);
-  assertTimezoneIfScheduled(input.scheduledAt ?? null, input.timezone ?? null);
   assertByeSlot(
     competitor1Id,
     input.competitor1SourceMatchId ?? null,
@@ -118,6 +117,8 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
   assertBracketPositionUnique(siblings.map(toMatchSnap), input.roundId, input.bracketPosition);
 
   const scheduledAt = input.scheduledAt ?? null;
+  const timezone = input.timezone ?? (scheduledAt ? 'utc' : null);
+  assertTimezoneIfScheduled(scheduledAt, timezone);
   const doc = await createTennisDoc(TENNIS_COLLECTIONS.matches, {
     tournament_id: input.tournamentId,
     round_id: input.roundId,
@@ -126,7 +127,7 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
     competitor_1_id: competitor1Id,
     competitor_2_id: competitor2Id,
     scheduled_at: scheduledAt,
-    timezone: input.timezone ?? null,
+    timezone,
     court: input.court ?? null,
     status: input.status ?? defaultStatus(competitor1Id, competitor2Id),
     started_at: null,
@@ -172,7 +173,10 @@ export async function updateTennisMatch(id: string, body: unknown): Promise<Tenn
     patch.competitor2Id !== undefined ? patch.competitor2Id : asStr(existing.data.competitor_2_id);
   const nextScheduled =
     patch.scheduledAt !== undefined ? patch.scheduledAt : asStr(existing.data.scheduled_at);
-  const nextTimezone = patch.timezone !== undefined ? patch.timezone : asStr(existing.data.timezone);
+  const nextTimezone =
+    patch.timezone !== undefined
+      ? patch.timezone
+      : (asStr(existing.data.timezone) ?? (nextScheduled ? 'utc' : null));
 
   assertDistinctCompetitors(nextCompetitor1, nextCompetitor2);
   assertTimezoneIfScheduled(nextScheduled, nextTimezone);
@@ -229,6 +233,13 @@ export async function updateTennisMatch(id: string, body: unknown): Promise<Tenn
     roundNumber = Number(round?.data.round_number);
   }
 
+  const timezoneToStore =
+    patch.timezone !== undefined
+      ? patch.timezone
+      : nextScheduled && !asStr(existing.data.timezone)
+        ? 'utc'
+        : undefined;
+
   const doc = await updateTennisDoc(TENNIS_COLLECTIONS.matches, existing.id, {
     ...(patch.roundId != null ? { round_id: patch.roundId } : {}),
     ...(roundNumber != null ? { round_number: roundNumber } : {}),
@@ -236,7 +247,7 @@ export async function updateTennisMatch(id: string, body: unknown): Promise<Tenn
     ...(patch.competitor1Id !== undefined ? { competitor_1_id: patch.competitor1Id } : {}),
     ...(patch.competitor2Id !== undefined ? { competitor_2_id: patch.competitor2Id } : {}),
     ...(patch.scheduledAt !== undefined ? { scheduled_at: patch.scheduledAt } : {}),
-    ...(patch.timezone !== undefined ? { timezone: patch.timezone } : {}),
+    ...(timezoneToStore !== undefined ? { timezone: timezoneToStore } : {}),
     ...(patch.court !== undefined ? { court: patch.court } : {}),
     ...(patch.status != null ? { status: patch.status } : {}),
     ...(patch.competitor1SourceMatchId !== undefined

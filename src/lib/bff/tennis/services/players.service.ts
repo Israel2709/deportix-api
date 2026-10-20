@@ -28,6 +28,9 @@ export async function fetchTennisPlayers(query: TennisPlayersQuery): Promise<Ten
     const needle = query.country.toUpperCase();
     docs = docs.filter((doc) => String(doc.data.country_code ?? '').toUpperCase() === needle);
   }
+  if (query.gender) {
+    docs = docs.filter((doc) => String(doc.data.gender ?? '') === query.gender);
+  }
 
   return docs
     .map((doc) => mapTennisPlayer(doc, countries))

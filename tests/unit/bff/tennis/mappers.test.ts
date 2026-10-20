@@ -23,6 +23,7 @@ describe('Tennis mappers', () => {
         display_name: 'Alcaraz',
         photo_url: null,
         country_code: 'ES',
+        gender: 'male',
         is_published: true,
       },
     };
@@ -31,6 +32,7 @@ describe('Tennis mappers', () => {
       fullName: 'Carlos Alcaraz',
       displayName: 'Alcaraz',
       country: { code: 'ES', name: 'Spain', flag: 'https://example.com/es.svg' },
+      gender: 'male',
       published: true,
     });
   });

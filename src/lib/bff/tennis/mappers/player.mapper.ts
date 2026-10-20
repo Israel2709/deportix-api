@@ -7,6 +7,13 @@ import type { z } from 'zod';
 
 export type CountryRef = z.infer<typeof countryRefSchema>;
 
+function asPlayerGender(value: unknown): TennisPlayerItem['gender'] {
+  const raw = asStr(value)?.toLowerCase();
+  if (raw === 'female') return 'female';
+  if (raw === 'male') return 'male';
+  return null;
+}
+
 export function mapCountryRef(
   countryCode: string | null,
   countryMap?: Map<string, CountryRecord>,
@@ -34,6 +41,7 @@ export function mapTennisPlayer(
     displayName: asStr(doc.data.display_name) ?? '',
     photoUrl: asStr(doc.data.photo_url),
     country: mapCountryRef(countryCode, countryMap),
+    gender: asPlayerGender(doc.data.gender),
     published: asBool(doc.data.is_published),
     createdAt: asStr(doc.data.created_at),
     updatedAt: asStr(doc.data.updated_at),

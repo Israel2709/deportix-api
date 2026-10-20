@@ -4916,6 +4916,17 @@ export const openapiDocument = {
             "description": "ISO country code"
           },
           {
+            "name": "gender",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "male",
+                "female"
+              ]
+            }
+          },
+          {
             "$ref": "#/components/parameters/TennisPublished"
           }
         ],
@@ -10921,6 +10932,7 @@ export const openapiDocument = {
           "fullName",
           "displayName",
           "country",
+          "gender",
           "published"
         ],
         "properties": {
@@ -10944,6 +10956,17 @@ export const openapiDocument = {
           "country": {
             "$ref": "#/components/schemas/TennisCountryRef"
           },
+          "gender": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "male",
+              "female",
+              null
+            ]
+          },
           "published": {
             "type": "boolean"
           },
@@ -10966,7 +10989,8 @@ export const openapiDocument = {
         "required": [
           "fullName",
           "displayName",
-          "countryCode"
+          "countryCode",
+          "gender"
         ],
         "additionalProperties": false,
         "properties": {
@@ -10985,6 +11009,13 @@ export const openapiDocument = {
           "countryCode": {
             "type": "string",
             "example": "ES"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "male",
+              "female"
+            ]
           },
           "published": {
             "type": "boolean"
