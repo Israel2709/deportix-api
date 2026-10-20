@@ -119,6 +119,8 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
   const scheduledAt = input.scheduledAt ?? null;
   const timezone = input.timezone ?? (scheduledAt ? 'utc' : null);
   assertTimezoneIfScheduled(scheduledAt, timezone);
+  // Inherit publish state from the tournament so draws added after go-live are visible.
+  const tournamentPublished = asBool(tournament.data.is_published);
   const doc = await createTennisDoc(TENNIS_COLLECTIONS.matches, {
     tournament_id: input.tournamentId,
     round_id: input.roundId,
@@ -133,8 +135,8 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
     started_at: null,
     ended_at: null,
     competitor_changed: false,
-    published_competitor_1_id: null,
-    published_competitor_2_id: null,
+    published_competitor_1_id: tournamentPublished ? competitor1Id : null,
+    published_competitor_2_id: tournamentPublished ? competitor2Id : null,
     competitor_1_source_match_id: input.competitor1SourceMatchId ?? null,
     competitor_2_source_match_id: input.competitor2SourceMatchId ?? null,
     winner_to_match_id: input.winnerToMatchId ?? null,
@@ -148,7 +150,7 @@ export async function createTennisMatch(body: unknown): Promise<TennisMatchItem>
     sets_player_2: null,
     set_scores: null,
     final_score_display: null,
-    is_published: false,
+    is_published: tournamentPublished,
   });
   return toItem(doc);
 }

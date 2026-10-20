@@ -1,3 +1,4 @@
+import { asBool } from '@/lib/api/serializers';
 import { invalidRequestBody, notFound } from '@/lib/api/errors';
 import { TENNIS_COLLECTIONS } from '@/lib/firebase/sport-registry';
 import {
@@ -40,7 +41,7 @@ export async function createTennisRound(body: unknown): Promise<TennisRoundItem>
     status: input.status ?? 'pending',
     start_date: input.startDate ?? null,
     end_date: input.endDate ?? null,
-    is_published: false,
+    is_published: asBool(tournament.data.is_published),
   });
   return mapTennisRound(doc);
 }
