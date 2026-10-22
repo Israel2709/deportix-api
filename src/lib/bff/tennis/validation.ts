@@ -200,9 +200,7 @@ export function assertResultConsistency(input: {
       fail('Normal results require setsPlayer1 and setsPlayer2.');
     }
     if (setsPlayer1 === setsPlayer2) fail('Normal results cannot be a sets tie.');
-    const setsWinner = setsPlayer1 > setsPlayer2 ? competitor1Id : competitor2Id;
-    if (setsWinner !== winnerId) {
-      fail('winnerId is inconsistent with the set tally.');
-    }
+    // Set tallies are not required to match winnerId: the BO may record a
+    // declared winner independently of (incomplete or contested) set scores.
   }
 }

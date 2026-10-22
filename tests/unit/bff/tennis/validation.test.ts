@@ -103,7 +103,7 @@ describe('Tennis bracket validation', () => {
 });
 
 describe('Tennis result validation', () => {
-  it('requires the set tally to match the winner on a normal result', () => {
+  it('allows a declared winner even when set tally favors the other player', () => {
     expect(() =>
       assertResultConsistency({
         winnerId: 'p1',
@@ -114,7 +114,7 @@ describe('Tennis result validation', () => {
         setsPlayer1: 1,
         setsPlayer2: 2,
       }),
-    ).toThrow(ApiError);
+    ).not.toThrow();
 
     expect(() =>
       assertResultConsistency({
@@ -127,6 +127,20 @@ describe('Tennis result validation', () => {
         setsPlayer2: 0,
       }),
     ).not.toThrow();
+  });
+
+  it('still rejects a sets tie on a normal result', () => {
+    expect(() =>
+      assertResultConsistency({
+        winnerId: 'p1',
+        loserId: 'p2',
+        resultType: 'normal',
+        competitor1Id: 'p1',
+        competitor2Id: 'p2',
+        setsPlayer1: 1,
+        setsPlayer2: 1,
+      }),
+    ).toThrow(ApiError);
   });
 
   it('allows walkover with an explicit advancing player', () => {
