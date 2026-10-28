@@ -28,8 +28,24 @@ function seasonsMatchFilter(
   return true;
 }
 
+function isUnassignedLeague(organizationId: string | null | undefined): boolean {
+  return !organizationId?.trim();
+}
+
+/**
+ * Count soccer leagues with no sports organization. Avoids season hydration —
+ * used by the Back Office org-first nav badge.
+ */
+export async function countUnassignedSoccerLeagues(): Promise<number> {
+  const leagues = await listLeagues({ sportSlug: 'soccer' });
+  return leagues.reduce((count, league) => count + (isUnassignedLeague(league.organizationId) ? 1 : 0), 0);
+}
+
 export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[]> {
-  const organizations = await listOrganizations({ sportSlug: 'soccer' });
+  const needsOrganizations = !query.unassigned;
+  const organizations = needsOrganizations
+    ? await listOrganizations({ sportSlug: 'soccer' })
+    : [];
   const orgById = new Map(organizations.map((org) => [org.id, org]));
 
   const matchingOrgIds = query.organization
@@ -49,6 +65,7 @@ export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[
   if (query.id) {
     const league = await getLeague(query.id);
     if (!league || league.dto.sport !== 'soccer') return [];
+    if (query.unassigned && !isUnassignedLeague(league.dto.organizationId)) return [];
     if (matchingOrgIds && (!league.dto.organizationId || !matchingOrgIds.has(league.dto.organizationId))) {
       return [];
     }
@@ -65,10 +82,16 @@ export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[
     return [mapLeagueToApiSports(league.dto, country, seasons, organization)];
   }
 
+  // Season rows are only required when filtering by season/current. Otherwise skip
+  // the per-league N+1 (Back Office list/nav never maps nested seasons).
+  const needsSeasonData = query.seasonYear != null || query.current === true;
+
   const [countryMap, leagues, seasonsForYear] = await Promise.all([
     buildCountryMap(),
     listLeagues({ sportSlug: 'soccer' }),
-    query.seasonYear != null ? listSeasonsByYear(query.seasonYear) : Promise.resolve(null),
+    needsSeasonData && query.seasonYear != null
+      ? listSeasonsByYear(query.seasonYear)
+      : Promise.resolve(null),
   ]);
 
   // When filtering by season year, avoid per-league season fetches (N+1 over ~1k leagues).
@@ -87,13 +110,17 @@ export async function fetchFootballLeagues(query: LeagueQuery): Promise<unknown[
   for (const league of leagues) {
     if (leagueIdsForYear && !leagueIdsForYear.has(league.id)) continue;
     if (query.country && !countryMatchesFilter(league.country, query.country)) continue;
-    if (matchingOrgIds && (!league.organizationId || !matchingOrgIds.has(league.organizationId))) {
+    if (query.unassigned) {
+      if (!isUnassignedLeague(league.organizationId)) continue;
+    } else if (matchingOrgIds && (!league.organizationId || !matchingOrgIds.has(league.organizationId))) {
       continue;
     }
 
-    const seasons =
-      seasonsByLeagueId.get(league.id) ?? (await listSeasonsByLeague(league.id));
-    if (!seasonsMatchFilter(seasons, query)) continue;
+    let seasons: Awaited<ReturnType<typeof listSeasonsByLeague>> = [];
+    if (needsSeasonData) {
+      seasons = seasonsByLeagueId.get(league.id) ?? (await listSeasonsByLeague(league.id));
+      if (!seasonsMatchFilter(seasons, query)) continue;
+    }
 
     const country = league.country ? (countryMap.get(league.country.toLowerCase()) ?? null) : null;
     const organization = league.organizationId ? (orgById.get(league.organizationId) ?? null) : null;

@@ -78,6 +78,7 @@ describe('OpenAPI document', () => {
       '/countries',
       '/organizations',
       '/leagues',
+      '/leagues/unassigned-count',
       '/leagues/seasons',
       '/fixtures',
       '/fixtures/rounds',

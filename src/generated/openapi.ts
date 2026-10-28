@@ -1304,7 +1304,7 @@ export const openapiDocument = {
           "BFF"
         ],
         "summary": "List leagues (API-Sports)",
-        "description": "Soccer leagues with nested `seasons[]`. Filter by `id` (provider league id), `country`\n(name substring), `organization` (id or name), `season` (year — league must have that\nseason), or `current=true`. Response includes additive `organization` (`id`, `name`,\n`logo`) when the league belongs to a sports organization.\n",
+        "description": "Soccer leagues with nested `seasons[]`. Filter by `id` (provider league id), `country`\n(name substring), `organization` (id or name), `unassigned=true` (no organization),\n`season` (year — league must have that season), or `current=true`. Response includes\nadditive `organization` (`id`, `name`, `logo`) when the league belongs to a sports\norganization. Nested seasons are hydrated only when `season` or `current` is set\n(or when resolving a single `id`); otherwise `seasons` is `[]` to avoid N+1 reads.\n",
         "operationId": "bffListLeagues",
         "parameters": [
           {
@@ -1325,9 +1325,17 @@ export const openapiDocument = {
           {
             "name": "organization",
             "in": "query",
-            "description": "Organization UUID or exact name.",
+            "description": "Organization UUID or exact name. Cannot be combined with `unassigned`.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "unassigned",
+            "in": "query",
+            "description": "When `true`, only leagues with no sports organization. Cannot be combined with `organization`.",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -1359,6 +1367,31 @@ export const openapiDocument = {
           },
           "400": {
             "$ref": "#/components/responses/BffInvalidParameter"
+          },
+          "503": {
+            "$ref": "#/components/responses/DataSourceNotConfigured"
+          }
+        }
+      }
+    },
+    "/leagues/unassigned-count": {
+      "get": {
+        "tags": [
+          "BFF"
+        ],
+        "summary": "Count leagues without a sports organization",
+        "description": "Lightweight count of soccer leagues with no `organization` assigned.\nDoes not hydrate seasons. Response is an integer array with one element,\nsame envelope shape as `/leagues/seasons`.\n",
+        "operationId": "bffCountUnassignedLeagues",
+        "responses": {
+          "200": {
+            "description": "API-Sports envelope with `[count]`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiSportsIntegerList"
+                }
+              }
+            }
           },
           "503": {
             "$ref": "#/components/responses/DataSourceNotConfigured"

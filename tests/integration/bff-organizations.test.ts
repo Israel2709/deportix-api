@@ -10,7 +10,9 @@ vi.mock('@/lib/firebase/admin', () => ({
 const { fetchFootballOrganizations } = await import(
   '@/lib/bff/football/services/organizations.service'
 );
-const { fetchFootballLeagues } = await import('@/lib/bff/football/services/leagues.service');
+const { countUnassignedSoccerLeagues, fetchFootballLeagues } = await import(
+  '@/lib/bff/football/services/leagues.service'
+);
 const {
   createSoccerOrganizationEntry,
   deleteSoccerOrganizationEntry,
@@ -144,11 +146,14 @@ describe('football organizations', () => {
       organization: { id: 'org_fmf', name: 'Federación Mexicana de Fútbol' },
     });
 
-    const unassigned = await fetchFootballLeagues({});
-    const libre = unassigned.find(
-      (row) => (row as { league: { name: string } }).league.name === 'Liga Libre',
-    );
-    expect(libre).toMatchObject({ organization: null });
+    const unassigned = await fetchFootballLeagues({ unassigned: true });
+    expect(unassigned).toHaveLength(1);
+    expect(unassigned[0]).toMatchObject({
+      league: { name: 'Liga Libre' },
+      organization: null,
+      seasons: [],
+    });
+    expect(await countUnassignedSoccerLeagues()).toBe(1);
   });
 
   it('creates a league associated with an organization', async () => {

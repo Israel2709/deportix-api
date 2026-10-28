@@ -41,10 +41,11 @@ export interface ApiSportsLeagueEntry {
   }>;
 }
 
-function leagueExternalId(externalId: string | null): number | string | null {
-  if (!externalId) return null;
-  const numeric = Number(externalId);
-  return Number.isNaN(numeric) ? externalId : numeric;
+function leaguePublicId(league: LeagueDTO): number | string | null {
+  const raw = league.externalId?.trim() || league.id?.trim() || null;
+  if (!raw) return null;
+  const numeric = Number(raw);
+  return Number.isNaN(numeric) ? raw : numeric;
 }
 
 export function mapLeagueToApiSports(
@@ -55,7 +56,7 @@ export function mapLeagueToApiSports(
 ): ApiSportsLeagueEntry {
   return {
     league: {
-      id: leagueExternalId(league.externalId),
+      id: leaguePublicId(league),
       name: league.name,
       type: league.type,
       logo: league.logo,

@@ -816,9 +816,11 @@ paths:
       summary: List leagues (API-Sports)
       description: |
         Soccer leagues with nested `seasons[]`. Filter by `id` (provider league id), `country`
-        (name substring), `organization` (id or name), `season` (year — league must have that
-        season), or `current=true`. Response includes additive `organization` (`id`, `name`,
-        `logo`) when the league belongs to a sports organization.
+        (name substring), `organization` (id or name), `unassigned=true` (no organization),
+        `season` (year — league must have that season), or `current=true`. Response includes
+        additive `organization` (`id`, `name`, `logo`) when the league belongs to a sports
+        organization. Nested seasons are hydrated only when `season` or `current` is set
+        (or when resolving a single `id`); otherwise `seasons` is `[]` to avoid N+1 reads.
       operationId: bffListLeagues
       parameters:
         - name: id
@@ -830,8 +832,12 @@ paths:
           schema: { type: string }
         - name: organization
           in: query
-          description: Organization UUID or exact name.
+          description: Organization UUID or exact name. Cannot be combined with `unassigned`.
           schema: { type: string }
+        - name: unassigned
+          in: query
+          description: When `true`, only leagues with no sports organization. Cannot be combined with `organization`.
+          schema: { type: boolean }
         - name: season
           in: query
           schema: { type: integer, example: 2026 }
@@ -847,6 +853,24 @@ paths:
                 $ref: '#/components/schemas/ApiSportsLeagueList'
         '400':
           $ref: '#/components/responses/BffInvalidParameter'
+        '503':
+          $ref: '#/components/responses/DataSourceNotConfigured'
+  /leagues/unassigned-count:
+    get:
+      tags: [BFF]
+      summary: Count leagues without a sports organization
+      description: |
+        Lightweight count of soccer leagues with no `organization` assigned.
+        Does not hydrate seasons. Response is an integer array with one element,
+        same envelope shape as `/leagues/seasons`.
+      operationId: bffCountUnassignedLeagues
+      responses:
+        '200':
+          description: API-Sports envelope with `[count]`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSportsIntegerList'
         '503':
           $ref: '#/components/responses/DataSourceNotConfigured'
   /leagues/seasons:

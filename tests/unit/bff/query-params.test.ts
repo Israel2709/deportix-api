@@ -20,9 +20,28 @@ describe('BFF query params', () => {
     expect(parseLeagueQuery(new URLSearchParams('id=262&country=Mexico&season=2026&current=true'))).toEqual({
       id: '262',
       country: 'Mexico',
+      organization: undefined,
+      unassigned: undefined,
       seasonYear: 2026,
       current: true,
     });
+  });
+
+  it('parses unassigned league filter', () => {
+    expect(parseLeagueQuery(new URLSearchParams('unassigned=true'))).toEqual({
+      id: undefined,
+      country: undefined,
+      organization: undefined,
+      unassigned: true,
+      seasonYear: undefined,
+      current: undefined,
+    });
+  });
+
+  it('rejects unassigned combined with organization', () => {
+    expect(() =>
+      parseLeagueQuery(new URLSearchParams('unassigned=true&organization=org_fmf')),
+    ).toThrow(/unassigned/i);
   });
 
   it('parses fixture filters including ids and last/next', () => {

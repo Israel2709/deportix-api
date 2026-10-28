@@ -23,6 +23,8 @@ export interface LeagueQuery {
   id?: string;
   country?: string;
   organization?: string;
+  /** When true, only leagues with no sports organization assigned. */
+  unassigned?: boolean;
   seasonYear?: number;
   current?: boolean;
 }
@@ -91,10 +93,19 @@ export function parseCountryQuery(searchParams: URLSearchParams): CountryQuery {
 }
 
 export function parseLeagueQuery(searchParams: URLSearchParams): LeagueQuery {
+  const organization = parseStringParam(searchParams.get('organization'));
+  const unassigned = parseBooleanParam(searchParams.get('unassigned'));
+  if (unassigned === true && organization) {
+    throw new ApiError(
+      'INVALID_QUERY_PARAMETER',
+      'The "unassigned" and "organization" parameters cannot be combined.',
+    );
+  }
   return {
     id: parseStringParam(searchParams.get('id')),
     country: parseStringParam(searchParams.get('country')),
-    organization: parseStringParam(searchParams.get('organization')),
+    organization,
+    unassigned: unassigned === true ? true : undefined,
     seasonYear: parseSeasonParam(searchParams.get('season')),
     current: parseBooleanParam(searchParams.get('current')),
   };
