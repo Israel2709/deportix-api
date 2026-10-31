@@ -97,7 +97,9 @@ tags:
       **BFF Tennis** — Tennis-native BFF under `/tennis/*` for App QD and the Deportix backoffice.
       Full envelope (`get`, `parameters`, `errors`, `results`, `paging`, `response`). Sport slug `tennis`.
       Tournaments are editions (e.g. US Open 2026 Men's Singles). Matches carry the bracket graph
-      (`competitor1SourceMatchId`, `winnerToMatchId`, …). BYE is an entry type, not a fake match.
+      (`competitor1SourceMatchId`, `winnerToMatchId`, …). BYE is an entry type on a competitor slot:
+      empty side (`entryType=bye`, no competitorId) means never had an opponent (R1); filled side
+      means the player advances into that slot via bye. Distinct from walkover (both players set).
       Swagger deep link — `/docs?tag=bff-tennis`.
 paths:
   /v1/health:
@@ -4994,6 +4996,7 @@ components:
         - finished
         - retirement
         - walkover
+        - bye
         - disqualification
         - cancelled
     TennisEntryType:
@@ -5185,7 +5188,7 @@ components:
               properties:
                 winnerId: { type: [string, 'null'] }
                 loserId: { type: [string, 'null'] }
-                resultType: { type: [string, 'null'], enum: [normal, retirement, walkover, disqualification, null] }
+                resultType: { type: [string, 'null'], enum: [normal, retirement, walkover, bye, disqualification, null] }
                 setsPlayer1: { type: [integer, 'null'] }
                 setsPlayer2: { type: [integer, 'null'] }
                 setScores:
@@ -5242,7 +5245,7 @@ components:
       properties:
         winnerId: { type: string, format: uuid }
         loserId: { type: string, format: uuid }
-        resultType: { type: string, enum: [normal, retirement, walkover, disqualification] }
+        resultType: { type: string, enum: [normal, retirement, walkover, bye, disqualification] }
         setsPlayer1: { type: [integer, 'null'] }
         setsPlayer2: { type: [integer, 'null'] }
         setScores:

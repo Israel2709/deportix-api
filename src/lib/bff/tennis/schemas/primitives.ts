@@ -19,10 +19,11 @@ export const MATCH_STATUSES = [
   'finished',
   'retirement',
   'walkover',
+  'bye',
   'disqualification',
   'cancelled',
 ] as const;
-export const RESULT_TYPES = ['normal', 'retirement', 'walkover', 'disqualification'] as const;
+export const RESULT_TYPES = ['normal', 'retirement', 'walkover', 'bye', 'disqualification'] as const;
 export const ENTRY_TYPES = [
   'direct',
   'qualifier',

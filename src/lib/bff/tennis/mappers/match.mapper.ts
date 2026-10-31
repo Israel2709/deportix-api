@@ -13,11 +13,12 @@ const MATCH_STATUSES: TennisMatchItem['status'][] = [
   'finished',
   'retirement',
   'walkover',
+  'bye',
   'disqualification',
   'cancelled',
 ];
 
-const RESULT_TYPES = ['normal', 'retirement', 'walkover', 'disqualification'] as const;
+const RESULT_TYPES = ['normal', 'retirement', 'walkover', 'bye', 'disqualification'] as const;
 const ENTRY_TYPES = [
   'direct',
   'qualifier',

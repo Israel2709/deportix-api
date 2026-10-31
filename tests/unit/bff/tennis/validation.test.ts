@@ -65,6 +65,16 @@ describe('Tennis bracket validation', () => {
     expect(() => assertPublishableBracket(rounds(), bracket())).not.toThrow();
   });
 
+  it('accepts an R1 match with an empty bye opponent', () => {
+    const matches = bracket();
+    matches[0] = {
+      ...matches[0]!,
+      competitor2Id: null,
+      competitor2EntryType: 'bye',
+    };
+    expect(() => assertPublishableBracket(rounds(), matches)).not.toThrow();
+  });
+
   it('allows a tournament with no rounds or matches', () => {
     expect(() => assertPublishableBracket([], [])).not.toThrow();
   });
@@ -155,5 +165,37 @@ describe('Tennis result validation', () => {
         setsPlayer2: null,
       }),
     ).not.toThrow();
+  });
+
+  it('allows bye when the empty side is marked entryType bye', () => {
+    expect(() =>
+      assertResultConsistency({
+        winnerId: 'p1',
+        loserId: null,
+        resultType: 'bye',
+        competitor1Id: 'p1',
+        competitor2Id: null,
+        competitor1EntryType: 'direct',
+        competitor2EntryType: 'bye',
+        setsPlayer1: 0,
+        setsPlayer2: 0,
+      }),
+    ).not.toThrow();
+  });
+
+  it('rejects bye without an empty bye slot', () => {
+    expect(() =>
+      assertResultConsistency({
+        winnerId: 'p1',
+        loserId: null,
+        resultType: 'bye',
+        competitor1Id: 'p1',
+        competitor2Id: 'p2',
+        competitor1EntryType: 'direct',
+        competitor2EntryType: 'direct',
+        setsPlayer1: 0,
+        setsPlayer2: 0,
+      }),
+    ).toThrow(ApiError);
   });
 });

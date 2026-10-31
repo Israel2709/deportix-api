@@ -322,9 +322,13 @@ export async function recordTennisMatchResult(id: string, body: unknown): Promis
 
   const competitor1Id = asStr(existing.data.competitor_1_id);
   const competitor2Id = asStr(existing.data.competitor_2_id);
+  const competitor1EntryType = asStr(existing.data.competitor_1_entry_type);
+  const competitor2EntryType = asStr(existing.data.competitor_2_entry_type);
   const loserId =
-    input.loserId ??
-    (input.winnerId === competitor1Id ? competitor2Id : competitor1Id);
+    input.resultType === 'bye'
+      ? null
+      : (input.loserId ??
+        (input.winnerId === competitor1Id ? competitor2Id : competitor1Id));
 
   assertResultConsistency({
     winnerId: input.winnerId,
@@ -332,6 +336,8 @@ export async function recordTennisMatchResult(id: string, body: unknown): Promis
     resultType: input.resultType,
     competitor1Id,
     competitor2Id,
+    competitor1EntryType,
+    competitor2EntryType,
     setsPlayer1: input.setsPlayer1 ?? null,
     setsPlayer2: input.setsPlayer2 ?? null,
   });
@@ -341,13 +347,36 @@ export async function recordTennisMatchResult(id: string, body: unknown): Promis
       ? 'finished'
       : input.resultType;
 
+  // Walkover omits scores; bye stores zeros (winner advances without playing).
+  const omitScores = input.resultType === 'walkover';
+  const byeZeros =
+    input.resultType === 'bye'
+      ? {
+          sets_player_1: input.setsPlayer1 ?? 0,
+          sets_player_2: input.setsPlayer2 ?? 0,
+          set_scores:
+            toFirestoreSetScores(input.setScores) ??
+            [
+              { set: 1, competitor_1: 0, competitor_2: 0 },
+              { set: 2, competitor_1: 0, competitor_2: 0 },
+              { set: 3, competitor_1: 0, competitor_2: 0 },
+            ],
+        }
+      : null;
+
   const updated = await updateTennisDoc(TENNIS_COLLECTIONS.matches, existing.id, {
     winner_id: input.winnerId,
     loser_id: loserId,
     result_type: input.resultType,
-    sets_player_1: input.resultType === 'walkover' ? null : (input.setsPlayer1 ?? null),
-    sets_player_2: input.resultType === 'walkover' ? null : (input.setsPlayer2 ?? null),
-    set_scores: input.resultType === 'walkover' ? null : toFirestoreSetScores(input.setScores),
+    sets_player_1: omitScores
+      ? null
+      : (byeZeros?.sets_player_1 ?? input.setsPlayer1 ?? null),
+    sets_player_2: omitScores
+      ? null
+      : (byeZeros?.sets_player_2 ?? input.setsPlayer2 ?? null),
+    set_scores: omitScores
+      ? null
+      : (byeZeros?.set_scores ?? toFirestoreSetScores(input.setScores)),
     final_score_display: input.finalScoreDisplay ?? null,
     status,
     started_at: input.startedAt !== undefined ? input.startedAt : existing.data.started_at ?? null,

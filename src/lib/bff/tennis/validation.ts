@@ -41,6 +41,12 @@ export function assertTimezoneIfScheduled(scheduledAt: string | null, timezone: 
   }
 }
 
+/**
+ * Bye semantics:
+ * - Empty side (`competitorId` null): never had an opponent (typical R1 A vs BYE).
+ * - Filled side (`competitorId` set): player advances into this slot via bye
+ *   (no source match), e.g. into a later round.
+ */
 export function assertByeSlot(
   competitorId: string | null,
   sourceMatchId: string | null,
@@ -49,9 +55,6 @@ export function assertByeSlot(
 ): void {
   if (entryType === 'bye' && sourceMatchId) {
     fail(`${slot} cannot have both a bye and a source match.`);
-  }
-  if (entryType === 'bye' && !competitorId) {
-    fail(`${slot} with entry type bye must identify the player who advances.`);
   }
 }
 
@@ -175,14 +178,44 @@ export function assertBracketPositionUnique(
 export function assertResultConsistency(input: {
   winnerId: string;
   loserId: string | null;
-  resultType: 'normal' | 'retirement' | 'walkover' | 'disqualification';
+  resultType: 'normal' | 'retirement' | 'walkover' | 'bye' | 'disqualification';
   competitor1Id: string | null;
   competitor2Id: string | null;
+  competitor1EntryType?: string | null;
+  competitor2EntryType?: string | null;
   setsPlayer1: number | null;
   setsPlayer2: number | null;
 }): void {
-  const { winnerId, loserId, resultType, competitor1Id, competitor2Id, setsPlayer1, setsPlayer2 } =
-    input;
+  const {
+    winnerId,
+    loserId,
+    resultType,
+    competitor1Id,
+    competitor2Id,
+    competitor1EntryType,
+    competitor2EntryType,
+    setsPlayer1,
+    setsPlayer2,
+  } = input;
+
+  if (resultType === 'bye') {
+    const emptyBye1 = competitor1EntryType === 'bye' && !competitor1Id;
+    const emptyBye2 = competitor2EntryType === 'bye' && !competitor2Id;
+    if (!emptyBye1 && !emptyBye2) {
+      fail('Bye results require one empty competitor slot marked entryType bye.');
+    }
+    if (emptyBye1 && emptyBye2) {
+      fail('A bye match must have exactly one real competitor.');
+    }
+    const realId = emptyBye1 ? competitor2Id : competitor1Id;
+    if (!realId) fail('A bye match must identify the player who advances.');
+    if (winnerId !== realId) {
+      fail('winnerId must be the real competitor in a bye match.');
+    }
+    if (loserId) fail('Bye results cannot have a loserId.');
+    return;
+  }
+
   if (!competitor1Id || !competitor2Id) {
     fail('Both competitors must be defined before recording a result.');
   }
