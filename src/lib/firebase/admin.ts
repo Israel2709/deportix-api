@@ -23,9 +23,16 @@ function readCredentials(): ServiceAccountCredentials | null {
 
   if (!projectId || !clientEmail || !rawPrivateKey) return null;
 
-  // Vercel stores the key with real newlines; .env files store the literal "\n".
-  // Normalize both to real newlines so cert() accepts the PEM.
-  const privateKey = rawPrivateKey.replace(/\\n/g, '\n');
+  // Secret Manager / .env footguns: wrapping quotes, CRLF, and literal "\n" escapes.
+  // Vercel/App Hosting may store real newlines; local .env usually keeps \n as two chars.
+  let privateKey = rawPrivateKey.trim();
+  if (
+    (privateKey.startsWith('"') && privateKey.endsWith('"')) ||
+    (privateKey.startsWith("'") && privateKey.endsWith("'"))
+  ) {
+    privateKey = privateKey.slice(1, -1);
+  }
+  privateKey = privateKey.replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
 
   return { projectId, clientEmail, privateKey };
 }
