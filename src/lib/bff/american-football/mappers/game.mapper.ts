@@ -35,7 +35,7 @@ export function mapRawAmericanFootballGameToApiSports(
   return {
     game: {
       id: doc.id,
-      stage: asStr(raw.stage),
+      stage: asStr(raw.stage) || 'Pre Season',
       week: asStr(raw.week) ?? asStr(raw.round),
       date: {
         timezone: 'UTC',

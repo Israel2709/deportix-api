@@ -46,12 +46,30 @@ export async function fetchAmericanFootballGames(query: AmericanFootballGamesQue
   if (!league) return [];
 
   const season = query.season != null ? await resolveAmericanFootballSeason(league.id, query.season) : null;
-  const docs = season
+  let docs = season
     ? await listRawMatchesBySeason('american-football', season.id)
     : await listRawMatchesByLeague('american-football', league.id);
 
+  // Ingested or legacy games may store season year without a matching season_id.
+  // If the season doc exists but the season_id query is empty, fall back to league
+  // games filtered by season year / embedded league.season.
+  if (season && docs.length === 0 && query.season != null) {
+    const year = Number(query.season);
+    const leagueDocs = await listRawMatchesByLeague('american-football', league.id);
+    docs = leagueDocs.filter((doc) => {
+      const seasonYear = Number(
+        doc.data.season_year ?? doc.data.season ?? (doc.data.league as { season?: unknown } | undefined)?.season ?? NaN,
+      );
+      if (Number.isFinite(seasonYear) && seasonYear === year) return true;
+      const date = americanFootballGameDate(doc.data);
+      if (!date) return false;
+      return new Date(date).getUTCFullYear() === year;
+    });
+  }
+
+  // Nearest kickoff first (ascending date).
   let filtered = [...docs].sort((a, b) =>
-    (americanFootballGameDate(b.data) ?? '').localeCompare(americanFootballGameDate(a.data) ?? ''),
+    (americanFootballGameDate(a.data) ?? '').localeCompare(americanFootballGameDate(b.data) ?? ''),
   );
 
   if (query.team) {
