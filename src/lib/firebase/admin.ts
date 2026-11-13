@@ -1,13 +1,15 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import { ApiError } from '@/lib/api/errors';
-
-type Auth = import('firebase-admin/auth').Auth;
 
 /**
  * Firebase Admin SDK bootstrap. SERVER-ONLY (Node.js runtime). Never import this from a
  * client component or the Edge runtime. Credentials come exclusively from environment
  * variables — there is no service-account file in the repo.
+ *
+ * ID tokens are verified with `jose` + Google's JWKS — not `firebase-admin/auth`.
+ * Loading `firebase-admin/auth` on Vercel crashes with ERR_REQUIRE_ESM (jwks-rsa → jose@6).
  */
 
 interface ServiceAccountCredentials {
@@ -16,8 +18,18 @@ interface ServiceAccountCredentials {
   privateKey: string;
 }
 
+export interface VerifiedIdToken {
+  uid: string;
+  email: string | null;
+  payload: JWTPayload;
+}
+
 let cachedDb: Firestore | null = null;
-let cachedAuth: Auth | null = null;
+
+/** Google JWKS for Firebase Auth ID tokens (shared across warm instances). */
+const firebaseAuthJwks = createRemoteJWKSet(
+  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'),
+);
 
 function readCredentials(): ServiceAccountCredentials | null {
   const projectId = process.env.FIREBASE_PROJECT_ID?.trim();
@@ -101,13 +113,35 @@ export function getDb(): Firestore {
 }
 
 /**
- * Firebase Auth Admin (ID token verification). Same credentials as Firestore.
- * Must use dynamic `import()` — `require('firebase-admin/auth')` crashes on Vercel
- * with ERR_REQUIRE_ESM (jwks-rsa → jose is ESM-only).
+ * Verifies a Firebase Auth ID token with Google's JWKS via `jose`.
+ * Does not load `firebase-admin/auth` (that path crashes on Vercel: ERR_REQUIRE_ESM).
+ * Requires `FIREBASE_PROJECT_ID` (same project that issued the token).
  */
-export async function getAdminAuth(): Promise<Auth> {
-  if (cachedAuth) return cachedAuth;
-  const { getAuth } = await import('firebase-admin/auth');
-  cachedAuth = getAuth(getOrInitAdminApp());
-  return cachedAuth;
+export async function verifyFirebaseIdToken(idToken: string): Promise<VerifiedIdToken> {
+  const projectId = process.env.FIREBASE_PROJECT_ID?.trim();
+  if (!projectId) {
+    throw new ApiError(
+      'DATA_SOURCE_NOT_CONFIGURED',
+      'The data source is not configured. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY.',
+    );
+  }
+
+  const { payload } = await jwtVerify(idToken, firebaseAuthJwks, {
+    issuer: `https://securetoken.google.com/${projectId}`,
+    audience: projectId,
+  });
+
+  const uid =
+    (typeof payload.user_id === 'string' && payload.user_id) ||
+    (typeof payload.sub === 'string' && payload.sub) ||
+    '';
+  if (!uid) {
+    throw new Error('Firebase ID token missing uid/sub');
+  }
+
+  return {
+    uid,
+    email: typeof payload.email === 'string' ? payload.email : null,
+    payload,
+  };
 }

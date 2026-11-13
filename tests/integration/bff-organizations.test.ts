@@ -5,12 +5,10 @@ const state: { db: ReturnType<typeof makeFakeDb> | null } = { db: null };
 vi.mock('@/lib/firebase/admin', () => ({
   getDb: () => state.db,
   isDataSourceConfigured: () => true,
-  getAdminAuth: () => ({
-    verifyIdToken: async (token: string) => {
-      if (token !== 'test-id-token') throw new Error('invalid test token');
-      return { uid: 'test-user', email: 'test@deportix.local' };
-    },
-  }),
+  verifyFirebaseIdToken: async (token: string) => {
+    if (token !== 'test-id-token') throw new Error('invalid test token');
+    return { uid: 'test-user', email: 'test@deportix.local', payload: {} };
+  },
 }));
 
 const { fetchFootballOrganizations } = await import(

@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { ApiError, unauthorized } from '@/lib/api/errors';
-import { getAdminAuth } from '@/lib/firebase/admin';
+import { verifyFirebaseIdToken } from '@/lib/firebase/admin';
 
 export interface AuthenticatedUser {
   uid: string;
@@ -43,10 +43,10 @@ export async function assertAuthenticated(
   }
 
   try {
-    const decoded = await (await getAdminAuth()).verifyIdToken(token);
+    const decoded = await verifyFirebaseIdToken(token);
     return {
       uid: decoded.uid,
-      email: decoded.email ?? null,
+      email: decoded.email,
     };
   } catch (err) {
     if (err instanceof ApiError) throw err;

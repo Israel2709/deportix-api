@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/lib/api/errors';
 import { assertAuthenticated } from '@/lib/api/assert-authenticated';
 import { withAuth } from '@/lib/api/with-auth';
-import { getAdminAuth, verifyIdToken } from '../setup/auth-mock';
+import { verifyFirebaseIdToken, verifyIdToken } from '../setup/auth-mock';
 
 function mockRequest(method: string, authorization?: string): Request {
   const headers = new Headers();
@@ -33,7 +33,7 @@ describe('assertAuthenticated', () => {
   });
 
   it('rethrows DATA_SOURCE_NOT_CONFIGURED', async () => {
-    getAdminAuth.mockImplementationOnce(() => {
+    verifyFirebaseIdToken.mockImplementationOnce(async () => {
       throw new ApiError('DATA_SOURCE_NOT_CONFIGURED', 'missing creds');
     });
 

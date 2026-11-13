@@ -7,31 +7,34 @@ export const testAuthHeaders = {
   Authorization: `Bearer ${TEST_ID_TOKEN}`,
 } as const;
 
-const verifyIdToken = vi.fn(async (token: string) => {
+const verifyFirebaseIdToken = vi.fn(async (token: string) => {
   if (token !== TEST_ID_TOKEN) {
     throw new Error('invalid test token');
   }
-  return { uid: 'test-user', email: 'test@deportix.local' };
+  return { uid: 'test-user', email: 'test@deportix.local', payload: {} };
 });
-
-const getAdminAuth = vi.fn(() => ({ verifyIdToken }));
 
 vi.mock('@/lib/firebase/admin', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/firebase/admin')>();
   return {
     ...actual,
-    getAdminAuth: () => getAdminAuth(),
+    verifyFirebaseIdToken: (...args: Parameters<typeof verifyFirebaseIdToken>) =>
+      verifyFirebaseIdToken(...args),
   };
 });
 
 beforeEach(() => {
-  verifyIdToken.mockImplementation(async (token: string) => {
+  verifyFirebaseIdToken.mockImplementation(async (token: string) => {
     if (token !== TEST_ID_TOKEN) {
       throw new Error('invalid test token');
     }
-    return { uid: 'test-user', email: 'test@deportix.local' };
+    return { uid: 'test-user', email: 'test@deportix.local', payload: {} };
   });
-  getAdminAuth.mockImplementation(() => ({ verifyIdToken }));
 });
 
-export { getAdminAuth, verifyIdToken };
+/** @deprecated alias kept for existing test imports */
+const verifyIdToken = verifyFirebaseIdToken;
+/** @deprecated alias kept for existing test imports */
+const getAdminAuth = vi.fn(() => ({ verifyIdToken: verifyFirebaseIdToken }));
+
+export { getAdminAuth, verifyIdToken, verifyFirebaseIdToken };
