@@ -5,7 +5,6 @@ import { buildResourceBody } from '@/lib/api/responses';
 import { CACHE } from '@/lib/api/cache';
 import { buildErrorResponse, optionsRoute } from '@/lib/api/handler';
 import { newRequestId } from '@/lib/api/request-id';
-import { assertAuthenticated } from '@/lib/api/assert-authenticated';
 import { uploadImage } from '@/lib/firebase/storage';
 
 export const runtime = 'nodejs';
@@ -25,6 +24,7 @@ async function handleUpload(request: NextRequest): Promise<NextResponse> {
   const origin = request.headers.get('origin');
 
   try {
+    const { assertAuthenticated } = await import('@/lib/api/assert-authenticated');
     await assertAuthenticated(request);
 
     let form: FormData;

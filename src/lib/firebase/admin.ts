@@ -1,7 +1,8 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
-import { getAuth, type Auth } from 'firebase-admin/auth';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { ApiError } from '@/lib/api/errors';
+
+type Auth = import('firebase-admin/auth').Auth;
 
 /**
  * Firebase Admin SDK bootstrap. SERVER-ONLY (Node.js runtime). Never import this from a
@@ -102,6 +103,10 @@ export function getDb(): Firestore {
 /** Firebase Auth Admin (ID token verification). Same credentials as Firestore. */
 export function getAdminAuth(): Auth {
   if (cachedAuth) return cachedAuth;
+  // Lazy require avoids pulling `firebase-admin/auth` into every route module graph
+  // (including public GETs) at import time — a hard crash there surfaces as HTTP 500 HTML.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getAuth } = require('firebase-admin/auth') as typeof import('firebase-admin/auth');
   cachedAuth = getAuth(getOrInitAdminApp());
   return cachedAuth;
 }

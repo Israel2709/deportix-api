@@ -5,7 +5,6 @@ import { ApiError, httpStatusForCode, type ErrorCode } from '@/lib/api/errors';
 import { applyCorsHeaders } from '@/lib/api/cors';
 import { newRequestId } from '@/lib/api/request-id';
 import { CACHE, type CachePolicy } from '@/lib/api/cache';
-import { assertAuthenticated } from '@/lib/api/assert-authenticated';
 import {
   buildApiSportsBody,
   buildApiSportsError,
@@ -232,6 +231,7 @@ export function createBffWriteRoute(
       const parameters = searchParamsToParameters(searchParams);
 
       try {
+        const { assertAuthenticated } = await import('@/lib/api/assert-authenticated');
         await assertAuthenticated(request);
 
         const params = ctx?.params ? await ctx.params : {};

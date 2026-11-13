@@ -11,7 +11,6 @@ import {
   buildResourceBody,
   type Pagination,
 } from './responses';
-import { assertAuthenticated } from './assert-authenticated';
 
 export interface RouteContext {
   request: NextRequest;
@@ -145,6 +144,7 @@ export function postRoute(handler: PatchRouteHandler) {
     const origin = request.headers.get('origin');
 
     try {
+      const { assertAuthenticated } = await import('./assert-authenticated');
       await assertAuthenticated(request);
 
       let body: unknown;
@@ -195,6 +195,7 @@ export function patchRoute(handler: PatchRouteHandler) {
     const origin = request.headers.get('origin');
 
     try {
+      const { assertAuthenticated } = await import('./assert-authenticated');
       await assertAuthenticated(request);
 
       let body: unknown;
@@ -242,6 +243,7 @@ export function deleteRoute(handler: DeleteRouteHandler) {
     const origin = request.headers.get('origin');
 
     try {
+      const { assertAuthenticated } = await import('./assert-authenticated');
       await assertAuthenticated(request);
 
       const params = ctx?.params ? await ctx.params : {};
