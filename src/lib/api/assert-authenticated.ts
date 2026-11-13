@@ -43,7 +43,7 @@ export async function assertAuthenticated(
   }
 
   try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
+    const decoded = await (await getAdminAuth()).verifyIdToken(token);
     return {
       uid: decoded.uid,
       email: decoded.email ?? null,

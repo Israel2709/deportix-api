@@ -100,12 +100,14 @@ export function getDb(): Firestore {
   return cachedDb;
 }
 
-/** Firebase Auth Admin (ID token verification). Same credentials as Firestore. */
-export function getAdminAuth(): Auth {
+/**
+ * Firebase Auth Admin (ID token verification). Same credentials as Firestore.
+ * Must use dynamic `import()` — `require('firebase-admin/auth')` crashes on Vercel
+ * with ERR_REQUIRE_ESM (jwks-rsa → jose is ESM-only).
+ */
+export async function getAdminAuth(): Promise<Auth> {
   if (cachedAuth) return cachedAuth;
-  // Lazy load so importing admin.ts for Firestore does not pull auth into every route.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getAuth } = require('firebase-admin/auth') as typeof import('firebase-admin/auth');
+  const { getAuth } = await import('firebase-admin/auth');
   cachedAuth = getAuth(getOrInitAdminApp());
   return cachedAuth;
 }
