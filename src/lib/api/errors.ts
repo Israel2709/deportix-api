@@ -6,6 +6,7 @@ export const ERROR_CODES = {
   INVALID_QUERY_PARAMETER: 'INVALID_QUERY_PARAMETER',
   INVALID_REQUEST_BODY: 'INVALID_REQUEST_BODY',
   INVALID_PATH_PARAMETER: 'INVALID_PATH_PARAMETER',
+  UNAUTHORIZED: 'UNAUTHORIZED',
   RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
   DATA_NOT_AVAILABLE: 'DATA_NOT_AVAILABLE',
   DATA_SOURCE_NOT_CONFIGURED: 'DATA_SOURCE_NOT_CONFIGURED',
@@ -18,6 +19,7 @@ const STATUS_BY_CODE: Record<ErrorCode, number> = {
   INVALID_QUERY_PARAMETER: 400,
   INVALID_REQUEST_BODY: 400,
   INVALID_PATH_PARAMETER: 400,
+  UNAUTHORIZED: 401,
   RESOURCE_NOT_FOUND: 404,
   // The resource type is recognized but no backing data exists for it (e.g. a sport
   // that does not model standings, or a sub-resource not yet loaded for this entity).
@@ -61,4 +63,10 @@ export function invalidRequestBody(message: string, details?: unknown): ApiError
 
 export function dataNotAvailable(message: string): ApiError {
   return new ApiError('DATA_NOT_AVAILABLE', message);
+}
+
+export function unauthorized(
+  message = 'Authentication required. Send a valid Firebase ID token in the Authorization header.',
+): ApiError {
+  return new ApiError('UNAUTHORIZED', message);
 }

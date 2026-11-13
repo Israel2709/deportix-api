@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { getRoute, optionsRoute, patchRoute, postRoute, deleteRoute, type PatchRouteHandler, type RouteHandler } from '@/lib/api/handler';
 import { ApiError } from '@/lib/api/errors';
+import { testAuthHeaders } from '../setup/auth-mock';
 
 function req(url = 'http://localhost/v1/x', init?: RequestInit) {
   return new Request(url, init) as never;
@@ -11,7 +12,7 @@ const noParams = { params: Promise.resolve({}) } as never;
 const run = (handler: RouteHandler, r = req()) => getRoute(handler)(r, noParams);
 const runPatch = (handler: PatchRouteHandler, r = req('http://localhost/v1/x', {
   method: 'PATCH',
-  headers: { 'Content-Type': 'application/json' },
+  headers: { 'Content-Type': 'application/json', ...testAuthHeaders },
   body: JSON.stringify({ status: 'FT' }),
 })) => patchRoute(handler)(r, noParams);
 
@@ -92,7 +93,11 @@ describe('patchRoute', () => {
 
   it('maps invalid json to INVALID_REQUEST_BODY', async () => {
     const res = await patchRoute(async () => ({ kind: 'resource', data: {} }))(
-      req('http://localhost/v1/x', { method: 'PATCH', body: 'not-json' }),
+      req('http://localhost/v1/x', {
+        method: 'PATCH',
+        headers: { ...testAuthHeaders },
+        body: 'not-json',
+      }),
       noParams,
     );
     expect(res.status).toBe(400);
@@ -109,7 +114,7 @@ describe('postRoute', () => {
     }))(
       req('http://localhost/v1/x', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...testAuthHeaders },
         body: JSON.stringify({ date: '2026-01-01', home: { teamId: 'a' }, away: { teamId: 'b' } }),
       }),
       noParams,
@@ -121,7 +126,10 @@ describe('postRoute', () => {
 
 describe('deleteRoute', () => {
   it('returns 204 with no body on success', async () => {
-    const res = await deleteRoute(async () => {})(req('http://localhost/v1/x', { method: 'DELETE' }), noParams);
+    const res = await deleteRoute(async () => {})(
+      req('http://localhost/v1/x', { method: 'DELETE', headers: { ...testAuthHeaders } }),
+      noParams,
+    );
     expect(res.status).toBe(204);
     expect(res.headers.get('x-request-id')).toMatch(/^req_/);
     expect(await res.text()).toBe('');
@@ -130,7 +138,10 @@ describe('deleteRoute', () => {
   it('maps ApiError to the uniform error envelope', async () => {
     const res = await deleteRoute(async () => {
       throw new ApiError('RESOURCE_NOT_FOUND', 'Match not found.');
-    })(req('http://localhost/v1/x', { method: 'DELETE' }), noParams);
+    })(
+      req('http://localhost/v1/x', { method: 'DELETE', headers: { ...testAuthHeaders } }),
+      noParams,
+    );
     expect(res.status).toBe(404);
     expect((await res.json()).error.code).toBe('RESOURCE_NOT_FOUND');
   });

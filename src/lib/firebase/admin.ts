@@ -1,4 +1,5 @@
 import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { ApiError } from '@/lib/api/errors';
 
@@ -15,6 +16,7 @@ interface ServiceAccountCredentials {
 }
 
 let cachedDb: Firestore | null = null;
+let cachedAuth: Auth | null = null;
 
 function readCredentials(): ServiceAccountCredentials | null {
   const projectId = process.env.FIREBASE_PROJECT_ID?.trim();
@@ -63,13 +65,9 @@ export function resolveStorageBucket(): string {
   return `${credentials.projectId}.firebasestorage.app`;
 }
 
-/**
- * Returns a cached Firestore instance, initializing the Admin app on first use.
- * Throws `DATA_SOURCE_NOT_CONFIGURED` (-> HTTP 503) when credentials are missing, so the
- * API degrades gracefully instead of crashing when env vars are not yet set.
- */
-export function getDb(): Firestore {
-  if (cachedDb) return cachedDb;
+function getOrInitAdminApp(): App {
+  const existing = getApps()[0];
+  if (existing) return existing;
 
   const credentials = readCredentials();
   if (!credentials) {
@@ -79,18 +77,31 @@ export function getDb(): Firestore {
     );
   }
 
-  const app: App =
-    getApps()[0] ??
-    initializeApp({
-      credential: cert({
-        projectId: credentials.projectId,
-        clientEmail: credentials.clientEmail,
-        privateKey: credentials.privateKey,
-      }),
+  return initializeApp({
+    credential: cert({
       projectId: credentials.projectId,
-      storageBucket: resolveStorageBucket(),
-    });
+      clientEmail: credentials.clientEmail,
+      privateKey: credentials.privateKey,
+    }),
+    projectId: credentials.projectId,
+    storageBucket: resolveStorageBucket(),
+  });
+}
 
-  cachedDb = getFirestore(app);
+/**
+ * Returns a cached Firestore instance, initializing the Admin app on first use.
+ * Throws `DATA_SOURCE_NOT_CONFIGURED` (-> HTTP 503) when credentials are missing, so the
+ * API degrades gracefully instead of crashing when env vars are not yet set.
+ */
+export function getDb(): Firestore {
+  if (cachedDb) return cachedDb;
+  cachedDb = getFirestore(getOrInitAdminApp());
   return cachedDb;
+}
+
+/** Firebase Auth Admin (ID token verification). Same credentials as Firestore. */
+export function getAdminAuth(): Auth {
+  if (cachedAuth) return cachedAuth;
+  cachedAuth = getAuth(getOrInitAdminApp());
+  return cachedAuth;
 }

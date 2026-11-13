@@ -5,6 +5,12 @@ const state: { db: ReturnType<typeof makeFakeDb> | null } = { db: null };
 vi.mock('@/lib/firebase/admin', () => ({
   getDb: () => state.db,
   isDataSourceConfigured: () => true,
+  getAdminAuth: () => ({
+    verifyIdToken: async (token: string) => {
+      if (token !== 'test-id-token') throw new Error('invalid test token');
+      return { uid: 'test-user', email: 'test@deportix.local' };
+    },
+  }),
 }));
 
 const { listCatalogCountries, createCatalogCountry } = await import('@/lib/catalog/countries.service');
@@ -60,7 +66,10 @@ describe('POST /v1/countries', () => {
     const res = await POST(
       new Request('http://localhost/v1/countries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-id-token',
+        },
         body: JSON.stringify({ name: 'Argentina', code: 'AR', flag: null }),
       }) as never,
       { params: Promise.resolve({}) },

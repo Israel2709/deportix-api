@@ -11,7 +11,11 @@ function multipartRequest(fields: Record<string, Blob | string>) {
   for (const [key, value] of Object.entries(fields)) {
     form.append(key, value);
   }
-  return new Request('http://localhost/v1/uploads', { method: 'POST', body: form });
+  return new Request('http://localhost/v1/uploads', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer test-id-token' },
+    body: form,
+  });
 }
 
 describe('POST /v1/uploads', () => {

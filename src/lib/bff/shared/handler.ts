@@ -5,6 +5,7 @@ import { ApiError, httpStatusForCode, type ErrorCode } from '@/lib/api/errors';
 import { applyCorsHeaders } from '@/lib/api/cors';
 import { newRequestId } from '@/lib/api/request-id';
 import { CACHE, type CachePolicy } from '@/lib/api/cache';
+import { assertAuthenticated } from '@/lib/api/with-auth';
 import {
   buildApiSportsBody,
   buildApiSportsError,
@@ -62,6 +63,7 @@ function baseHeaders(requestId: string, origin: string | null): Headers {
 function errorFieldForCode(code: ErrorCode): string {
   if (code === 'INVALID_QUERY_PARAMETER') return 'parameters';
   if (code === 'INVALID_REQUEST_BODY') return 'parameters';
+  if (code === 'UNAUTHORIZED') return 'authorization';
   if (code === 'RESOURCE_NOT_FOUND') return 'resource';
   if (code === 'DATA_SOURCE_NOT_CONFIGURED') return 'service';
   return 'error';
@@ -230,6 +232,8 @@ export function createBffWriteRoute(
       const parameters = searchParamsToParameters(searchParams);
 
       try {
+        await assertAuthenticated(request);
+
         const params = ctx?.params ? await ctx.params : {};
         const body =
           method === 'DELETE' || options?.optionalBody

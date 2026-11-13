@@ -30,6 +30,7 @@ describe('CORS', () => {
     expect(headers.get('Access-Control-Allow-Methods')).toContain('POST');
     expect(headers.get('Access-Control-Allow-Methods')).toContain('PATCH');
     expect(headers.get('Access-Control-Allow-Methods')).toContain('DELETE');
+    expect(headers.get('Access-Control-Allow-Headers')).toContain('Authorization');
   });
 });
 
@@ -50,6 +51,7 @@ describe('error status mapping', () => {
   it('maps codes to HTTP statuses', () => {
     expect(httpStatusForCode('INVALID_QUERY_PARAMETER')).toBe(400);
     expect(httpStatusForCode('INVALID_REQUEST_BODY')).toBe(400);
+    expect(httpStatusForCode('UNAUTHORIZED')).toBe(401);
     expect(httpStatusForCode('RESOURCE_NOT_FOUND')).toBe(404);
     expect(httpStatusForCode('DATA_SOURCE_NOT_CONFIGURED')).toBe(503);
     expect(httpStatusForCode('INTERNAL_SERVER_ERROR')).toBe(500);

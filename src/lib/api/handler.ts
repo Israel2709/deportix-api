@@ -11,6 +11,7 @@ import {
   buildResourceBody,
   type Pagination,
 } from './responses';
+import { assertAuthenticated } from './with-auth';
 
 export interface RouteContext {
   request: NextRequest;
@@ -144,6 +145,8 @@ export function postRoute(handler: PatchRouteHandler) {
     const origin = request.headers.get('origin');
 
     try {
+      await assertAuthenticated(request);
+
       let body: unknown;
       try {
         body = await request.json();
@@ -192,6 +195,8 @@ export function patchRoute(handler: PatchRouteHandler) {
     const origin = request.headers.get('origin');
 
     try {
+      await assertAuthenticated(request);
+
       let body: unknown;
       try {
         body = await request.json();
@@ -237,6 +242,8 @@ export function deleteRoute(handler: DeleteRouteHandler) {
     const origin = request.headers.get('origin');
 
     try {
+      await assertAuthenticated(request);
+
       const params = ctx?.params ? await ctx.params : {};
       const searchParams = new URL(request.url).searchParams;
       await handler({ request, params, searchParams, requestId });

@@ -5,6 +5,12 @@ const state: { db: ReturnType<typeof makeFakeDb> | null } = { db: null };
 vi.mock('@/lib/firebase/admin', () => ({
   getDb: () => state.db,
   isDataSourceConfigured: () => true,
+  getAdminAuth: () => ({
+    verifyIdToken: async (token: string) => {
+      if (token !== 'test-id-token') throw new Error('invalid test token');
+      return { uid: 'test-user', email: 'test@deportix.local' };
+    },
+  }),
 }));
 
 const { fetchFootballOrganizations } = await import(
@@ -79,6 +85,8 @@ describe('football organizations', () => {
         id: 'org_fmf',
         name: 'Federación Mexicana de Fútbol',
         logo: 'https://example.com/fmf.png',
+        logo_alt: null,
+        abbreviation: null,
         country: { name: 'Mexico', code: 'MX', flag: 'https://example.com/mx.svg' },
       },
     ]);
@@ -181,7 +189,10 @@ describe('football organizations', () => {
     const res = await POST(
       new Request('http://localhost/organizations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-id-token',
+        },
         body: JSON.stringify({
           name: 'Liga Premier',
           logo: null,
@@ -196,7 +207,13 @@ describe('football organizations', () => {
   });
 
   it('DELETE /organizations without id is 400', async () => {
-    const res = await DELETE(new Request('http://localhost/organizations', { method: 'DELETE' }) as never, emptyCtx);
+    const res = await DELETE(
+      new Request('http://localhost/organizations', {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer test-id-token' },
+      }) as never,
+      emptyCtx,
+    );
     expect(res.status).toBe(400);
   });
 });
