@@ -38,6 +38,13 @@ export async function assertAuthenticated(
     };
   } catch (err) {
     if (err instanceof ApiError) throw err;
+    const detail =
+      err && typeof err === 'object' && 'code' in err
+        ? String((err as { code?: unknown }).code)
+        : err instanceof Error
+          ? err.message
+          : 'unknown';
+    console.error(`[auth] verifyIdToken failed: ${detail}`);
     throw unauthorized('Invalid or expired authentication token.');
   }
 }
