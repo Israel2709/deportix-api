@@ -49,7 +49,7 @@ describe('withAuth', () => {
     const handler = vi.fn(async () => 'ok');
     const wrapped = withAuth(handler);
     const ctx = {
-      request: mockRequest('GET'),
+      request: mockRequest('GET') as never,
     };
 
     await expect(wrapped(ctx)).resolves.toBe('ok');
@@ -61,7 +61,7 @@ describe('withAuth', () => {
     const handler = vi.fn(async () => 'ok');
     const wrapped = withAuth(handler);
     const ctx = {
-      request: mockRequest('POST'),
+      request: mockRequest('POST') as never,
     };
 
     await expect(wrapped(ctx)).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
