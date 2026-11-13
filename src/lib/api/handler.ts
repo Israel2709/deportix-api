@@ -11,7 +11,7 @@ import {
   buildResourceBody,
   type Pagination,
 } from './responses';
-import { assertAuthenticated } from './with-auth';
+import { assertAuthenticated } from './assert-authenticated';
 
 export interface RouteContext {
   request: NextRequest;

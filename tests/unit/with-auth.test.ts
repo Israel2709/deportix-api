@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/lib/api/errors';
-import { assertAuthenticated, withAuth } from '@/lib/api/with-auth';
-import type { RouteContext } from '@/lib/api/handler';
+import { assertAuthenticated } from '@/lib/api/assert-authenticated';
+import { withAuth } from '@/lib/api/with-auth';
 import { getAdminAuth, verifyIdToken } from '../setup/auth-mock';
 
 function mockRequest(method: string, authorization?: string): Request {
@@ -50,7 +50,7 @@ describe('withAuth', () => {
     const wrapped = withAuth(handler);
     const ctx = {
       request: mockRequest('GET'),
-    } as unknown as RouteContext;
+    };
 
     await expect(wrapped(ctx)).resolves.toBe('ok');
     expect(handler).toHaveBeenCalledOnce();
@@ -62,7 +62,7 @@ describe('withAuth', () => {
     const wrapped = withAuth(handler);
     const ctx = {
       request: mockRequest('POST'),
-    } as unknown as RouteContext;
+    };
 
     await expect(wrapped(ctx)).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
     expect(handler).not.toHaveBeenCalled();

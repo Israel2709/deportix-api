@@ -5,7 +5,7 @@ import { buildResourceBody } from '@/lib/api/responses';
 import { CACHE } from '@/lib/api/cache';
 import { buildErrorResponse, optionsRoute } from '@/lib/api/handler';
 import { newRequestId } from '@/lib/api/request-id';
-import { assertAuthenticated } from '@/lib/api/with-auth';
+import { assertAuthenticated } from '@/lib/api/assert-authenticated';
 import { uploadImage } from '@/lib/firebase/storage';
 
 export const runtime = 'nodejs';

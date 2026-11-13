@@ -5,7 +5,7 @@ import { ApiError, httpStatusForCode, type ErrorCode } from '@/lib/api/errors';
 import { applyCorsHeaders } from '@/lib/api/cors';
 import { newRequestId } from '@/lib/api/request-id';
 import { CACHE, type CachePolicy } from '@/lib/api/cache';
-import { assertAuthenticated } from '@/lib/api/with-auth';
+import { assertAuthenticated } from '@/lib/api/assert-authenticated';
 import {
   buildApiSportsBody,
   buildApiSportsError,
