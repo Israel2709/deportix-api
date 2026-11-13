@@ -21,7 +21,9 @@ export const runtime = 'nodejs';
 
 export const GET = bffGetRoute(async ({ searchParams }) => {
   const response = await fetchFootballLeagues(parseLeagueQuery(searchParams));
-  return { response, cache: CACHE.standard };
+  // BO assigns organizations and expects the unassigned/org lists to update immediately.
+  // CACHE.standard (CDN s-maxage=300) left assigned leagues stuck in "sin organización".
+  return { response, cache: CACHE.none };
 });
 
 export const POST = soccerBffPostRoute('leagues')(async ({ body }) => {
