@@ -103,8 +103,7 @@ export function getDb(): Firestore {
 /** Firebase Auth Admin (ID token verification). Same credentials as Firestore. */
 export function getAdminAuth(): Auth {
   if (cachedAuth) return cachedAuth;
-  // Lazy require avoids pulling `firebase-admin/auth` into every route module graph
-  // (including public GETs) at import time — a hard crash there surfaces as HTTP 500 HTML.
+  // Lazy load so importing admin.ts for Firestore does not pull auth into every route.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getAuth } = require('firebase-admin/auth') as typeof import('firebase-admin/auth');
   cachedAuth = getAuth(getOrInitAdminApp());

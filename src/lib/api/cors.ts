@@ -34,7 +34,7 @@ export function applyCorsHeaders(headers: Headers, requestOrigin: string | null)
   headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   headers.set(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, If-None-Match, x-rapidapi-key, x-apisports-key, x-rapidapi-host',
+    'Content-Type, Authorization, x-deportix-id-token, If-None-Match, x-rapidapi-key, x-apisports-key, x-rapidapi-host',
   );
   headers.set('Access-Control-Max-Age', '86400');
 }

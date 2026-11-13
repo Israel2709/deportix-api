@@ -14,6 +14,18 @@ function extractBearerToken(request: NextRequest): string | null {
   return match?.[1]?.trim() || null;
 }
 
+function peekJwtAudience(token: string): string | null {
+  try {
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) return null;
+    const json = Buffer.from(payloadPart, 'base64url').toString('utf8');
+    const payload = JSON.parse(json) as { aud?: unknown };
+    return typeof payload.aud === 'string' ? payload.aud : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Verifies `Authorization: Bearer <Firebase ID token>` and returns the user.
  * Throws `UNAUTHORIZED` (401) when missing/invalid, or `DATA_SOURCE_NOT_CONFIGURED` (503)
@@ -44,7 +56,13 @@ export async function assertAuthenticated(
         : err instanceof Error
           ? err.message
           : 'unknown';
-    console.error(`[auth] verifyIdToken failed: ${detail}`);
-    throw unauthorized('Invalid or expired authentication token.');
+    const aud = peekJwtAudience(token);
+    const projectId = process.env.FIREBASE_PROJECT_ID?.trim() ?? '(unset)';
+    console.error(
+      `[auth] verifyIdToken failed: ${detail}; token.aud=${aud}; FIREBASE_PROJECT_ID=${projectId}`,
+    );
+    throw unauthorized(
+      `Invalid or expired authentication token (${detail}; aud=${aud ?? 'n/a'}; project=${projectId}).`,
+    );
   }
 }
