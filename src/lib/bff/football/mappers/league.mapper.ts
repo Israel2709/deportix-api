@@ -66,7 +66,19 @@ export function mapLeagueToApiSports(
       code: country?.code ?? null,
       flag: country?.flag ?? null,
     },
-    organization: mapOrganizationRef(organization),
+    // Keep the raw organization id visible to the BO even when the org doc is missing,
+    // so edits do not wipe `organization_id` by round-tripping a null ref.
+    organization:
+      mapOrganizationRef(organization) ??
+      (league.organizationId
+        ? {
+            id: league.organizationId,
+            name: league.organizationId,
+            abbreviation: null,
+            logo: null,
+            logo_alt: null,
+          }
+        : null),
     seasons: seasons.map((season) => ({
       year: season.year,
       start: season.startDate,

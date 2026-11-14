@@ -77,6 +77,7 @@ paths and query params stay the same.
 | GET/POST/PATCH/DELETE | `/organizations` | POST `country.name`; PATCH/DELETE `?id` | Sports orgs per country. `GET ?country=`, `?name=`. DELETE blocked if the org has leagues. Additive — Flutter can ignore. |
 | GET | `/leagues` | — | `?id`, `?country`, `?organization`, `?season`, `?current`. Additive `organization` on each entry. |
 | GET | `/leagues/seasons` | — | Global list of season years. |
+| GET | `/teams` | at least one of `league`, `country`, `organization` | Aggregates across matching leagues. Optional `season` **requires** `league`. Response may include `league` + `organization` per entry. |
 | GET | `/fixtures` | `league` and/or `team`, or `id`/`ids` | Full filter set in OpenAPI. |
 | GET | `/fixtures/rounds` | `league`, `season` | Returns round name strings. |
 | GET | `/standings` | `league`, `season` | Nested `league.standings` table. |

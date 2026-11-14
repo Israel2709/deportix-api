@@ -52,7 +52,13 @@ export interface CountryQuery {
 }
 
 export interface TeamQuery {
-  league: string;
+  /** Provider / Firestore league id. Required when `season` is set. */
+  league?: string;
+  /** Country name substring — aggregates teams across matching leagues. */
+  country?: string;
+  /** Organization id or exact name — aggregates teams across matching leagues. */
+  organization?: string;
+  /** Season year. Requires `league` (participants are league-scoped). */
   season?: string | number;
 }
 
@@ -179,7 +185,24 @@ export function requireSeasonYear(value: number | undefined): number {
 }
 
 export function parseTeamQuery(searchParams: URLSearchParams): TeamQuery {
-  const league = requireLeagueExternalId(parseStringParam(searchParams.get('league')));
+  const league = parseStringParam(searchParams.get('league'));
+  const country = parseStringParam(searchParams.get('country'));
+  const organization = parseStringParam(searchParams.get('organization'));
   const season = parseSeasonParam(searchParams.get('season'));
-  return { league, season };
+
+  if (season != null && !league) {
+    throw new ApiError(
+      'INVALID_QUERY_PARAMETER',
+      'The "season" parameter requires "league".',
+    );
+  }
+
+  if (!league && !country && !organization) {
+    throw new ApiError(
+      'INVALID_QUERY_PARAMETER',
+      'Provide at least one of "league", "country", or "organization".',
+    );
+  }
+
+  return { league, country, organization, season };
 }

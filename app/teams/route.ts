@@ -21,7 +21,8 @@ export const runtime = 'nodejs';
 
 export const GET = bffGetRoute(async ({ searchParams }) => {
   const response = await fetchFootballTeams(parseTeamQuery(searchParams));
-  return { response, cache: CACHE.standard };
+  // BO edits team catalogs and expects immediate list refresh after PATCH.
+  return { response, cache: CACHE.none };
 });
 
 export const POST = soccerBffPostRoute('teams')(async ({ searchParams, body }) => {

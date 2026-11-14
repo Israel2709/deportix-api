@@ -5,6 +5,7 @@ import {
   parseLeagueQuery,
   parseRoundsQuery,
   parseStandingsQuery,
+  parseTeamQuery,
   requireLeagueExternalId,
 } from '@/lib/bff/football/query-params';
 
@@ -84,5 +85,27 @@ describe('BFF query params', () => {
 
   it('requires league external id when missing', () => {
     expect(() => requireLeagueExternalId(undefined)).toThrow(/league/i);
+  });
+
+  it('parses team filters by country / organization / league / season', () => {
+    expect(parseTeamQuery(new URLSearchParams('country=Mexico'))).toEqual({
+      league: undefined,
+      country: 'Mexico',
+      organization: undefined,
+      season: undefined,
+    });
+    expect(
+      parseTeamQuery(new URLSearchParams('organization=org_fmf&league=262&season=2026')),
+    ).toEqual({
+      league: '262',
+      country: undefined,
+      organization: 'org_fmf',
+      season: 2026,
+    });
+  });
+
+  it('requires a team scope and rejects season without league', () => {
+    expect(() => parseTeamQuery(new URLSearchParams(''))).toThrow(/league|country|organization/i);
+    expect(() => parseTeamQuery(new URLSearchParams('season=2026'))).toThrow(/season/i);
   });
 });

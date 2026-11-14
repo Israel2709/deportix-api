@@ -10,7 +10,8 @@ import {
   listRawMatchesBySeason,
 } from '@/lib/firebase/repositories/matches.repository';
 import type { RawDoc } from '@/lib/firebase/repositories/helpers';
-import { resolveSoccerLeague, resolveSoccerSeason } from './leagues.service';
+import type { TeamQuery } from '../query-params';
+import { fetchFootballLeagues, resolveSoccerLeague, resolveSoccerSeason } from './leagues.service';
 
 async function loadTeamsByIds(teamIds: string[]): Promise<RawDoc[]> {
   const docs: RawDoc[] = [];
@@ -48,36 +49,62 @@ async function teamsReferencedByFixtures(
   return loadTeamsByIds([...teamIds]);
 }
 
-function sortTeamEntries(docs: RawDoc[]): Record<string, unknown>[] {
-  return docs
-    .map((doc) => mapSoccerTeamToApiSports(doc))
-    .sort((a, b) => {
-      const left = String((a.team as { name?: string } | undefined)?.name ?? '');
-      const right = String((b.team as { name?: string } | undefined)?.name ?? '');
-      return left.localeCompare(right, 'es');
-    });
+function sortTeamEntries(docs: Record<string, unknown>[]): Record<string, unknown>[] {
+  return [...docs].sort((a, b) => {
+    const left = String((a.team as { name?: string } | undefined)?.name ?? '');
+    const right = String((b.team as { name?: string } | undefined)?.name ?? '');
+    return left.localeCompare(right, 'es');
+  });
 }
 
-export async function fetchFootballTeams(query: {
-  league: string;
-  season?: string | number;
-}): Promise<Record<string, unknown>[]> {
-  const league = await resolveSoccerLeague(query.league);
-  if (!league) return [];
+type LeagueScope = {
+  id: string;
+  publicId: string | number | null;
+  name: string | null;
+  organization: {
+    id: string;
+    name: string;
+    abbreviation: string | null;
+    logo: string | null;
+    logo_alt: string | null;
+  } | null;
+};
 
+function enrichTeamEntry(
+  doc: RawDoc,
+  league: LeagueScope,
+): Record<string, unknown> {
+  const mapped = mapSoccerTeamToApiSports(doc);
+  return {
+    ...mapped,
+    league: {
+      id: league.publicId ?? league.id,
+      name: league.name,
+    },
+    organization: league.organization,
+  };
+}
+
+async function teamsForLeagueScope(
+  league: LeagueScope,
+  season?: string | number,
+): Promise<Record<string, unknown>[]> {
   // Preferred path: season participants (many-to-many competition ↔ teams).
-  if (query.season != null && String(query.season).trim() !== '') {
-    const year = Number(query.season);
+  if (season != null && String(season).trim() !== '') {
+    const year = Number(season);
     if (Number.isFinite(year)) {
-      const season = await resolveSoccerSeason(league.id, year);
-      if (season) {
-        const participantIds = await listParticipantTeamIdsBySeason(season.id);
+      const seasonRow = await resolveSoccerSeason(league.id, year);
+      if (seasonRow) {
+        const participantIds = await listParticipantTeamIdsBySeason(seasonRow.id);
         if (participantIds.length > 0) {
-          return sortTeamEntries(await loadTeamsByIds(participantIds));
+          const docs = await loadTeamsByIds(participantIds);
+          return docs.map((doc) => enrichTeamEntry(doc, league));
         }
         // Fallback while migrating: teams referenced by fixtures for that season.
         const fromFixtures = await teamsReferencedByFixtures(league.id, year);
-        if (fromFixtures.length > 0) return sortTeamEntries(fromFixtures);
+        if (fromFixtures.length > 0) {
+          return fromFixtures.map((doc) => enrichTeamEntry(doc, league));
+        }
       }
     }
   }
@@ -85,13 +112,91 @@ export async function fetchFootballTeams(query: {
   // No season (or empty participants): legacy league_id + fixture union.
   const [byLeague, byFixtures] = await Promise.all([
     listRawSoccerTeamsByLeague(league.id),
-    teamsReferencedByFixtures(league.id, query.season),
+    teamsReferencedByFixtures(league.id, season),
   ]);
 
   const byId = new Map<string, RawDoc>();
   for (const doc of byLeague) byId.set(doc.id, doc);
   for (const doc of byFixtures) {
     if (!byId.has(doc.id)) byId.set(doc.id, doc);
+  }
+
+  return [...byId.values()].map((doc) => enrichTeamEntry(doc, league));
+}
+
+function leagueScopeFromEntry(entry: Record<string, unknown>): LeagueScope | null {
+  const league = entry.league as { id?: string | number | null; name?: string | null } | undefined;
+  if (league?.id == null || String(league.id).trim() === '') return null;
+  const organization =
+    (entry.organization as LeagueScope['organization'] | null | undefined) ?? null;
+  return {
+    id: String(league.id),
+    publicId: league.id,
+    name: league.name ?? null,
+    organization,
+  };
+}
+
+async function resolveLeagueScopes(query: TeamQuery): Promise<LeagueScope[]> {
+  if (query.league) {
+    // Resolve via leagues service so country/organization filters can narrow, and
+    // organization metadata is hydrated for the BO.
+    const scoped = await fetchFootballLeagues({
+      id: query.league,
+      country: query.country,
+      organization: query.organization,
+    });
+    if (scoped.length === 0) return [];
+    const fromList = leagueScopeFromEntry(scoped[0] as Record<string, unknown>);
+    if (fromList) {
+      // Prefer Firestore internal id for participant / league_id lookups.
+      const resolved = await resolveSoccerLeague(query.league);
+      if (resolved) return [{ ...fromList, id: resolved.id }];
+      return [fromList];
+    }
+    return [];
+  }
+
+  const entries = await fetchFootballLeagues({
+    country: query.country,
+    organization: query.organization,
+  });
+
+  const scopes: LeagueScope[] = [];
+  for (const entry of entries) {
+    const scope = leagueScopeFromEntry(entry as Record<string, unknown>);
+    if (!scope) continue;
+    const resolved = await resolveSoccerLeague(String(scope.publicId ?? scope.id));
+    scopes.push(resolved ? { ...scope, id: resolved.id } : scope);
+  }
+  return scopes;
+}
+
+/**
+ * List soccer teams by league (optional season), or by country / organization
+ * (aggregates across matching leagues). `season` requires `league`.
+ */
+export async function fetchFootballTeams(query: TeamQuery): Promise<Record<string, unknown>[]> {
+  const scopes = await resolveLeagueScopes(query);
+  const first = scopes[0];
+  if (!first) return [];
+
+  if (scopes.length === 1) {
+    return sortTeamEntries(await teamsForLeagueScope(first, query.season));
+  }
+
+  const batches = await Promise.all(
+    scopes.map((scope) => teamsForLeagueScope(scope, query.season)),
+  );
+
+  const byId = new Map<string, Record<string, unknown>>();
+  for (const batch of batches) {
+    for (const entry of batch) {
+      const team = entry.team as { id?: string | number } | undefined;
+      const id = team?.id != null ? String(team.id) : '';
+      if (!id || byId.has(id)) continue;
+      byId.set(id, entry);
+    }
   }
 
   return sortTeamEntries([...byId.values()]);
