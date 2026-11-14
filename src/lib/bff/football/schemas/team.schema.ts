@@ -10,7 +10,13 @@ export const soccerTeamCreateSchema = z
   })
   .strict();
 
-export const soccerTeamUpdateSchema = soccerTeamCreateSchema.partial();
+export const soccerTeamUpdateSchema = soccerTeamCreateSchema
+  .partial()
+  .extend({
+    /** Provider / Firestore league id — reassign the team's catalog league. */
+    league: nullableString.optional(),
+  })
+  .strict();
 
 export const soccerTeamItemSchema = z
   .object({

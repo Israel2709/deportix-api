@@ -53,7 +53,10 @@ export async function requireSoccerTeamInLeague(leagueId: string, teamId: string
   return team;
 }
 
-export async function createSoccerTeam(leagueId: string, input: SoccerTeamCreate): Promise<RawDoc> {
+export async function createSoccerTeam(
+  leagueId: string | null,
+  input: SoccerTeamCreate,
+): Promise<RawDoc> {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const data: Record<string, unknown> = {
@@ -78,7 +81,7 @@ export async function createSoccerTeam(leagueId: string, input: SoccerTeamCreate
 
 export async function updateSoccerTeam(
   idOrExternalId: string,
-  patch: SoccerTeamUpdate,
+  patch: SoccerTeamUpdate & { leagueId?: string | null },
 ): Promise<RawDoc> {
   const existing = await resolveDoc(COLLECTION, idOrExternalId);
   if (!existing) throw notFound('Team not found.');
@@ -102,6 +105,7 @@ export async function updateSoccerTeam(
   };
   if (patch.name !== undefined) fields.name = patch.name;
   if (patch.logo !== undefined) fields.logo = patch.logo;
+  if (patch.leagueId !== undefined) fields.league_id = patch.leagueId;
 
   await updateDocFields(COLLECTION, existing.id, fields);
   const updated = await resolveDoc(COLLECTION, existing.id);

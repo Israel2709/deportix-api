@@ -30,17 +30,38 @@ function parseTeamUpdateBody(body: unknown): SoccerTeamUpdate {
   return parsed.data;
 }
 
-export async function createSoccerTeamEntry(leagueExternalId: string, body: unknown) {
-  const league = await resolveSoccerLeague(leagueExternalId);
-  if (!league) throw invalidRequestBody('League not found.');
+export async function createSoccerTeamEntry(
+  leagueExternalId: string | null | undefined,
+  body: unknown,
+) {
   const input = parseTeamCreateBody(body);
+  if (leagueExternalId == null || String(leagueExternalId).trim() === '') {
+    const doc = await createSoccerTeam(null, input);
+    return mapSoccerTeamToApiSports(doc);
+  }
+  const league = await resolveSoccerLeague(String(leagueExternalId));
+  if (!league) throw invalidRequestBody('League not found.');
   const doc = await createSoccerTeam(league.id, input);
   return mapSoccerTeamToApiSports(doc);
 }
 
 export async function updateSoccerTeamEntry(teamId: string, body: unknown) {
   const patch = parseTeamUpdateBody(body);
-  const doc = await updateSoccerTeam(teamId, patch);
+  let leagueId: string | null | undefined;
+  if (patch.league !== undefined) {
+    if (patch.league == null || String(patch.league).trim() === '') {
+      leagueId = null;
+    } else {
+      const league = await resolveSoccerLeague(String(patch.league));
+      if (!league) throw invalidRequestBody('League not found.');
+      leagueId = league.id;
+    }
+  }
+  const { league: _league, ...teamPatch } = patch;
+  const doc = await updateSoccerTeam(teamId, {
+    ...teamPatch,
+    ...(leagueId !== undefined ? { leagueId } : {}),
+  });
   return mapSoccerTeamToApiSports(doc);
 }
 

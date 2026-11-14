@@ -27,7 +27,7 @@ export const GET = bffGetRoute(async ({ searchParams }) => {
 
 export const POST = soccerBffPostRoute('teams')(async ({ searchParams, body }) => {
   const league = searchParams.get('league');
-  if (!league) throw new ApiError('INVALID_QUERY_PARAMETER', 'The "league" parameter is required.');
+  // League is optional: maestros can create a catalog team and assign leagues later.
   const team = await createSoccerTeamEntry(league, body);
   return { response: [team], status: 201 };
 });
