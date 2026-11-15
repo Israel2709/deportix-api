@@ -40,7 +40,15 @@ function enrichTeamSide(
 
   enriched.name = preferCanonicalString(fromMap?.name, asStr(enriched.name));
   enriched.logo = preferCanonicalString(fromMap?.logo, asStr(enriched.logo));
-  if (enriched.id == null && externalId != null) enriched.id = externalNumericId(externalId);
+  // Prefer provider external id when present; otherwise expose the Firestore team id
+  // so BO round-trips (PATCH fixtures) do not send empty team ids.
+  if (enriched.id == null || String(enriched.id).trim() === '') {
+    if (externalId != null && String(externalId).trim() !== '') {
+      enriched.id = externalNumericId(externalId);
+    } else if (teamId) {
+      enriched.id = teamId;
+    }
+  }
 
   return enriched;
 }
@@ -88,8 +96,15 @@ export function mapRawSoccerMatchToApiSports(
     teamExternalIds?.away ?? null,
   );
 
-  if (fixture.id == null && raw.external_id) {
-    fixture.id = externalNumericId(asStr(raw.external_id));
+  if (fixture.id == null || String(fixture.id).trim() === '') {
+    if (raw.external_id) {
+      fixture.id = externalNumericId(asStr(raw.external_id));
+    }
+    // BO-created matches often have no provider external_id; use the Firestore doc id
+    // so list → edit → PATCH updates the same fixture instead of POSTing a duplicate.
+    if (fixture.id == null || String(fixture.id).trim() === '') {
+      fixture.id = doc.id;
+    }
   }
   if (!fixture.date) fixture.date = asStr(raw.fixture_date);
   if (!fixture.timezone) fixture.timezone = 'UTC';
