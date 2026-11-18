@@ -22,10 +22,17 @@ function standingRow(
   const teamExternalId = teamId ? teamExternalIds.get(teamId) : null;
   const numericTeamId = teamExternalId ? Number(teamExternalId) : null;
 
+  // Prefer API-Sports external id when present; otherwise keep Firestore team id
+  // so BO re-saves never send an empty `team.id` (Zod min(1)).
+  const resolvedTeamId =
+    numericTeamId != null && !Number.isNaN(numericTeamId)
+      ? numericTeamId
+      : teamExternalId || teamId || null;
+
   return {
     rank,
     team: {
-      id: numericTeamId != null && !Number.isNaN(numericTeamId) ? numericTeamId : teamExternalId,
+      id: resolvedTeamId,
       name: teamInfo?.name ?? null,
       logo: teamInfo?.logo ?? null,
     },
