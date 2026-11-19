@@ -21,7 +21,8 @@ export const runtime = 'nodejs';
 
 export const GET = bffGetRoute(async ({ searchParams }) => {
   const response = await fetchFootballStandings(parseStandingsQuery(searchParams));
-  return { response, cache: CACHE.standard };
+  // BO syncs standings after every match save; CDN cache caused stale/random ranks.
+  return { response, cache: CACHE.none };
 });
 
 export const POST = soccerBffPostRoute('standings')(async ({ body }) => {

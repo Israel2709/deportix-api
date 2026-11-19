@@ -58,7 +58,7 @@ function gameToFirestore(
     date: isoDate,
     status: item.game.status?.short ?? item.game.status?.long ?? 'NS',
     // api-sports American Football game.stage; never persist null for BO/App QD.
-    stage: item.game.stage?.trim() || 'Pre Season',
+    stage: item.game.stage?.trim() || 'Regular Season',
     week: item.game.week ?? null,
     round: item.game.week ?? null,
     venue: item.game.venue ?? null,

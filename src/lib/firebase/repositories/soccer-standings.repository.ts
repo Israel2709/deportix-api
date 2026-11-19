@@ -77,6 +77,21 @@ export async function createSoccerStanding(
   teamId: string,
   item: SoccerStandingCreate,
 ): Promise<RawDoc> {
+  // Upsert by league+season+team so repeated BO syncs don't create duplicate rows
+  // (duplicates broke rank/PJ/GF consistency on GET).
+  const existingDocs = await listRawSoccerStandingsByLeague(leagueId, { seasonId });
+  const existing = existingDocs.find((doc) => asStr(doc.data.team_id) === teamId);
+  if (existing) {
+    const fields: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+    applyStandingPatch(fields, item);
+    await updateDocFields(COLLECTION, existing.id, fields);
+    const updated = await resolveDoc(COLLECTION, existing.id);
+    if (!updated) throw notFound('Standing not found.');
+    return updated;
+  }
+
   const id = crypto.randomUUID();
   await createDoc(COLLECTION, id, standingToFirestore(leagueId, seasonId, teamId, item));
   const created = await resolveDoc(COLLECTION, id);
