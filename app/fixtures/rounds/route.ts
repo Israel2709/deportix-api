@@ -21,7 +21,9 @@ export const runtime = 'nodejs';
 
 export const GET = bffGetRoute(async ({ searchParams }) => {
   const rounds = await fetchFootballRounds(parseRoundsQuery(searchParams));
-  return { response: rounds, cache: CACHE.standard };
+  // CACHE.standard (CDN s-maxage=300) hid newly created jornadas in the BO
+  // until the edge copy expired after POST /fixtures/rounds.
+  return { response: rounds, cache: CACHE.none };
 });
 
 export const POST = soccerBffPostRoute('rounds')(async ({ searchParams, body }) => {
