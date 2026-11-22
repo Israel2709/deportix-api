@@ -21,6 +21,7 @@ function externalNumericId(value: string | null): number | string | null {
 export function mapSoccerTeamToApiSports(doc: RawDoc): Record<string, unknown> {
   const raw = doc.data;
   const team = (raw.team && typeof raw.team === 'object' ? raw.team : {}) as Record<string, unknown>;
+  const externalId = externalNumericId(asStr(raw.external_id));
   return {
     team: {
       id: doc.id,
@@ -29,6 +30,8 @@ export function mapSoccerTeamToApiSports(doc: RawDoc): Record<string, unknown> {
       country: asStr(team.country),
       logo: asStr(team.logo) ?? asStr(raw.logo),
     },
+    // BO uses this to map fixture provider ids → Firestore team ids.
+    external_id: externalId,
     venue: raw.venue && typeof raw.venue === 'object' ? raw.venue : {},
   };
 }

@@ -29,6 +29,24 @@ function normalizeStatus(rawStatus: unknown): Raw {
   return { long: null, short: null, elapsed: null };
 }
 
+/**
+ * Prefer top-level `status` when it disagrees with nested `fixture.status`.
+ * BO PATCHes historically wrote only the top-level field; imported blobs keep a
+ * stale nested short (e.g. NS) that would otherwise win on read.
+ */
+function resolveFixtureStatus(raw: Raw, fixture: Raw): Raw {
+  const nested = asObj(fixture.status);
+  const top = raw.status;
+  if (typeof top === 'string' && top.trim()) {
+    const topShort = top.trim().toUpperCase();
+    const nestedShort = asStr(nested?.short)?.toUpperCase() ?? null;
+    if (!nestedShort || nestedShort !== topShort) {
+      return normalizeStatus(top);
+    }
+  }
+  return normalizeStatus(nested ?? top);
+}
+
 function enrichTeamSide(
   side: Raw,
   teamId: string | null,
@@ -40,14 +58,23 @@ function enrichTeamSide(
 
   enriched.name = preferCanonicalString(fromMap?.name, asStr(enriched.name));
   enriched.logo = preferCanonicalString(fromMap?.logo, asStr(enriched.logo));
-  // Prefer provider external id when present; otherwise expose the Firestore team id
-  // so BO round-trips (PATCH fixtures) do not send empty team ids.
-  if (enriched.id == null || String(enriched.id).trim() === '') {
-    if (externalId != null && String(externalId).trim() !== '') {
-      enriched.id = externalNumericId(externalId);
-    } else if (teamId) {
-      enriched.id = teamId;
-    }
+
+  // Preserve provider id for App QD, but always expose Firestore id as `id` when we
+  // have it. Imported Liga MX fixtures keep stale numeric ids on teams.*; leaving
+  // those as `id` broke BO standings (EQ 2295 instead of names, duplicated rows).
+  const providerId =
+    (externalId != null && String(externalId).trim() !== ''
+      ? externalNumericId(externalId)
+      : null) ??
+    (enriched.id != null && String(enriched.id).trim() !== '' && teamId && String(enriched.id) !== teamId
+      ? externalNumericId(String(enriched.id))
+      : null);
+  if (providerId != null) enriched.external_id = providerId;
+
+  if (teamId) {
+    enriched.id = teamId;
+  } else if (enriched.id == null || String(enriched.id).trim() === '') {
+    if (providerId != null) enriched.id = providerId;
   }
 
   return enriched;
@@ -109,7 +136,7 @@ export function mapRawSoccerMatchToApiSports(
   if (!fixture.date) fixture.date = asStr(raw.fixture_date);
   if (!fixture.timezone) fixture.timezone = 'UTC';
 
-  fixture.status = normalizeStatus(fixture.status ?? raw.status);
+  fixture.status = resolveFixtureStatus(raw, fixture);
 
   const score = asObj(raw.score);
 

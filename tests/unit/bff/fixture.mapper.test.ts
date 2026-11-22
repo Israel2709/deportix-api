@@ -20,6 +20,27 @@ describe('preferCanonicalString', () => {
 });
 
 describe('fixture mapper', () => {
+  it('prefers top-level status when nested fixture.status is stale', () => {
+    const mapped = mapRawSoccerMatchToApiSports({
+      id: 'm-stale-status',
+      data: {
+        status: 'FT',
+        fixture: {
+          id: 1,
+          status: { short: 'NS', long: 'Not Started', elapsed: null },
+        },
+        home_team_id: 'tm_home',
+        away_team_id: 'tm_away',
+        teams: { home: { name: 'A' }, away: { name: 'B' } },
+        goals: { home: 1, away: 0 },
+      },
+    });
+
+    expect(mapped.fixture).toMatchObject({
+      status: { short: 'FT', long: 'FT', elapsed: null },
+    });
+  });
+
   it('maps nested raw soccer documents to API-Sports shape', () => {
     const mapped = mapRawSoccerMatchToApiSports(
       {
@@ -52,8 +73,8 @@ describe('fixture mapper', () => {
       status: { short: 'NS', long: 'NS', elapsed: null },
     });
     expect(mapped.teams).toMatchObject({
-      home: { id: 1, name: 'Boca Juniors', logo: 'b.png' },
-      away: { id: 2, name: 'River Plate', logo: 'r.png' },
+      home: { id: 'tm_home', external_id: 1, name: 'Boca Juniors', logo: 'b.png' },
+      away: { id: 'tm_away', external_id: 2, name: 'River Plate', logo: 'r.png' },
     });
     expect(mapped.league).toMatchObject({ id: 128, season: 2026, round: 'Regular Season - 1' });
     expect(mapped.goals).toEqual({ home: null, away: null });

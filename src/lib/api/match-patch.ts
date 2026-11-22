@@ -62,6 +62,12 @@ export function buildMatchFirestorePatch(
   if (patch.status !== undefined) out.status = patch.status;
 
   if (sport === 'soccer') {
+    // Imported fixtures expose status via fixture.status.*; the BFF mapper prefers
+    // that nested object over the top-level string, so PATCH must update both.
+    if (patch.status !== undefined) {
+      out['fixture.status.short'] = patch.status;
+      out['fixture.status.long'] = soccerStatusLong(patch.status);
+    }
     if (patch.date !== undefined) {
       out.fixture_date = patch.date;
       out['fixture.date'] = patch.date;
@@ -87,6 +93,23 @@ export function buildMatchFirestorePatch(
   applyGenericSidePatch(out, patch.home, 'home');
   applyGenericSidePatch(out, patch.away, 'away');
   return out;
+}
+
+/** API-Sports-style long label for common soccer shorts written by the BO. */
+function soccerStatusLong(short: string | null): string | null {
+  if (short == null) return null;
+  switch (short.trim().toUpperCase()) {
+    case 'NS':
+      return 'Not Started';
+    case 'LIVE':
+      return 'Live';
+    case 'FT':
+      return 'Match Finished';
+    case 'CANC':
+      return 'Cancelled';
+    default:
+      return short;
+  }
 }
 
 function applySidePatch(

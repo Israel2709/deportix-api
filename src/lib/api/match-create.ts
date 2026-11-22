@@ -76,6 +76,7 @@ export function buildMatchFirestoreDocument(
       venue: input.venue ?? null,
       fixture: {
         date: input.date,
+        status: { short: status, long: status, elapsed: null },
         venue: input.venue ? { name: input.venue } : {},
       },
       league: { round: input.round ?? null },

@@ -16,6 +16,8 @@ describe('buildMatchFirestorePatch', () => {
       fixture_date: '2026-11-08T22:00:00.000Z',
       'fixture.date': '2026-11-08T22:00:00.000Z',
       status: 'FT',
+      'fixture.status.short': 'FT',
+      'fixture.status.long': 'Match Finished',
       'league.round': 'Clausura - 16',
       venue: 'Monumental',
       'fixture.venue.name': 'Monumental',
